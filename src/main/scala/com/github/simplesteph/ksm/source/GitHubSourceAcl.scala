@@ -4,7 +4,7 @@ class GitHubSourceAcl extends SourceAcl {
 
   val mode = "csv"
 
-  override def refreshSourceAcl() = ???
+  override def refresh() = ???
 
   //    // return new StringReader(string);
   override def close(): Unit = ???

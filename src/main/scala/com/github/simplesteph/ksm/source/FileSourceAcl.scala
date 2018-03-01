@@ -7,12 +7,12 @@ import kafka.security.auth._
 
 import scala.util.Try
 
-class FileSourceAcl extends SourceAcl  {
+class FileSourceAcl(filename: String) extends SourceAcl  {
 
   var lastModified: Long = -1
 
-  override def refreshSourceAcl(): Option[SourceAclResult] = {
-    val file = new File("example/acls.csv")
+  override def refresh(): Option[SourceAclResult] = {
+    val file = new File(filename)
     if (file.lastModified() > lastModified) {
       val reader = new FileReader(file)
       val res = CsvParser.aclsFromCsv(reader)

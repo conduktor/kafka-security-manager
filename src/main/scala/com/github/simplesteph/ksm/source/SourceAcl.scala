@@ -6,7 +6,7 @@ import scala.util.Try
 
 trait SourceAcl {
 
-  def refreshSourceAcl(): Option[SourceAclResult]
+  def refresh(): Option[SourceAclResult]
 
   def close()
 }
