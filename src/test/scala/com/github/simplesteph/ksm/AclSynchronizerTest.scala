@@ -86,8 +86,6 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
         simpleAclAuthorizer.getAcls() shouldBe Map()
       }
 
-      // TODO: deal with error cases
-
       aclSynchronizer.close()
     }
   }
@@ -133,6 +131,9 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
     }
   }
+
+  // TODO: deal with error cases
+
 
 
 }

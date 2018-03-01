@@ -1,4 +1,0 @@
-KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-User:alice,Topic,foo,Read,Allow,*
-User:bob,Group,bar,Write,Deny,12.34.56.78
-User:peter,Cluster,kafka-cluster,Create,Allow,*

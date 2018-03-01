@@ -81,11 +81,10 @@ class CsvParserTest extends FlatSpec with Matchers {
     res.errs.size shouldBe 2
     val throwable1 = res.errs.head.get
     throwable1.getClass shouldBe classOf[CsvParserException]
-    throwable1.asInstanceOf[CsvParserException].printRow().contains("bob") shouldBe true //TODO: use should have word
+    throwable1.asInstanceOf[CsvParserException].printRow() should include("bob")
 
     val throwable2 = res.errs.head.get
     throwable2.getClass shouldBe classOf[CsvParserException]
-//    throwable2.asInstanceOf[CsvParserException].  //TODO: use should have word
 
     res.acls shouldBe Set(
       res1 -> acl1,
