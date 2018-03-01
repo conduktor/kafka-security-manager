@@ -6,8 +6,10 @@ version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
-//lazy val root = (project in file("."))
-//  .enablePlugins(JavaAppPackaging)
+lazy val root = (project in file("."))
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
+
 
 resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
 
@@ -34,3 +36,6 @@ libraryDependencies ++= Seq(
 mainClass in Compile := Some("com.github.simplesteph.ksm.KafkaSecurityManager")
 
 parallelExecution in Test := false
+
+// Docker stuff
+dockerRepository := Some("simplesteph")
