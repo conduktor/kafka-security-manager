@@ -3,10 +3,22 @@ package com.github.simplesteph.ksm.source
 import java.io.{ File, FileReader }
 
 import com.github.simplesteph.ksm.parser.CsvParser
+import com.typesafe.config.Config
 
-class FileSourceAcl(filename: String) extends SourceAcl {
+class FileSourceAcl extends SourceAcl {
+
+  override val CONFIG_PREFIX: String = "file"
+  final val FILENAME_CONFIG = "filename"
 
   var lastModified: Long = -1
+  var filename: String = _
+
+  /**
+   * internal config definition for the module
+   */
+  override def configure(config: Config): Unit = {
+    filename = config.getString(FILENAME_CONFIG)
+  }
 
   /**
    * We use the metadata of the file (last modified date)
@@ -29,4 +41,5 @@ class FileSourceAcl(filename: String) extends SourceAcl {
   }
 
   override def close(): Unit = ()
+
 }

@@ -1,5 +1,6 @@
 package com.github.simplesteph.ksm.source
 
+import com.typesafe.config.Config
 import kafka.security.auth._
 import org.apache.kafka.common.utils.SecurityUtils
 
@@ -53,4 +54,14 @@ class DummySourceAcl extends SourceAcl {
   }
 
   override def close(): Unit = ()
+
+  /**
+    * Config Prefix for configuring this module
+    */
+  override val CONFIG_PREFIX: String = "dummy"
+
+  /**
+    * internal config definition for the module
+    */
+  override def configure(config: Config): Unit = ()
 }

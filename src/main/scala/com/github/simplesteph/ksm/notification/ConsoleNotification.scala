@@ -1,13 +1,24 @@
 package com.github.simplesteph.ksm.notification
 import com.github.simplesteph.ksm.parser.CsvParserException
+import com.typesafe.config.Config
 import kafka.security.auth.{ Acl, Resource }
 import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.util.Try
 
-case object ConsoleNotification extends Notification {
+case class ConsoleNotification() extends Notification {
 
   val log: Logger = LoggerFactory.getLogger(ConsoleNotification.getClass.getSimpleName)
+
+  /**
+   * Config Prefix for configuring this module
+   */
+  override val CONFIG_PREFIX: String = "console"
+
+  /**
+   * internal config definition for the module
+   */
+  override def configure(config: Config): Unit = ()
 
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
     if (errs.nonEmpty) {
@@ -30,4 +41,5 @@ case object ConsoleNotification extends Notification {
   }
 
   override def close(): Unit = ()
+
 }

@@ -1,34 +1,21 @@
 package com.github.simplesteph.ksm
 
-import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
+import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
 
-import com.github.simplesteph.ksm.notification.ConsoleNotification
-import com.github.simplesteph.ksm.source.FileSourceAcl
-import kafka.security.auth.SimpleAclAuthorizer
+import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConverters._
 
 object KafkaSecurityManager extends App {
 
   val log = LoggerFactory.getLogger(KafkaSecurityManager.getClass)
 
-
-  private val simpleAclAuthorizer: SimpleAclAuthorizer = new SimpleAclAuthorizer
-  private val configs = Map(
-    "zookeeper.connect" -> "localhost:2181",
-  )
-  simpleAclAuthorizer.configure(configs.asJava)
-
-  private val sourceAcl = new FileSourceAcl("example/acls.csv")
-  private val notification = ConsoleNotification
+  val config = ConfigFactory.load()
+  val appConfig: AppConfig = new AppConfig(config)
 
   val aclSynchronizer = new AclSynchronizer(
-    simpleAclAuthorizer,
-    sourceAcl,
-    notification
-  )
-
+    appConfig.Authorizer.authZ,
+    appConfig.Source.sourceAcl,
+    appConfig.Notification.notification)
 
   val executor = Executors.newScheduledThreadPool(1)
   val f: ScheduledFuture[_] = executor.scheduleAtFixedRate(aclSynchronizer, 1, 10, TimeUnit.SECONDS)

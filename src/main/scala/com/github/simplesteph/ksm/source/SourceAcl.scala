@@ -1,6 +1,19 @@
 package com.github.simplesteph.ksm.source
 
+import com.typesafe.config.Config
+
 trait SourceAcl {
+
+  /**
+   * Config Prefix for configuring this module
+   */
+  val CONFIG_PREFIX: String
+
+  /**
+   * internal config definition for the module
+   */
+
+  def configure(config: Config)
 
   /**
    * Refresh the current view on the external source of truth for Acl

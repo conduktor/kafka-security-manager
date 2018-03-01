@@ -54,7 +54,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
-        ConsoleNotification
+        new ConsoleNotification
       )
 
 
@@ -102,7 +102,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
-        ConsoleNotification
+        new ConsoleNotification
       )
 
       // first iteration

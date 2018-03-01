@@ -23,7 +23,8 @@ class FileSourceAclTest extends FlatSpec with Matchers {
 
     Files.write(Paths.get(file.toURI), content1.getBytes(StandardCharsets.UTF_8))
 
-    val fileSourceAcl = new FileSourceAcl(file.getAbsolutePath)
+    val fileSourceAcl = new FileSourceAcl
+    fileSourceAcl.filename = file.getAbsolutePath
 
     val acl1 = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
     val acl2 = Acl(SecurityUtils.parseKafkaPrincipal("User:bob"), Deny, "12.34.56.78", Write)
@@ -49,7 +50,8 @@ class FileSourceAclTest extends FlatSpec with Matchers {
 
     Files.write(Paths.get(file.toURI), content1.getBytes(StandardCharsets.UTF_8))
 
-    val fileSourceAcl = new FileSourceAcl(file.getAbsolutePath)
+    val fileSourceAcl = new FileSourceAcl
+    fileSourceAcl.filename = file.getAbsolutePath
 
     val acl1 = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
     val acl2 = Acl(SecurityUtils.parseKafkaPrincipal("User:bob"), Deny, "12.34.56.78", Write)

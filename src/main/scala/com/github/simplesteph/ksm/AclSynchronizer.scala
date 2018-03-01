@@ -2,7 +2,7 @@ package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.Notification
 import com.github.simplesteph.ksm.source.{ SourceAcl, SourceAclResult }
-import kafka.security.auth.{ Acl, Resource, SimpleAclAuthorizer }
+import kafka.security.auth.{ Acl, Authorizer, Resource }
 import org.slf4j.{ Logger, LoggerFactory }
 
 object AclSynchronizer {
@@ -29,15 +29,15 @@ object AclSynchronizer {
     sourceAcls: Set[(Resource, Acl)],
     kafkaAcls: Set[(Resource, Acl)],
     notification: Notification,
-    simpleAclAuthorizer: SimpleAclAuthorizer): Unit = {
+    authZ: Authorizer): Unit = {
     if (sourceAcls == kafkaAcls) {
       log.info("No ACL changes")
     } else {
       val added = sourceAcls -- kafkaAcls
       val removed = kafkaAcls -- sourceAcls
 
-      regroupAcls(added).foreach { case (resource, acls) => simpleAclAuthorizer.addAcls(acls, resource) }
-      regroupAcls(removed).foreach { case (resource, acls) => simpleAclAuthorizer.removeAcls(acls, resource) }
+      regroupAcls(added).foreach { case (resource, acls) => authZ.addAcls(acls, resource) }
+      regroupAcls(removed).foreach { case (resource, acls) => authZ.removeAcls(acls, resource) }
 
       notification.notifySuccess(added, removed)
     }
@@ -45,7 +45,7 @@ object AclSynchronizer {
 }
 
 class AclSynchronizer(
-  simpleAclAuthorizer: SimpleAclAuthorizer,
+  authZ: Authorizer,
   sourceAcl: SourceAcl,
   notification: Notification) extends Runnable {
 
@@ -56,7 +56,7 @@ class AclSynchronizer(
   override def run(): Unit = {
 
     // flatten the Kafka ACL
-    val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(simpleAclAuthorizer.getAcls())
+    val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authZ.getAcls())
 
     // parse the source of the ACL
     sourceAcl.refresh() match {
@@ -68,7 +68,7 @@ class AclSynchronizer(
             sourceAclsCache.acls,
             kafkaAcls,
             notification,
-            simpleAclAuthorizer)
+            authZ)
         }
       // the source has changed
       case Some(SourceAclResult(acls, errs)) =>
@@ -80,7 +80,7 @@ class AclSynchronizer(
             sourceAclsCache.acls,
             kafkaAcls,
             notification,
-            simpleAclAuthorizer)
+            authZ)
         } else {
           log.error("Exceptions while parsing ACL source:")
           notification.notifyErrors(errs)
@@ -90,7 +90,7 @@ class AclSynchronizer(
   }
 
   def close(): Unit = {
-    simpleAclAuthorizer.close()
+    authZ.close()
     sourceAcl.close()
     notification.close()
   }

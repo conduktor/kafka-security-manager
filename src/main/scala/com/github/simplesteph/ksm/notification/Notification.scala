@@ -1,10 +1,22 @@
 package com.github.simplesteph.ksm.notification
 
+import com.typesafe.config.Config
 import kafka.security.auth.{ Acl, Resource }
 
 import scala.util.Try
 
 trait Notification {
+
+  /**
+   * Config Prefix for configuring this module
+   */
+  val CONFIG_PREFIX: String
+
+  /**
+   * internal config definition for the module
+   */
+
+  def configure(config: Config)
 
   /**
    * Function to be called by external accessors, but should not be implemented by subclasses
