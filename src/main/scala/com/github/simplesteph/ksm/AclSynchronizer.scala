@@ -1,12 +1,11 @@
 package com.github.simplesteph.ksm
 
-import com.github.simplesteph.ksm.notification.{ConsoleNotification, Notification}
-import com.github.simplesteph.ksm.source.{FileSourceAcl, SourceAcl, SourceAclResult}
-import kafka.security.auth.{Acl, Resource, SimpleAclAuthorizer}
-import org.slf4j.{Logger, LoggerFactory}
+import com.github.simplesteph.ksm.notification.{ ConsoleNotification, Notification }
+import com.github.simplesteph.ksm.source.{ FileSourceAcl, SourceAcl, SourceAclResult }
+import kafka.security.auth.{ Acl, Resource, SimpleAclAuthorizer }
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.util.Try
-
 
 // kafka-acls  --topic test --producer --authorizer-properties zookeeper.connect=localhost:2181 --add --allow-principal User:alice
 
@@ -17,8 +16,9 @@ object AclSynchronizer {
   // transform Kafka ACLs to make them more agreeable to deal with
   def flattenKafkaAcls(kafkaGroupedAcls: Map[Resource, Set[Acl]]): Set[(Resource, Acl)] = {
     kafkaGroupedAcls.toSeq
-      .flatMap { case (resource: Resource, acls: Set[Acl]) =>
-        acls.toSeq.map(acl => (resource, acl))
+      .flatMap {
+        case (resource: Resource, acls: Set[Acl]) =>
+          acls.toSeq.map(acl => (resource, acl))
       }.toSet
   }
 
@@ -29,10 +29,11 @@ object AclSynchronizer {
   }
 
   // apply changes to Zookeeper / Kafka security and store the results in Notification object
-  def applySourceAcls(sourceAcls: Set[(Resource, Acl)],
-                      kafkaAcls: Set[(Resource, Acl)],
-                      notification: Notification,
-                      simpleAclAuthorizer: SimpleAclAuthorizer): Unit = {
+  def applySourceAcls(
+    sourceAcls: Set[(Resource, Acl)],
+    kafkaAcls: Set[(Resource, Acl)],
+    notification: Notification,
+    simpleAclAuthorizer: SimpleAclAuthorizer): Unit = {
     if (sourceAcls == kafkaAcls) {
       log.info("No ACL changes")
     } else {
@@ -47,9 +48,10 @@ object AclSynchronizer {
   }
 }
 
-class AclSynchronizer(simpleAclAuthorizer: SimpleAclAuthorizer,
-                      sourceAcl: SourceAcl,
-                      notification: Notification) extends Runnable {
+class AclSynchronizer(
+  simpleAclAuthorizer: SimpleAclAuthorizer,
+  sourceAcl: SourceAcl,
+  notification: Notification) extends Runnable {
 
   import AclSynchronizer._
 

@@ -3,12 +3,12 @@ package com.github.simplesteph.ksm.parser
 import java.io.Reader
 
 import com.github.simplesteph.ksm.source.SourceAclResult
-import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
+import com.github.tototoshi.csv.{ CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting }
 import kafka.security.auth._
 import org.apache.kafka.common.utils.SecurityUtils
 
 import scala.collection.immutable
-import scala.util.{Failure, Try}
+import scala.util.{ Failure, Try }
 
 object CsvParser {
 
@@ -19,7 +19,8 @@ object CsvParser {
   final val PERMISSION_TYPE_COL = "PermissionType"
   final val HOST_COL = "Host"
 
-  final val EXPECTED_COLS = Set(KAFKA_PRINCIPAL_COL,
+  final val EXPECTED_COLS = Set(
+    KAFKA_PRINCIPAL_COL,
     RESOURCE_TYPE_COL, RESOURCE_NAME_COL, OPERATION_COL,
     PERMISSION_TYPE_COL, HOST_COL)
 

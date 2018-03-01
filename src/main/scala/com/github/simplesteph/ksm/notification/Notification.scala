@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm.notification
 
-import kafka.security.auth.{Acl, Resource}
+import kafka.security.auth.{ Acl, Resource }
 
 import scala.util.Try
 
@@ -11,7 +11,7 @@ trait Notification {
     notifyOne("REMOVED", removed)
   }
 
-  protected def notifyOne (action: String, acls: Set[(Resource, Acl)]): Unit
+  protected def notifyOne(action: String, acls: Set[(Resource, Acl)]): Unit
 
   def notifyErrors(errs: List[Try[Throwable]]): Unit
 

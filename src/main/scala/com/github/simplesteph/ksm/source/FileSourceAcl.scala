@@ -1,13 +1,13 @@
 package com.github.simplesteph.ksm.source
 
-import java.io.{File, FileReader}
+import java.io.{ File, FileReader }
 
 import com.github.simplesteph.ksm.parser.CsvParser
 import kafka.security.auth._
 
 import scala.util.Try
 
-class FileSourceAcl(filename: String) extends SourceAcl  {
+class FileSourceAcl(filename: String) extends SourceAcl {
 
   var lastModified: Long = -1
 

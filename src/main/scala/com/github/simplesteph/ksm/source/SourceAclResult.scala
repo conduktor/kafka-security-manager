@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm.source
 
-import kafka.security.auth.{Acl, Resource}
+import kafka.security.auth.{ Acl, Resource }
 
 import scala.util.Try
 

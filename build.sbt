@@ -9,6 +9,8 @@ scalaVersion := "2.12.4"
 //lazy val root = (project in file("."))
 //  .enablePlugins(JavaAppPackaging)
 
+resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+
 libraryDependencies ++= Seq(
   // kafka
   "org.apache.kafka" %% "kafka" % "1.0.0",

@@ -1,5 +1,5 @@
 package com.github.simplesteph.ksm.notification
-import kafka.security.auth.{Acl, Resource}
+import kafka.security.auth.{ Acl, Resource }
 
 import scala.util.Try
 
