@@ -1,0 +1,4 @@
+KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
+User:alice,Topic,test,Read,Allow,*
+User:bob,Topic,test,Read,Allow,*
+User:peter,Topic,test,Read,Allow,*
