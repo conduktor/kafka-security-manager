@@ -12,7 +12,10 @@ Your role is to ensure that Kafka Security Manager is never down, as it is now a
 
 # Building
 
-``` TODO ```
+``` 
+sbt test
+sbt universal:stage
+```
 
 This is a Scala app and therefore should run on the JVM like any other application
 
