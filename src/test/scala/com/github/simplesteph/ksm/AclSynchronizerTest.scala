@@ -1,11 +1,9 @@
 package com.github.simplesteph.ksm
 
-import com.github.simplesteph.ksm.KafkaSecurityManager.simpleAclAuthorizer
 import com.github.simplesteph.ksm.notification.ConsoleNotification
 import com.github.simplesteph.ksm.source.DummySourceAcl
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
-import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{FlatSpec, Matchers}
 

@@ -1,13 +1,9 @@
 package com.github.simplesteph.ksm
 
-import com.github.simplesteph.ksm.notification.{ ConsoleNotification, Notification }
-import com.github.simplesteph.ksm.source.{ FileSourceAcl, SourceAcl, SourceAclResult }
+import com.github.simplesteph.ksm.notification.Notification
+import com.github.simplesteph.ksm.source.{ SourceAcl, SourceAclResult }
 import kafka.security.auth.{ Acl, Resource, SimpleAclAuthorizer }
 import org.slf4j.{ Logger, LoggerFactory }
-
-import scala.util.Try
-
-// kafka-acls  --topic test --producer --authorizer-properties zookeeper.connect=localhost:2181 --add --allow-principal User:alice
 
 object AclSynchronizer {
 

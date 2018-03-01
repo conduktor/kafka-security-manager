@@ -8,8 +8,14 @@ import kafka.security.auth._
 import org.apache.kafka.common.utils.SecurityUtils
 
 import scala.collection.immutable
-import scala.util.{ Failure, Try }
+import scala.util.Try
 
+/**
+ * Parser that assumes that all ACLs are flattened
+ * and live under a CSV format.
+ * The CSV is expected to have headers as outlined below and in the example
+ * Empty lines in the CSV should be ignored
+ */
 object CsvParser {
 
   final val KAFKA_PRINCIPAL_COL = "KafkaPrincipal"
@@ -24,6 +30,7 @@ object CsvParser {
     RESOURCE_TYPE_COL, RESOURCE_NAME_COL, OPERATION_COL,
     PERMISSION_TYPE_COL, HOST_COL)
 
+  // we treat empty lines as Nil hence the format override
   implicit val csvFormat: CSVFormat = new CSVFormat {
     val delimiter: Char = ','
     val quoteChar: Char = '"'
@@ -33,6 +40,11 @@ object CsvParser {
     val treatEmptyLineAsNil: Boolean = true
   }
 
+  /**
+   * parse a row to return an ACL
+   * @param row a map of column name to row value
+   * @return an ACL
+   */
   def parseRow(row: Map[String, String]): (Resource, Acl) = {
     val kafkaPrincipal = SecurityUtils.parseKafkaPrincipal(row(KAFKA_PRINCIPAL_COL))
     val resourceType = ResourceType.fromString(row(RESOURCE_TYPE_COL))
@@ -47,6 +59,11 @@ object CsvParser {
     (resource, acl)
   }
 
+  /**
+   * Parses all the ACL as provided by the reader that wraps the CSV content
+   * @param reader we use the reader interface to use string and files interchangeably in the parser
+   * @return sourceAclResult
+   */
   def aclsFromCsv(reader: Reader): SourceAclResult = {
     val csv = CSVReader.open(reader).allWithHeaders().filter(_.nonEmpty)
 

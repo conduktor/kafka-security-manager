@@ -3,10 +3,8 @@ package com.github.simplesteph.ksm.parser
 import java.io.StringReader
 
 import kafka.security.auth._
-import net.manub.embeddedkafka.EmbeddedKafka
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
-import org.scalatest.concurrent.Eventually
 
 class CsvParserTest extends FlatSpec with Matchers {
 

@@ -15,7 +15,7 @@ object DummySourceAcl {
 
 }
 
-class DummySourceAcl  extends  SourceAcl {
+class DummySourceAcl extends SourceAcl {
 
   import DummySourceAcl._
 

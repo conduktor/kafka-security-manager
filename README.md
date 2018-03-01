@@ -10,7 +10,15 @@ There are several advantages to this:
 - **Full auditability:** KSM provides the guarantee that ACLs in Kafka are those in the external source. Additionally, if for example your external source is GitHub, then PRs, PR approvals and commit history will provide Audit the full log of who did what to the ACLs and when
 - **Notifications**: KSM can notify external channels (such as Slack) in order to give feedback to admins when ACLs are changed. This is particularly useful to ensure that 1) ACL changes are correctly applied 2) ACL are not changed in Kafka directly.
 
-Your role is to ensure that Kafka Security Manager is never down, as it is now a custodian of your ACL. 
+Your role is to ensure that Kafka Security Manager is never down, as it is now a custodian of your ACL.
+
+A sample CSV to manage ACL is:
+```
+KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
+User:alice,Topic,foo,Read,Allow,*
+User:bob,Group,bar,Write,Deny,12.34.56.78
+User:peter,Cluster,kafka-cluster,Create,Allow,*
+``` 
 
 # Building
 
