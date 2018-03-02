@@ -15,8 +15,8 @@ class AppConfig(config: Config) {
     val authZ: Authorizer = CoreUtils.createObject[Authorizer](authorizerClass)
 
     private val authorizerConfig = config.getConfig("authorizer.config")
-    authZ.configure(Map("zookeeper.connect" -> "localhost:2181").asJava)
-    //    authZ.configure(authorizerConfig)
+    private val configMap = authorizerConfig.root().unwrapped().asScala.map { case (s, a) => (s, a.toString) }
+    authZ.configure(configMap.asJava)
   }
 
   object Source {
