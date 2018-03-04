@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm
 
-import com.github.simplesteph.ksm.notification.ConsoleNotification
+import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
 import com.github.simplesteph.ksm.source.DummySourceAcl
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
@@ -50,36 +50,48 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       simpleAclAuthorizer.configure(configs.asJava)
 
       val dummySourceAcl = new DummySourceAcl
+      val dummyNotification = new DummyNotification
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
-        new ConsoleNotification
+        dummyNotification,
       )
 
 
       // first iteration
+      dummyNotification.reset()
       aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 3
+      dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
       // second iteration
+      dummyNotification.reset()
       aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 1
+      dummyNotification.removedAcls.size shouldBe 1
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
       }
 
       // third iteration
       dummySourceAcl.setNoneNext()
+      dummyNotification.reset()
       aclSynchronizer.run()
-      // TODO: Assert using notifier that no changes happened
+      dummyNotification.addedAcls.size shouldBe 0
+      dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
       }
 
       // fourth iteration
+      dummyNotification.reset()
       aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 0
+      dummyNotification.removedAcls.size shouldBe 3
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
         simpleAclAuthorizer.getAcls() shouldBe Map()
       }
