@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.simplesteph.ksm.parser.CsvParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
-import skinny.http.{HTTP, HTTPException, Request, Response}
+import skinny.http.{ HTTP, HTTPException, Request, Response }
 
 import scala.util.Try
 

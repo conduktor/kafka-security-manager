@@ -23,7 +23,7 @@ User:peter,Cluster,kafka-cluster,Create,Allow,*
 # Building
 
 ``` 
-sbt test
+sbt clean test
 sbt universal:stage
 ```
 
@@ -31,6 +31,8 @@ This is a Scala app and therefore should run on the JVM like any other applicati
 
 
 # Configuration 
+
+## Security configuration
 
 Make sure the app is using a property file and launch options similar to your broker so that it can 
 1. Authenticate to Zookeeper using secure credentials (usually done with JAAS)
@@ -40,17 +42,71 @@ Make sure the app is using a property file and launch options similar to your br
 
 Sample run for a typical SASL Setup:
 ``` 
-export JAVA_OPTS="TODO"
-bin/kafka-security-manager -Djava.security.auth.login.config=conf/jaas.conf
+target/universal/stage/bin/kafka-security-manager -Djava.security.auth.login.config=conf/jaas.conf
 ```
+
+Where `conf/jaas.conf` contains something like:
+```
+Client {
+    com.sun.security.auth.module.Krb5LoginModule required
+    useKeyTab=true
+    storeKey=true
+    keyTab="/etc/kafka/secrets/zkclient1.keytab"
+    principal="zkclient/example.com@EXAMPLE.COM";
+};
+```
+
+## Configuration file
+
+For a list of configuration see [application.conf](src/main/resources/application.conf). You can customise them using environment variables or create your own `.conf` file and pass it at runtime doing:
+```
+target/universal/stage/bin/kafka-security-manager -Dconfig.TODO=/path/to/config
+```
+
+Overall we use the typesafe config library to configure this project (LINK TODO).
+
+## Environment variables 
+The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
+
+- `DEBUG=true`: enable debug mode (print configs etc)
+- `AUTHORIZER_CLASS`: override the authorizer class if you're not using the `SimpleAclAuthorizer`
+- `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
+- `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.  
+- `SOURCE_CLASS`: Source class. Valid values include
+    - `com.github.simplesteph.ksm.source.FileSourceAcl` (default): get the ACL source from a file on disk. Good for POC
+    - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control. 
+- `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
+    - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
+    - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
 
 # Running on Docker
 
-TODO, PR welcome
+## Building the image
+
+```
+./build-docker.sh
+```
+TODO: Publish on Docker Hub automatically
+  
+
+## Running
+
+(read above for configuration details)
+
+Then apply to the docker run using for example:
+
+```
+docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="localhost:2181" -e FOO=BAR \
+            simplesteph/kafka-security-manager:0.1-SNAPSHOT \
+            -Djava.security.auth.login.config=conf/jaas.conf
+```
+
+Any of the environment variables described above can be used by the docker run command with the `-e ` options. 
+
 
 # Compatibility
 
-0.x: Kafka 1.0.0
+0.1: Kafka 1.0.0
 
 # Contributing
 
