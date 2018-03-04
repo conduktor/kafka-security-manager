@@ -103,6 +103,22 @@ docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="localhost:2181" -e FOO=BAR \
 
 Any of the environment variables described above can be used by the docker run command with the `-e ` options. 
 
+## Example
+
+```
+docker-compose up -d
+docker-compose logs kafka-security-manager
+# view the logs, have fun changing example/acls.csv
+docker-compose down
+```
+
+For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/simplesteph/kafka-stack-docker-compose)
+
+Add the entry to your `/etc/hosts` file
+```
+127.0.0.1 kafka1
+```
+
 
 # Compatibility
 
