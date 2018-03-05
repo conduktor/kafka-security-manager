@@ -45,7 +45,7 @@ object AclSynchronizer {
 }
 
 class AclSynchronizer(
-  authZ: Authorizer,
+  authorizer: Authorizer,
   sourceAcl: SourceAcl,
   notification: Notification) extends Runnable {
 
@@ -56,7 +56,7 @@ class AclSynchronizer(
   override def run(): Unit = {
 
     // flatten the Kafka ACL
-    val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authZ.getAcls())
+    val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authorizer.getAcls())
 
     // parse the source of the ACL
     sourceAcl.refresh() match {
@@ -68,7 +68,7 @@ class AclSynchronizer(
             sourceAclsCache.acls,
             kafkaAcls,
             notification,
-            authZ)
+            authorizer)
         }
       // the source has changed
       case Some(SourceAclResult(acls, errs)) =>
@@ -80,7 +80,7 @@ class AclSynchronizer(
             sourceAclsCache.acls,
             kafkaAcls,
             notification,
-            authZ)
+            authorizer)
         } else {
           log.error("Exceptions while parsing ACL source:")
           notification.notifyErrors(errs)
@@ -90,7 +90,7 @@ class AclSynchronizer(
   }
 
   def close(): Unit = {
-    authZ.close()
+    authorizer.close()
     sourceAcl.close()
     notification.close()
   }

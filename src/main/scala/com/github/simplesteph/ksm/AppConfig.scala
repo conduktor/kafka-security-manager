@@ -12,11 +12,11 @@ class AppConfig(config: Config) {
 
   object Authorizer {
     private val authorizerClass = config.getString("authorizer.class")
-    val authZ: Authorizer = CoreUtils.createObject[Authorizer](authorizerClass)
+    val authorizer: Authorizer = CoreUtils.createObject[Authorizer](authorizerClass)
 
     private val authorizerConfig = config.getConfig("authorizer.config")
     private val configMap = authorizerConfig.root().unwrapped().asScala.map { case (s, a) => (s, a.toString) }
-    authZ.configure(configMap.asJava)
+    authorizer.configure(configMap.asJava)
   }
 
   object Source {

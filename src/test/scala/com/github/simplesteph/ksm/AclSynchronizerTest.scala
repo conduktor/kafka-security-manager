@@ -15,7 +15,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
   import DummySourceAcl._
 
   val kafkaGroupedAcls: Map[Resource, Set[Acl]] = Map(
-    res1 -> Set(acl1,acl2),
+    res1 -> Set(acl1, acl2),
     res2 -> Set(acl3),
   )
 
@@ -64,7 +64,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 3
       dummyNotification.removedAcls.size shouldBe 0
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
@@ -73,7 +73,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 1
       dummyNotification.removedAcls.size shouldBe 1
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
       }
 
@@ -83,7 +83,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 0
       dummyNotification.removedAcls.size shouldBe 0
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
       }
 
@@ -92,7 +92,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 0
       dummyNotification.removedAcls.size shouldBe 3
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map()
       }
 
@@ -119,19 +119,19 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       // first iteration
       aclSynchronizer.run()
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
 
       // changes to the ACLs through Kafka directly
-      simpleAclAuthorizer.addAcls(Set(acl3,acl1), res3) // we add bad Acls
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      simpleAclAuthorizer.addAcls(Set(acl3, acl1), res3) // we add bad Acls
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         // wait for the bad Acls to settle in Kafka
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3), res3 -> Set(acl3, acl1))
       }
       // apply KSM and see if Acls come back to normal
-      eventually(timeout(3000 milliseconds), interval(200 milliseconds)){
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         dummySourceAcl.setNoneNext()
         aclSynchronizer.run()
         simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
@@ -143,7 +143,6 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
   }
 
   // TODO: deal with error cases
-
 
 
 }

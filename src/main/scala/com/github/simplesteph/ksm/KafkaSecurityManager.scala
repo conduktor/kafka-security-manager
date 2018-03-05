@@ -13,7 +13,7 @@ object KafkaSecurityManager extends App {
   val appConfig: AppConfig = new AppConfig(config)
 
   val aclSynchronizer = new AclSynchronizer(
-    appConfig.Authorizer.authZ,
+    appConfig.Authorizer.authorizer,
     appConfig.Source.sourceAcl,
     appConfig.Notification.notification)
 
