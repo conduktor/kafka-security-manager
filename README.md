@@ -69,6 +69,7 @@ Overall we use the typesafe config library to configure this project (LINK TODO)
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
 - `DEBUG=true`: enable debug mode (print configs etc)
+- `REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
 - `AUTHORIZER_CLASS`: override the authorizer class if you're not using the `SimpleAclAuthorizer`
 - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
 - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.  

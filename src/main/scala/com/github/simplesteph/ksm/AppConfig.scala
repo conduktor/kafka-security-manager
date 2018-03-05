@@ -39,4 +39,9 @@ class AppConfig(config: Config) {
     notification.configure(notificationConfig)
   }
 
+  object KSM {
+    private val ksmConfig = config.getConfig("ksm")
+    val refreshFrequencyMs: Int = ksmConfig.getInt("refresh.frequency.ms")
+  }
+
 }
