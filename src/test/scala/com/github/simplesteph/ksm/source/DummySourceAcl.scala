@@ -4,6 +4,8 @@ import com.typesafe.config.Config
 import kafka.security.auth._
 import org.apache.kafka.common.utils.SecurityUtils
 
+import scala.util.Try
+
 object DummySourceAcl {
 
   val acl1 = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
@@ -18,9 +20,12 @@ object DummySourceAcl {
 
 class DummySourceAcl extends SourceAcl {
 
+
+
   import DummySourceAcl._
 
   var noneNext = false
+  var errorNext = false
 
   // initial state
   val sar1 = SourceAclResult(Set(
@@ -46,11 +51,19 @@ class DummySourceAcl extends SourceAcl {
     if(noneNext){
       noneNext = false
       None
+    } else if (errorNext) {
+      errorNext = false
+      Some(SourceAclResult(Set((res1, acl1)),
+        List[Try[Throwable]](Try(new RuntimeException("triggered error")))))
     } else Some(sars.next())
   }
 
   def setNoneNext(): Unit ={
     noneNext = true
+  }
+
+  def setErrorNext(): Unit = {
+    errorNext = true
   }
 
   override def close(): Unit = ()

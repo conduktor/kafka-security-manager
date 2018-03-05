@@ -142,7 +142,59 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
     }
   }
 
-  // TODO: deal with error cases
+
+  "applySourcesAcls" should "do nothing as long as there are errors" in {
+    withRunningKafka {
+      val simpleAclAuthorizer = new SimpleAclAuthorizer()
+
+      val configs = Map(
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+      )
+      simpleAclAuthorizer.configure(configs.asJava)
+
+      val dummySourceAcl = new DummySourceAcl
+      val dummyNotification = new DummyNotification
+
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        dummySourceAcl,
+        dummyNotification,
+      )
+
+
+      // first iteration
+      dummyNotification.reset()
+      aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 3
+      dummyNotification.removedAcls.size shouldBe 0
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
+        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+      }
+
+      // error iteration
+      dummyNotification.reset()
+      dummySourceAcl.setErrorNext()
+      aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 0
+      dummyNotification.removedAcls.size shouldBe 0
+      dummyNotification.errorCounter shouldBe 1
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
+        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+      }
+
+
+      // second iteration
+      dummyNotification.reset()
+      aclSynchronizer.run()
+      dummyNotification.addedAcls.size shouldBe 1
+      dummyNotification.removedAcls.size shouldBe 1
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
+        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
+      }
+
+      aclSynchronizer.close()
+    }
+  }
 
 
 }

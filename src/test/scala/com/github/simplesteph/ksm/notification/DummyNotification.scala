@@ -1,6 +1,8 @@
 package com.github.simplesteph.ksm.notification
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.typesafe.config.Config
-import kafka.security.auth.{ Acl, Resource }
+import kafka.security.auth.{Acl, Resource}
 
 import scala.collection.mutable
 import scala.util.Try
@@ -18,6 +20,7 @@ class DummyNotification extends Notification {
 
   val addedAcls: mutable.Set[(Resource, Acl)] = mutable.Set.empty[(Resource, Acl)]
   val removedAcls: mutable.Set[(Resource, Acl)] = mutable.Set.empty[(Resource, Acl)]
+  var errorCounter: Int = 0
 
   override protected def notifyOne(action: String, acls: Set[(Resource, Acl)]): Unit = {
     action match {
@@ -30,6 +33,7 @@ class DummyNotification extends Notification {
   def reset(): Unit = {
     addedAcls.clear()
     removedAcls.clear()
+    errorCounter = 0
   }
 
   /**
@@ -38,7 +42,7 @@ class DummyNotification extends Notification {
    * @param errs list of errors
    */
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
-
+    errorCounter += 1
   }
 
   /**
