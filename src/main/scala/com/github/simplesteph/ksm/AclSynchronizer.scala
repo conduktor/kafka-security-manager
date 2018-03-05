@@ -11,11 +11,7 @@ object AclSynchronizer {
 
   // transform Kafka ACLs to make them more agreeable to deal with
   def flattenKafkaAcls(kafkaGroupedAcls: Map[Resource, Set[Acl]]): Set[(Resource, Acl)] = {
-    kafkaGroupedAcls.toSeq
-      .flatMap {
-        case (resource: Resource, acls: Set[Acl]) =>
-          acls.toSeq.map(acl => (resource, acl))
-      }.toSet
+    kafkaGroupedAcls.keySet.flatMap(resource => kafkaGroupedAcls(resource).map((resource, _)))
   }
 
   // group the ACL by resource

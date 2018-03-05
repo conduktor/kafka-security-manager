@@ -29,7 +29,7 @@ trait Notification {
   }
 
   /**
-   * Function to be implemented by subclasses
+   *
    * @param action ADDED or REMOVED
    * @param acls List of corresponding ACLs
    */

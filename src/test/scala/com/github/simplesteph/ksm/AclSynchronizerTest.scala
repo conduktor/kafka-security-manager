@@ -22,7 +22,6 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
   val kafkaFlattenedAcls = Set(res1 -> acl1, res1 -> acl2, res2 -> acl3)
 
   "flattenKafkaAcls" should "correctly flatten Acls" in {
-
     AclSynchronizer.flattenKafkaAcls(kafkaGroupedAcls) shouldBe kafkaFlattenedAcls
   }
 
