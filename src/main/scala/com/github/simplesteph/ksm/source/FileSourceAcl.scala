@@ -2,7 +2,7 @@ package com.github.simplesteph.ksm.source
 
 import java.io.{ File, FileReader }
 
-import com.github.simplesteph.ksm.parser.CsvParser
+import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.Config
 
 class FileSourceAcl extends SourceAcl {
@@ -31,7 +31,7 @@ class FileSourceAcl extends SourceAcl {
     val file = new File(filename)
     if (file.lastModified() > lastModified) {
       val reader = new FileReader(file)
-      val res = CsvParser.aclsFromCsv(reader)
+      val res = CsvAclParser.aclsFromReader(reader)
       reader.close()
       lastModified = file.lastModified()
       Some(res)

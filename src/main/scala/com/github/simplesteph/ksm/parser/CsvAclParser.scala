@@ -1,9 +1,9 @@
 package com.github.simplesteph.ksm.parser
 
-import java.io.Reader
+import java.io.{ OutputStream, Reader }
 
 import com.github.simplesteph.ksm.source.SourceAclResult
-import com.github.tototoshi.csv.{ CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting }
+import com.github.tototoshi.csv.{ CSVFormat, CSVReader, CSVWriter, QUOTE_MINIMAL, Quoting }
 import kafka.security.auth._
 import org.apache.kafka.common.utils.SecurityUtils
 
@@ -16,7 +16,7 @@ import scala.util.Try
  * The CSV is expected to have headers as outlined below and in the example
  * Empty lines in the CSV should be ignored
  */
-object CsvParser {
+object CsvAclParser extends AclParser {
 
   final val KAFKA_PRINCIPAL_COL = "KafkaPrincipal"
   final val RESOURCE_TYPE_COL = "ResourceType"
@@ -25,7 +25,7 @@ object CsvParser {
   final val PERMISSION_TYPE_COL = "PermissionType"
   final val HOST_COL = "Host"
 
-  final val EXPECTED_COLS = Set(
+  final val EXPECTED_COLS = List(
     KAFKA_PRINCIPAL_COL,
     RESOURCE_TYPE_COL, RESOURCE_NAME_COL, OPERATION_COL,
     PERMISSION_TYPE_COL, HOST_COL)
@@ -64,7 +64,7 @@ object CsvParser {
    * @param reader we use the reader interface to use string and files interchangeably in the parser
    * @return sourceAclResult
    */
-  def aclsFromCsv(reader: Reader): SourceAclResult = {
+  override def aclsFromReader(reader: Reader): SourceAclResult = {
     val csv = CSVReader.open(reader).allWithHeaders().filter(_.nonEmpty)
 
     // parse the CSV
@@ -77,4 +77,29 @@ object CsvParser {
     SourceAclResult(acls, errors)
   }
 
+  def asCsv(r: Resource, a: Acl): String = {
+    List(
+      a.principal.toString,
+      r.resourceType.toString,
+      r.name,
+      a.operation.toString,
+      a.permissionType.toString,
+      a.host).mkString(",")
+  }
+
+  override def formatAcls(acls: List[(Resource, Acl)]): String = {
+    val sb = new StringBuilder
+    // header
+    sb.append(EXPECTED_COLS.mkString(","))
+    sb.append(System.getProperty("line.separator"))
+    // rows
+    acls.foreach {
+      case (r, a) =>
+        sb.append(asCsv(r, a))
+        sb.append(System.getProperty("line.separator"))
+    }
+    sb.toString()
+  }
+
 }
+

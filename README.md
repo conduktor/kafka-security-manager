@@ -68,7 +68,7 @@ Overall we use the typesafe config library to configure this project (LINK TODO)
 ## Environment variables 
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
-- `DEBUG=true`: enable debug mode (print configs etc)
+- `EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
 - `REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
 - `AUTHORIZER_CLASS`: override the authorizer class if you're not using the `SimpleAclAuthorizer`
 - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
@@ -120,6 +120,23 @@ Add the entry to your `/etc/hosts` file
 127.0.0.1 kafka1
 ```
 
+## Extracting ACLs
+
+You can initially extract all your existing ACL in Kafka by running the program with the config `extract=true` or `export EXTRACT=true`
+
+Output should look like:
+```
+[2018-03-06 21:49:44,704] INFO Running ACL Extraction mode (ExtractAcl)
+[2018-03-06 21:49:44,704] INFO Getting ACLs from Kafka (ExtractAcl)
+[2018-03-06 21:49:44,704] INFO Closing Authorizer (ExtractAcl)
+
+KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
+User:bob,Group,bar,Write,Deny,12.34.56.78
+User:alice,Topic,foo,Read,Allow,*
+User:peter,Cluster,kafka-cluster,Create,Allow,*
+```
+
+You can then use place this CSV anywhere and use it as your source of truth. 
 
 # Compatibility
 

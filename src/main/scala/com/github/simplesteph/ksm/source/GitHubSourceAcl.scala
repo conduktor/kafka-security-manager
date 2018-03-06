@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.CsvParser
+import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{ HTTP, HTTPException, Request, Response }
@@ -54,7 +54,7 @@ class GitHubSourceAcl extends SourceAcl {
         val b64encodedContent = objectMapper.readTree(response.textBody).get("content").asText()
         val data = new String(Base64.getDecoder.decode(b64encodedContent), Charset.forName("UTF-8"))
         // use the CSV Parser
-        Some(CsvParser.aclsFromCsv(new StringReader(data)))
+        Some(CsvAclParser.aclsFromReader(new StringReader(data)))
       case 304 =>
         None
       case _ =>

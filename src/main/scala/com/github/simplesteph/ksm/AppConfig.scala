@@ -42,6 +42,7 @@ class AppConfig(config: Config) {
   object KSM {
     private val ksmConfig = config.getConfig("ksm")
     val refreshFrequencyMs: Int = ksmConfig.getInt("refresh.frequency.ms")
+    val extract: Boolean = ksmConfig.getBoolean("extract")
   }
 
 }
