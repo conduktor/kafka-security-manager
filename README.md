@@ -87,8 +87,8 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 ```
 ./build-docker.sh
 ```
-TODO: Publish on Docker Hub automatically
-  
+
+Alternatively, you can get the automatically built Docker images on [Docker Hub](https://hub.docker.com/r/simplesteph/kafka-security-manager)  
 
 ## Running
 
@@ -98,7 +98,7 @@ Then apply to the docker run using for example:
 
 ```
 docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="localhost:2181" -e FOO=BAR \
-            simplesteph/kafka-security-manager:0.1-SNAPSHOT \
+            simplesteph/kafka-security-manager:latest \
             -Djava.security.auth.login.config=conf/jaas.conf
 ```
 
