@@ -27,7 +27,7 @@ services:
       - zoo1
 
   kafka-security-manager:
-    image: simplesteph/kafka-security-manager:0.1-SNAPSHOT
+    image: simplesteph/kafka-security-manager:latest
     environment:
       AUTHORIZER_ZOOKEEPER_CONNECT: "zoo1:2181"
       SOURCE_FILE_FILENAME: "/example/acls.csv"

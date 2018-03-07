@@ -15,7 +15,7 @@ resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "1.0.0",
+  "org.apache.kafka" %% "kafka" % "1.0.1",
   "net.manub" %% "scalatest-embedded-kafka" % "1.0.0" % "test",
 
   // logging
@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-log4j12" % "1.7.25",
 
   // config
-  "com.typesafe" % "config" % "1.3.1",
+  "com.typesafe" % "config" % "1.3.3",
 
   // parsers
   "com.github.tototoshi" %% "scala-csv" % "1.3.5",

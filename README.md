@@ -58,12 +58,12 @@ Client {
 
 ## Configuration file
 
-For a list of configuration see [application.conf](src/main/resources/application.conf). You can customise them using environment variables or create your own `.conf` file and pass it at runtime doing:
+For a list of configuration see [application.conf](src/main/resources/application.conf). You can customise them using environment variables or create your own `application.conf` file and pass it at runtime doing:
 ```
-target/universal/stage/bin/kafka-security-manager -Dconfig.TODO=/path/to/config
+target/universal/stage/bin/kafka-security-manager -Dconfig.file=path/to/config-file.conf
 ```
 
-Overall we use the typesafe config library to configure this project (LINK TODO).
+Overall we use the [lightbend config](https://github.com/lightbend/config) library to configure this project.
 
 ## Environment variables 
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
@@ -140,7 +140,9 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 # Compatibility
 
-0.1: Kafka 1.0.0
+KSM Version | Kafka Version
+--- | ---
+0.1 | 1.0.x (might work for earlier versions)
 
 # Contributing
 
@@ -148,7 +150,6 @@ You can break the API / configs as long as we haven't reached 1.0. Each API brea
 
 PRs are welcome, especially with the following:
 - Code refactoring  / cleanup / renaming
-- Docker image building
 - External Sources for ACLs (JDBC, Microsoft AD, etc...)
 - Notification Channels (Email, etc...) 
 
