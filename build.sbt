@@ -39,3 +39,4 @@ parallelExecution in Test := false
 
 // Docker stuff
 dockerRepository := Some("simplesteph")
+dockerUpdateLatest := true

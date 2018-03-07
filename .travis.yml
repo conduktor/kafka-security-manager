@@ -1,7 +1,22 @@
 language: scala
+sudo: required
+
+services:
+  - docker
 
 scala:
   - 2.12.4
 
 script:
   - ./test.sh
+
+# Improvement: move logic out of docker_push.sh into .travis.yml
+deploy:
+  provider: script
+  script: bash docker_push.sh
+  skip_cleanup: true
+#  on:
+#    all_branches: true
+#    tags: true / false  => has precendence over the branch condition
+#    condition: "foo == bar && baz==bat"
+#    repo: simplesteph/kafka-security-manager
