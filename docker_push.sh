@@ -5,7 +5,7 @@
 docker_push(){
     echo "Pushing tag $1 to docker hub"
     docker tag "simplesteph/kafka-security-manager:latest" "simplesteph/kafka-security-manager:$1"
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
     docker push "simplesteph/kafka-security-manager:$1"
 }
 
