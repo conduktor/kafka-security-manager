@@ -94,12 +94,11 @@ Alternatively, you can get the automatically built Docker images on [Docker Hub]
 
 (read above for configuration details)
 
-Then apply to the docker run using for example:
+Then apply to the docker run using for example (in EXTRACT mode):
 
 ```
-docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="localhost:2181" -e FOO=BAR \
-            simplesteph/kafka-security-manager:latest \
-            -Djava.security.auth.login.config=conf/jaas.conf
+docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e EXTRACT=true \
+            simplesteph/kafka-security-manager:latest
 ```
 
 Any of the environment variables described above can be used by the docker run command with the `-e ` options. 
