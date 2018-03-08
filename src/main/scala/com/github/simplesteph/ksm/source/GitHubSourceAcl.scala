@@ -21,6 +21,7 @@ class GitHubSourceAcl extends SourceAcl {
   final val REPO_CONFIG = "repo"
   final val FILEPATH_CONFIG = "filepath"
   final val BRANCH_CONFIG = "branch"
+  final val HOSTNAME_CONFIG = "hostname"
 
   var lastModified: Option[String] = None
   val objectMapper = new ObjectMapper()
@@ -28,6 +29,7 @@ class GitHubSourceAcl extends SourceAcl {
   var repo: String = _
   var filepath: String = _
   var branch: String = _
+  var hostname: String = _
 
   /**
    * internal config definition for the module
@@ -37,10 +39,11 @@ class GitHubSourceAcl extends SourceAcl {
     repo = config.getString(REPO_CONFIG)
     filepath = config.getString(FILEPATH_CONFIG)
     branch = config.getString(BRANCH_CONFIG)
+    hostname = config.getString(HOSTNAME_CONFIG)
   }
 
   override def refresh(): Option[SourceAclResult] = {
-    val url = s"https://api.github.com/repos/$user/$repo/contents/$filepath?ref=$branch"
+    val url = s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
     // TODO: add optional auth
 
@@ -59,6 +62,7 @@ class GitHubSourceAcl extends SourceAcl {
         None
       case _ =>
         // we got an http error so we propagate it
+        log.warn(response.asString)
         Some(
           SourceAclResult(
             Set(),
