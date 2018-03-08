@@ -54,7 +54,7 @@ class GitHubSourceAcl extends SourceAcl {
 
     // authentication if present
     basicOpt.foreach(basic => {
-      val basicB64 = Base64.getEncoder.encodeToString(basic.getBytes("UTF‌​-8"​))
+      val basicB64 = Base64.getEncoder.encodeToString(basic.getBytes("UTF‌​-8"))
       request.header("Authorization", s"Basic $basicB64")
     })
     tokenOpt.foreach(token => {
