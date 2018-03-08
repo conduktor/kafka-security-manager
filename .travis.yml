@@ -18,6 +18,7 @@ deploy:
     skip_cleanup: true
     on:
       all_branches: true
+      condition: -z "$TRAVIS_PULL_REQUEST_BRANCH"
 #    tags: true / false  => has precendence over the branch condition
 #    condition: "foo == bar && baz==bat"
 #    repo: simplesteph/kafka-security-manager
