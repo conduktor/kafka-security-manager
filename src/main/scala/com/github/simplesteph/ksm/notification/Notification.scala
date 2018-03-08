@@ -52,6 +52,6 @@ object Notification {
 
   // helper to pretty print a long ACL, as the toString provided by Kafka is not suitable here
   def printAcl(acl: Acl, resource: Resource): String = {
-    s"${acl.principal}, $resource, ${acl.operation}, ${acl.permissionType}, ${acl.host}"
+    s"${acl.principal}, $resource, Operation: ${acl.operation}, Permission: ${acl.permissionType}, Host: ${acl.host}"
   }
 }

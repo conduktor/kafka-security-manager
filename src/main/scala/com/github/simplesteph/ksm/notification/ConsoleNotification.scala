@@ -21,13 +21,7 @@ case class ConsoleNotification() extends Notification {
   override def configure(config: Config): Unit = ()
 
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
-    if (errs.nonEmpty) {
-      errs.foreach(e =>
-        e.get match {
-          case cPE: CsvParserException => log.error(s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}")
-          case _ => log.error("error while parsing ACL source", e.get)
-        })
-    }
+    NotificationUtils.errorsToString(errs).foreach(println)
   }
 
   override protected def notifyOne(action: String, acls: Set[(Resource, Acl)]): Unit = {

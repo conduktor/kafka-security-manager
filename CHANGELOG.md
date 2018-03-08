@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.1] - 08/03/2017
+- Kafka 1.0.1
 - Initial Release
 - Travis CI automation
 - Docker Hub release
@@ -15,3 +19,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Tests including with Kafka running 
 - GitHub Enterprise Support
 - GitHub authentication Support
+- Slack Notification Support
