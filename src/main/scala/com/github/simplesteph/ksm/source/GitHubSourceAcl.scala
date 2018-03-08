@@ -22,6 +22,8 @@ class GitHubSourceAcl extends SourceAcl {
   final val FILEPATH_CONFIG = "filepath"
   final val BRANCH_CONFIG = "branch"
   final val HOSTNAME_CONFIG = "hostname"
+  final val AUTH_BASIC_CONFIG = "auth.basic"
+  final val AUTH_TOKEN_CONFIG = "auth.token"
 
   var lastModified: Option[String] = None
   val objectMapper = new ObjectMapper()
@@ -30,6 +32,8 @@ class GitHubSourceAcl extends SourceAcl {
   var filepath: String = _
   var branch: String = _
   var hostname: String = _
+  var basicOpt: Option[String] = _
+  var tokenOpt: Option[String] = _
 
   /**
    * internal config definition for the module
@@ -40,12 +44,22 @@ class GitHubSourceAcl extends SourceAcl {
     filepath = config.getString(FILEPATH_CONFIG)
     branch = config.getString(BRANCH_CONFIG)
     hostname = config.getString(HOSTNAME_CONFIG)
+    basicOpt = Try(config.getString(AUTH_BASIC_CONFIG)).toOption
+    tokenOpt = Try(config.getString(AUTH_TOKEN_CONFIG)).toOption
   }
 
   override def refresh(): Option[SourceAclResult] = {
     val url = s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
-    // TODO: add optional auth
+
+    // authentication if present
+    basicOpt.foreach(basic => {
+      val basicB64 = Base64.getEncoder.encodeToString(basic.getBytes("UTF‌​-8"​))
+      request.header("Authorization", s"Basic $basicB64")
+    })
+    tokenOpt.foreach(token => {
+      request.header("Authorization", s"Token $token")
+    })
 
     // we use this header for the 304
     request.headers.put("If-Modified-Since", lastModified.getOrElse(""))

@@ -13,3 +13,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Notification: Console & Slack
 - Extract ACLs from Kafka. 
 - Tests including with Kafka running 
+- GitHub Enterprise Support
+- GitHub authentication Support
