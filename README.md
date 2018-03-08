@@ -4,6 +4,8 @@
 
 Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source.
 
+![Kafka Security Manager Diagram](https://i.imgur.com/BuikeuB.png)
+
 There are several advantages to this:
 - **Kafka administration is done outside of Kafka:** anyone with access to the external ACL source can manage Kafka Security
 - **Prevents intruders:** if someone were to add ACLs to Kafka using the CLI, they would be reverted by KSM within 10 seconds. 
