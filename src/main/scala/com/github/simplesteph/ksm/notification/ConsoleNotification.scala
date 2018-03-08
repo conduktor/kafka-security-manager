@@ -8,7 +8,7 @@ import scala.util.Try
 
 case class ConsoleNotification() extends Notification {
 
-  val log: Logger = LoggerFactory.getLogger(ConsoleNotification.getClass.getSimpleName)
+  val log: Logger = LoggerFactory.getLogger(classOf[ConsoleNotification].getSimpleName)
 
   /**
    * Config Prefix for configuring this module

@@ -7,7 +7,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 
 object AclSynchronizer {
 
-  private val log: Logger = LoggerFactory.getLogger(AclSynchronizer.getClass.getSimpleName)
+  private val log: Logger = LoggerFactory.getLogger(classOf[AclSynchronizer].getSimpleName)
 
   // transform Kafka ACLs to make them more agreeable to deal with
   def flattenKafkaAcls(kafkaGroupedAcls: Map[Resource, Set[Acl]]): Set[(Resource, Acl)] = {
