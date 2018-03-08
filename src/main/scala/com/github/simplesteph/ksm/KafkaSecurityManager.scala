@@ -22,7 +22,7 @@ object KafkaSecurityManager extends App {
       appConfig.Notification.notification)
 
     val executor = Executors.newScheduledThreadPool(1)
-    val f: ScheduledFuture[_] = executor.scheduleAtFixedRate(aclSynchronizer, 1,
+    val f: ScheduledFuture[_] = executor.scheduleAtFixedRate(aclSynchronizer, 1000,
       appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
 
     Runtime.getRuntime.addShutdownHook(new Thread() {

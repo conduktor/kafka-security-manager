@@ -62,14 +62,14 @@ class GitHubSourceAcl extends SourceAcl {
     })
 
     // we use this header for the 304
-    request.headers.put("If-Modified-Since", lastModified.getOrElse(""))
+    lastModified.foreach( header => request.header("If-Modified-Since", header))
     val response: Response = HTTP.get(request)
 
     response.status match {
       case 200 =>
         lastModified = response.header("Last-Modified")
         val b64encodedContent = objectMapper.readTree(response.textBody).get("content").asText()
-        val data = new String(Base64.getDecoder.decode(b64encodedContent), Charset.forName("UTF-8"))
+        val data = new String(Base64.getDecoder.decode(b64encodedContent.replace("\n","").replace("\r","")), Charset.forName("UTF-8"))
         // use the CSV Parser
         Some(CsvAclParser.aclsFromReader(new StringReader(data)))
       case 304 =>
