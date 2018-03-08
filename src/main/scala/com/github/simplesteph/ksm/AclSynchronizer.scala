@@ -43,13 +43,13 @@ object AclSynchronizer {
 class AclSynchronizer(
   authorizer: Authorizer,
   sourceAcl: SourceAcl,
-  notification: Notification) extends Runnable {
+  notification: Notification) {
 
   import AclSynchronizer._
 
   private var sourceAclsCache: SourceAclResult = _
 
-  override def run(): Unit = {
+  def run(): Unit = {
 
     // flatten the Kafka ACL
     val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authorizer.getAcls())

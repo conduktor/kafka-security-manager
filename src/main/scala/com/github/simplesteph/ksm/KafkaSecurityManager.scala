@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm
 
-import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
+import java.util.concurrent.atomic.AtomicBoolean
 
 import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.ConfigFactory
@@ -13,6 +13,8 @@ object KafkaSecurityManager extends App {
   val config = ConfigFactory.load()
   val appConfig: AppConfig = new AppConfig(config)
 
+  var isCancelled: AtomicBoolean = new AtomicBoolean(false)
+
   if (appConfig.KSM.extract) {
     new ExtractAcl(appConfig.Authorizer.authorizer, CsvAclParser).extract()
   } else {
@@ -21,20 +23,18 @@ object KafkaSecurityManager extends App {
       appConfig.Source.sourceAcl,
       appConfig.Notification.notification)
 
-    val executor = Executors.newScheduledThreadPool(1)
-    val f: ScheduledFuture[_] = executor.scheduleAtFixedRate(aclSynchronizer, 1000,
-      appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
-
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
+        log.info("Received stop signal, Kafka Security Manager is shutting down...")
+        isCancelled = new AtomicBoolean(true)
         aclSynchronizer.close()
-        log.info("Kafka Security Manager is shutting down...")
-        f.cancel(false)
-        log.info("Waiting for thread to cleanly shutdown (10 seconds maximum)")
-        executor.shutdown()
-        executor.awaitTermination(10, TimeUnit.SECONDS)
-        log.info("Kafka Security Manager has shut down...")
       }
     })
+
+    while (!isCancelled.get()) {
+      aclSynchronizer.run()
+      Thread.sleep(appConfig.KSM.refreshFrequencyMs)
+    }
+
   }
 }
