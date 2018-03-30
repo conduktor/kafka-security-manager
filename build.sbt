@@ -2,7 +2,7 @@ name := "kafka-security-manager"
 
 organization := "com.github.simplesteph.ksm"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
@@ -15,8 +15,8 @@ resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "1.0.1",
-  "net.manub" %% "scalatest-embedded-kafka" % "1.0.0" % "test",
+  "org.apache.kafka" %% "kafka" % "1.1.0",
+  "net.manub" %% "scalatest-embedded-kafka" % "1.1.0" % "test",
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",
