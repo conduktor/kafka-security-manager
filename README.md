@@ -90,6 +90,8 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 ./build-docker.sh
 ```
 
+## Docker Hub
+
 Alternatively, you can get the automatically built Docker images on [Docker Hub](https://hub.docker.com/r/simplesteph/kafka-security-manager)  
 
 ## Running
@@ -143,6 +145,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version
 --- | ---
+0.2 | 1.1.x 
 0.1 | 1.0.x (might work for earlier versions)
 
 # Contributing
