@@ -17,7 +17,13 @@ deploy:
     script: bash docker_push.sh
     skip_cleanup: true
     on:
-      all_branches: true
+      tags: true
+      condition: -z "$TRAVIS_PULL_REQUEST_BRANCH"
+  - provider: script
+    script: bash docker_push.sh
+    skip_cleanup: true
+    on:
+      branch: master
       condition: -z "$TRAVIS_PULL_REQUEST_BRANCH"
 #    tags: true / false  => has precendence over the branch condition
 #    condition: "foo == bar && baz==bat"
