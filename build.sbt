@@ -2,7 +2,7 @@ name := "kafka-security-manager"
 
 organization := "com.github.simplesteph.ksm"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
@@ -11,12 +11,15 @@ lazy val root = (project in file("."))
   .enablePlugins(DockerPlugin)
 
 
-resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+resolvers ++= Seq(
+  "Artima Maven Repository" at "http://repo.artima.com/releases",
+  "confluent" at "https://packages.confluent.io/maven/",
+)
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "1.0.1",
-  "net.manub" %% "scalatest-embedded-kafka" % "1.0.0" % "test",
+  "org.apache.kafka" %% "kafka" % "1.1.0",
+  "net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1" % "test",
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",
