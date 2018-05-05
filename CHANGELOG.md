@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased - 0.2]
 - Kafka 1.1.0
-- Updated Embedded Kafka to v1.1.0 (test dependency)
+- Updated Embedded Kafka to v1.1.0-kafka1.1.0 (test dependency)
 
 
 ## [0.1] - 08/03/2017
