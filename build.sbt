@@ -34,6 +34,11 @@ libraryDependencies ++= Seq(
   // APIs
   "org.skinny-framework" %% "skinny-http-client" % "2.3.7",
   "com.fasterxml.jackson.core" % "jackson-core" % "2.9.4",
+
+  // GRPC
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 )
 
 mainClass in Compile := Some("com.github.simplesteph.ksm.KafkaSecurityManager")
@@ -43,3 +48,8 @@ parallelExecution in Test := false
 // Docker stuff
 dockerRepository := Some("simplesteph")
 dockerUpdateLatest := true
+
+// GRPC
+PB.targets in Compile := Seq(
+  scalapb.gen() -> (sourceManaged in Compile).value
+)

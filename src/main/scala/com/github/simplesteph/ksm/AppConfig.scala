@@ -45,4 +45,9 @@ class AppConfig(config: Config) {
     val extract: Boolean = ksmConfig.getBoolean("extract")
   }
 
+  object GRPC {
+    private val grpcConfig = config.getConfig("grpc")
+    val port: Int = grpcConfig.getInt("port")
+  }
+
 }
