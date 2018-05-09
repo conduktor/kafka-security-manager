@@ -1,0 +1,76 @@
+// following prototool guidelines: https://github.com/uber/prototool/blob/dev/etc/style/uber/uber.proto
+syntax = "proto3";
+
+package security.kafka;
+
+option go_package = "kafkapb";
+
+option java_package = "com.security.kafka.pb";
+option java_multiple_files = true;
+
+message ResourceAndAclPb {
+    ResourcePb resource = 1;
+    AclPb acl = 2;
+}
+
+message ResourcePb {
+    string name = 1;
+    ResourceTypePb kafka_resource_type = 2;
+}
+
+enum ResourceTypePb {
+    RESOURCE_TYPE_INVALID = 0;
+    RESOURCE_TYPE_UNSET = 1;
+    RESOURCE_TYPE_TOPIC = 2;
+    RESOURCE_TYPE_GROUP = 3;
+    RESOURCE_TYPE_CLUSTER = 4;
+    RESOURCE_TYPE_TRANSACTIONALID = 5;
+    RESOURCE_TYPE_DELEGATIONTOKEN = 6;
+}
+
+message AclPb {
+    KafkaPrincipalPb principal = 1;
+    PermissionTypePb permission_type = 2;
+    string host = 3;
+    OperationTypePb operation_type = 4;
+}
+
+message KafkaPrincipalPb {
+    string principal_type = 1;
+    string name = 2;
+}
+
+enum PermissionTypePb {
+    PERMISSION_TYPE_INVALID = 0;
+    PERMISSION_TYPE_UNSET = 1;
+    PERMISSION_TYPE_ALLOW = 2;
+    PERMISSION_TYPE_DENY = 3;
+}
+
+enum OperationTypePb {
+    OPERATION_TYPE_INVALID = 0;
+    OPERATION_TYPE_UNSET = 1;
+    OPERATION_TYPE_READ = 2;
+    OPERATION_TYPE_WRITE = 3;
+    OPERATION_TYPE_CREATE = 4;
+    OPERATION_TYPE_DELETE = 5;
+    OPERATION_TYPE_ALTER = 6;
+    OPERATION_TYPE_DESCRIBE = 7;
+    OPERATION_TYPE_CLUSTERACTION = 8;
+    OPERATION_TYPE_DESCRIBECONFIGS = 9;
+    OPERATION_TYPE_ALTERCONFIGS = 10;
+    OPERATION_TYPE_IDEMPOTENTWRITE = 11;
+    OPERATION_TYPE_ALL = 12;
+}
+
+message GetAllAclsRequest {
+
+}
+
+message GetAllAclsResponse {
+    repeated ResourceAndAclPb resource_and_acls = 1;
+}
+
+service KsmService {
+    rpc GetAllAcls(GetAllAclsRequest) returns (GetAllAclsResponse) {};
+}

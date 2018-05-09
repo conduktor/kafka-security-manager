@@ -52,7 +52,6 @@ class AclSynchronizer(
   def run(): Unit = {
 
     // flatten the Kafka ACL
-    val kafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authorizer.getAcls())
 
     // parse the source of the ACL
     sourceAcl.refresh() match {
@@ -62,7 +61,7 @@ class AclSynchronizer(
           // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
           applySourceAcls(
             sourceAclsCache.acls,
-            kafkaAcls,
+            getKafkaAcls,
             notification,
             authorizer)
         }
@@ -74,7 +73,7 @@ class AclSynchronizer(
         if (errs.isEmpty) {
           applySourceAcls(
             sourceAclsCache.acls,
-            kafkaAcls,
+            getKafkaAcls,
             notification,
             authorizer)
         } else {
@@ -84,6 +83,8 @@ class AclSynchronizer(
     }
 
   }
+
+  def getKafkaAcls: Set[(Resource, Acl)] = flattenKafkaAcls(authorizer.getAcls())
 
   def close(): Unit = {
     authorizer.close()
