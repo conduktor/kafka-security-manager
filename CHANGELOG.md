@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.3 - SNAPSHOT]
 - Added gRPC endpoint to perform API calls on KSM (the goal is to build a UI on top of KSM)
+- Feature flag for gRPC server (off by default)
 
 ## [0.2] - 05/05/2018
 - Kafka 1.1.0

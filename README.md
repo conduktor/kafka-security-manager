@@ -142,6 +142,8 @@ User:peter,Cluster,kafka-cluster,Create,Allow,*
 You can then use place this CSV anywhere and use it as your source of truth. 
 
 # External API
+To activate this feature, set `FEATURE_GRPC=true`.
+
 Kafka Security Manager exposes a GRPC endpoint to be consumed by external systems. The use case is to build a UI on top of KSM or some level of automation. 
 
 By default KSM binds to port 50051, but you can configure this using the `GRPC_PORT` environment variable. 

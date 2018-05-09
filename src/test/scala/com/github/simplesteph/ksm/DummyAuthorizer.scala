@@ -4,7 +4,7 @@ import java.util
 
 import com.github.simplesteph.ksm.TestFixtures._
 import kafka.network.RequestChannel
-import kafka.security.auth.{Acl, Authorizer, Operation, Resource}
+import kafka.security.auth.{ Acl, Authorizer, Operation, Resource }
 import org.apache.kafka.common.security.auth.KafkaPrincipal
 
 class DummyAuthorizer() extends Authorizer {

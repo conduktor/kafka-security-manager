@@ -7,7 +7,7 @@ import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object KafkaSecurityManager extends App {
 
@@ -29,11 +29,11 @@ object KafkaSecurityManager extends App {
       appConfig.Notification.notification)
 
     Try {
-       grpcServer = new KsmGrpcServer(
-         aclSynchronizer,
-         appConfig.GRPC.port,
-       )
-       grpcServer.start()
+      grpcServer = new KsmGrpcServer(
+        aclSynchronizer,
+        appConfig.GRPC.port,
+        appConfig.Feature.grpc)
+      grpcServer.start()
     } match {
       case Success(_) =>
       case Failure(e) =>

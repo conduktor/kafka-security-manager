@@ -50,4 +50,9 @@ class AppConfig(config: Config) {
     val port: Int = grpcConfig.getInt("port")
   }
 
+  object Feature {
+    private val featureConfig = config.getConfig("feature")
+    val grpc: Boolean = featureConfig.getBoolean("grpc")
+  }
+
 }
