@@ -2,6 +2,7 @@ package com.github.simplesteph.ksm.grpc
 
 import com.github.simplesteph.ksm.{ AclSynchronizer, KafkaSecurityManager }
 import com.security.kafka.pb.ksm.KsmServiceGrpc
+import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.{ Server, ServerBuilder }
 import org.slf4j.LoggerFactory
 
@@ -20,8 +21,8 @@ class KsmGrpcServer(
     if (enabled) {
       log.info("Starting gRPC Server")
       server = ServerBuilder.forPort(port)
+        .addService(ProtoReflectionService.newInstance())
         .addService(KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ExecutionContext.global))
-        // TODO: Add Reflection service .addService()
         .build()
       server.start()
       log.info("gRPC Server Started")

@@ -38,7 +38,8 @@ libraryDependencies ++= Seq(
   // GRPC
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
-  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
+  "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
 )
 
 mainClass in Compile := Some("com.github.simplesteph.ksm.KafkaSecurityManager")
