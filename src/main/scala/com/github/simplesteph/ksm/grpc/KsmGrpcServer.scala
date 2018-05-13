@@ -1,19 +1,18 @@
 package com.github.simplesteph.ksm.grpc
 
-import com.github.simplesteph.ksm.{ AclSynchronizer, KafkaSecurityManager }
-import com.security.kafka.pb.ksm.{ KsmServiceGrpc, KsmServiceHandler }
-import grpcgateway.server.{ GrpcGatewayServer, GrpcGatewayServerBuilder }
+import com.github.simplesteph.ksm.{AclSynchronizer, KafkaSecurityManager}
+import com.security.kafka.pb.ksm.{KsmServiceGrpc, KsmServiceHandler}
+import grpcgateway.server.{GrpcGatewayServer, GrpcGatewayServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.{ ManagedChannelBuilder, Server, ServerBuilder }
+import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
-class KsmGrpcServer(
-  aclSynchronizer: AclSynchronizer,
-  port: Int,
-  gatewayPort: Int,
-  enabled: Boolean) {
+class KsmGrpcServer(aclSynchronizer: AclSynchronizer,
+                    port: Int,
+                    gatewayPort: Int,
+                    enabled: Boolean) {
 
   val log = LoggerFactory.getLogger(KsmServiceGrpc.getClass)
 
@@ -25,9 +24,11 @@ class KsmGrpcServer(
   def start(): Unit = {
     if (enabled) {
       log.info("Starting gRPC Server")
-      server = ServerBuilder.forPort(port)
+      server = ServerBuilder
+        .forPort(port)
         .addService(ProtoReflectionService.newInstance())
-        .addService(KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ec))
+        .addService(
+          KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ec))
         .build()
       server.start()
       log.info(s"gRPC Server started on port $port")

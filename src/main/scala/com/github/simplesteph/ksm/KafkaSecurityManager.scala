@@ -28,11 +28,10 @@ object KafkaSecurityManager extends App {
                                           appConfig.Notification.notification)
 
     Try {
-      grpcServer = new KsmGrpcServer(
-        aclSynchronizer,
-        appConfig.GRPC.port,
-        appConfig.GRPC.gatewayPort,
-        appConfig.Feature.grpc)
+      grpcServer = new KsmGrpcServer(aclSynchronizer,
+                                     appConfig.GRPC.port,
+                                     appConfig.GRPC.gatewayPort,
+                                     appConfig.Feature.grpc)
       grpcServer.start()
     } match {
       case Success(_) =>

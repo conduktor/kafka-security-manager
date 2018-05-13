@@ -61,33 +61,32 @@ class AclSynchronizer(authorizer: Authorizer,
 
     // parse the source of the ACL
     Try(sourceAcl.refresh()) match {
-      case Success(result) => result match {
-        // the source has not changed
-        case None =>
-          if (sourceAclsCache != null && sourceAclsCache.errs.isEmpty) {
-            // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
-            applySourceAcls(
-              sourceAclsCache.acls,
-              getKafkaAcls,
-              notification,
-              authorizer)
-          }
-        // the source has changed
-        case Some(SourceAclResult(acls, errs)) =>
-          // we have a new result, so we cache it
-          sourceAclsCache = SourceAclResult(acls, errs)
-          // normal execution
-          if (errs.isEmpty) {
-            applySourceAcls(
-              sourceAclsCache.acls,
-              getKafkaAcls,
-              notification,
-              authorizer)
-          } else {
-            log.error("Exceptions while parsing ACL source:")
-            notification.notifyErrors(errs)
-          }
-      }
+      case Success(result) =>
+        result match {
+          // the source has not changed
+          case None =>
+            if (sourceAclsCache != null && sourceAclsCache.errs.isEmpty) {
+              // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
+              applySourceAcls(sourceAclsCache.acls,
+                              getKafkaAcls,
+                              notification,
+                              authorizer)
+            }
+          // the source has changed
+          case Some(SourceAclResult(acls, errs)) =>
+            // we have a new result, so we cache it
+            sourceAclsCache = SourceAclResult(acls, errs)
+            // normal execution
+            if (errs.isEmpty) {
+              applySourceAcls(sourceAclsCache.acls,
+                              getKafkaAcls,
+                              notification,
+                              authorizer)
+            } else {
+              log.error("Exceptions while parsing ACL source:")
+              notification.notifyErrors(errs)
+            }
+        }
       case Failure(e) =>
         log.error("Refreshing the source failed", e)
     }
