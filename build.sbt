@@ -13,6 +13,7 @@ lazy val root = (project in file("."))
 
 resolvers ++= Seq(
   "Artima Maven Repository" at "http://repo.artima.com/releases",
+  Resolver.bintrayRepo("beyondthelines", "maven")
 )
 
 libraryDependencies ++= Seq(
@@ -39,6 +40,10 @@ libraryDependencies ++= Seq(
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
   "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
+
+  // REST gateway generation
+  "beyondthelines" %% "grpcgatewayruntime" % "0.0.9" % "compile,protobuf"
+
 )
 
 mainClass in Compile := Some("com.github.simplesteph.ksm.KafkaSecurityManager")
@@ -49,7 +54,10 @@ parallelExecution in Test := false
 dockerRepository := Some("simplesteph")
 dockerUpdateLatest := true
 
-// GRPC
 PB.targets in Compile := Seq(
-  scalapb.gen() -> (sourceManaged in Compile).value
+  scalapb.gen() -> (sourceManaged in Compile).value,
+  // generate Swagger spec files into the `resources/specs`
+  grpcgateway.generators.SwaggerGenerator -> (resourceDirectory in Compile).value / "specs",
+  // generate the Rest Gateway source code
+  grpcgateway.generators.GatewayGenerator -> (sourceManaged in Compile).value
 )
