@@ -1,6 +1,8 @@
 // following prototool guidelines: https://github.com/uber/prototool/blob/dev/etc/style/uber/uber.proto
 syntax = "proto3";
 
+import "google/api/annotations.proto";
+
 package security.kafka;
 
 option go_package = "kafkapb";
@@ -72,5 +74,9 @@ message GetAllAclsResponse {
 }
 
 service KsmService {
-    rpc GetAllAcls(GetAllAclsRequest) returns (GetAllAclsResponse) {};
+    rpc GetAllAcls(GetAllAclsRequest) returns (GetAllAclsResponse) {
+        option (google.api.http) = {
+            get: "/v1/KsmService/GetAllAcls"
+        };
+    }
 }
