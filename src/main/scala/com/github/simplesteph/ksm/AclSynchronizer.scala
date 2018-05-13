@@ -4,6 +4,7 @@ import com.github.simplesteph.ksm.notification.Notification
 import com.github.simplesteph.ksm.source.{SourceAcl, SourceAclResult}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
+import scala.util.{Failure, Success, Try}
 
 object AclSynchronizer {
 
@@ -58,35 +59,38 @@ class AclSynchronizer(authorizer: Authorizer,
 
   def run(): Unit = {
 
-    // flatten the Kafka ACL
-
     // parse the source of the ACL
-    sourceAcl.refresh() match {
-      // the source has not changed
-      case None =>
-        if (sourceAclsCache.errs.isEmpty) {
-          // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
-          applySourceAcls(sourceAclsCache.acls,
-                          getKafkaAcls,
-                          notification,
-                          authorizer)
-        }
-      // the source has changed
-      case Some(SourceAclResult(acls, errs)) =>
-        // we have a new result, so we cache it
-        sourceAclsCache = SourceAclResult(acls, errs)
-        // normal execution
-        if (errs.isEmpty) {
-          applySourceAcls(sourceAclsCache.acls,
-                          getKafkaAcls,
-                          notification,
-                          authorizer)
-        } else {
-          log.error("Exceptions while parsing ACL source:")
-          notification.notifyErrors(errs)
-        }
+    Try(sourceAcl.refresh()) match {
+      case Success(result) => result match {
+        // the source has not changed
+        case None =>
+          if (sourceAclsCache != null && sourceAclsCache.errs.isEmpty) {
+            // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
+            applySourceAcls(
+              sourceAclsCache.acls,
+              getKafkaAcls,
+              notification,
+              authorizer)
+          }
+        // the source has changed
+        case Some(SourceAclResult(acls, errs)) =>
+          // we have a new result, so we cache it
+          sourceAclsCache = SourceAclResult(acls, errs)
+          // normal execution
+          if (errs.isEmpty) {
+            applySourceAcls(
+              sourceAclsCache.acls,
+              getKafkaAcls,
+              notification,
+              authorizer)
+          } else {
+            log.error("Exceptions while parsing ACL source:")
+            notification.notifyErrors(errs)
+          }
+      }
+      case Failure(e) =>
+        log.error("Refreshing the source failed", e)
     }
-
   }
 
   def getKafkaAcls: Set[(Resource, Acl)] =
