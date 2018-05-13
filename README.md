@@ -144,11 +144,19 @@ You can then use place this CSV anywhere and use it as your source of truth.
 # External API
 To activate this feature, set `FEATURE_GRPC=true`.
 
+## gRPC Endpoint
 Kafka Security Manager exposes a GRPC endpoint to be consumed by external systems. The use case is to build a UI on top of KSM or some level of automation. 
 
-By default KSM binds to port 50051, but you can configure this using the `GRPC_PORT` environment variable. 
+By default KSM binds to port 50051, but you can configure this using the `GRPC_PORT` environment variable.
 
-The API is defined according to the proto file in [src/main/protobuf/](src/main/protobuf/) 
+## gRPC Gateway (REST Endpoint)
+By default KSM binds to port 50052, but you can configure this using the `GRPC_GATEWAY_PORT` environment variable.
+
+This provides a REST API to consume data from KSM
+
+## Service Definition
+
+The API is defined according to the proto file in [src/main/protobuf/](src/main/protobuf/)
 
 # Compatibility
 
