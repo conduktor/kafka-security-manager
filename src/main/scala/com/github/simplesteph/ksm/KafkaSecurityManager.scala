@@ -32,6 +32,7 @@ object KafkaSecurityManager extends App {
       grpcServer = new KsmGrpcServer(
         aclSynchronizer,
         appConfig.GRPC.port,
+        appConfig.GRPC.gatewayPort,
         appConfig.Feature.grpc)
       grpcServer.start()
     } match {

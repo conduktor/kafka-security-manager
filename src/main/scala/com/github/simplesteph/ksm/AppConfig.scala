@@ -48,6 +48,7 @@ class AppConfig(config: Config) {
   object GRPC {
     private val grpcConfig = config.getConfig("grpc")
     val port: Int = grpcConfig.getInt("port")
+    val gatewayPort: Int = grpcConfig.getInt("gateway.port")
   }
 
   object Feature {
