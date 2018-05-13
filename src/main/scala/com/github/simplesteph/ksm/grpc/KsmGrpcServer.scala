@@ -30,6 +30,7 @@ class KsmGrpcServer(
         .addService(KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ec))
         .build()
       server.start()
+      log.info(s"gRPC Server started on port $port")
 
       log.info("Starting gRPC Gateway")
 
@@ -45,10 +46,10 @@ class KsmGrpcServer(
         .forPort(gatewayPort)
         .addService(new KsmServiceHandler(channel)(ec))
         .build()
+      gateway.start()
 
-      log.info("gRPC Server Started")
+      log.info(s"gRPC Server started on port $gatewayPort")
     }
-
   }
 
   def stop(): Unit = {
