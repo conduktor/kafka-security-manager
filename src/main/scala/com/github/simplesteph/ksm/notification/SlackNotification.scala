@@ -1,17 +1,17 @@
 package com.github.simplesteph.ksm.notification
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.CsvParserException
 import com.typesafe.config.Config
-import kafka.security.auth.{ Acl, Resource }
+import kafka.security.auth.{Acl, Resource}
 import org.slf4j.LoggerFactory
 import skinny.http.HTTP
 
 import scala.util.Try
 
 class SlackNotification extends Notification {
+
   /**
-   * Config Prefix for configuring this module
-   */
+    * Config Prefix for configuring this module
+    */
   override val CONFIG_PREFIX: String = "slack"
 
   private val log = LoggerFactory.getLogger(classOf[SlackNotification])
@@ -28,8 +28,8 @@ class SlackNotification extends Notification {
   var channel: String = _
 
   /**
-   * internal config definition for the module
-   */
+    * internal config definition for the module
+    */
   override def configure(config: Config): Unit = {
     webhook = config.getString(WEBHOOK_CONFIG)
     username = config.getString(USERNAME_CONFIG)
@@ -51,30 +51,33 @@ class SlackNotification extends Notification {
 
   def sendToSlack(messages: List[String], retries: Int = 5): Unit = {
     if (retries > 0) {
-      messages.grouped(50).foreach(msgChunks => {
-        val text =
-          s"""```
+      messages
+        .grouped(50)
+        .foreach(msgChunks => {
+          val text =
+            s"""```
              |${msgChunks.mkString("\n")}
              |```
            """.stripMargin
 
-        val payload = objectMapper.createObjectNode()
-          .put("text", text)
-          .put("username", username)
-          .put("icon_url", icon)
-          .put("channel", channel)
+          val payload = objectMapper
+            .createObjectNode()
+            .put("text", text)
+            .put("username", username)
+            .put("icon_url", icon)
+            .put("channel", channel)
 
-        val response = HTTP.post(webhook, payload.toString)
+          val response = HTTP.post(webhook, payload.toString)
 
-        response.status match {
-          case 200 => ()
-          case _ =>
-            log.warn(response.asString)
-            if (retries > 1) log.warn("Retrying...")
-            Thread.sleep(300)
-            sendToSlack(msgChunks, retries - 1)
-        }
-      })
+          response.status match {
+            case 200 => ()
+            case _ =>
+              log.warn(response.asString)
+              if (retries > 1) log.warn("Retrying...")
+              Thread.sleep(300)
+              sendToSlack(msgChunks, retries - 1)
+          }
+        })
     } else {
       log.error("Can't send notification to Slack after retries")
     }
@@ -84,7 +87,5 @@ class SlackNotification extends Notification {
     sendToSlack(NotificationUtils.errorsToString(errs))
   }
 
-  override def close(): Unit = {
-
-  }
+  override def close(): Unit = {}
 }
