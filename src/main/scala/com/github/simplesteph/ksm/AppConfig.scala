@@ -12,10 +12,13 @@ class AppConfig(config: Config) {
 
   object Authorizer {
     private val authorizerClass = config.getString("authorizer.class")
-    val authorizer: Authorizer = CoreUtils.createObject[Authorizer](authorizerClass)
+    val authorizer: Authorizer =
+      CoreUtils.createObject[Authorizer](authorizerClass)
 
     private val authorizerConfig = config.getConfig("authorizer.config")
-    private val configMap = authorizerConfig.root().unwrapped().asScala.map { case (s, a) => (s, a.toString) }
+    private val configMap = authorizerConfig.root().unwrapped().asScala.map {
+      case (s, a) => (s, a.toString)
+    }
     authorizer.configure(configMap.asJava)
   }
 
@@ -25,17 +28,20 @@ class AppConfig(config: Config) {
 
     // here we get a dynamic config prefix given by the class.
     // this will allow multiple classes to co-exist in the same config and avoid collisions
-    private val sourceAclConfig = config.getConfig(s"source.${sourceAcl.CONFIG_PREFIX}")
+    private val sourceAclConfig =
+      config.getConfig(s"source.${sourceAcl.CONFIG_PREFIX}")
     sourceAcl.configure(sourceAclConfig)
   }
 
   object Notification {
     private val notificationClass = config.getString("notification.class")
-    val notification: Notification = CoreUtils.createObject[Notification](notificationClass)
+    val notification: Notification =
+      CoreUtils.createObject[Notification](notificationClass)
 
     // here we get a dynamic config prefix given by the class.
     // this will allow multiple classes to co-exist in the same config and avoid collisions
-    private val notificationConfig = config.getConfig(s"notification.${notification.CONFIG_PREFIX}")
+    private val notificationConfig =
+      config.getConfig(s"notification.${notification.CONFIG_PREFIX}")
     notification.configure(notificationConfig)
   }
 
