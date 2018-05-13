@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
-import skinny.http.{ HTTP, HTTPException, Request, Response }
+import skinny.http.{HTTP, HTTPException, Request, Response}
 
 import scala.util.Try
 
@@ -36,8 +36,8 @@ class GitHubSourceAcl extends SourceAcl {
   var tokenOpt: Option[String] = _
 
   /**
-   * internal config definition for the module
-   */
+    * internal config definition for the module
+    */
   override def configure(config: Config): Unit = {
     user = config.getString(USER_CONFIG)
     repo = config.getString(REPO_CONFIG)
@@ -49,7 +49,8 @@ class GitHubSourceAcl extends SourceAcl {
   }
 
   override def refresh(): Option[SourceAclResult] = {
-    val url = s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
+    val url =
+      s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
 
     // authentication if present
@@ -68,8 +69,12 @@ class GitHubSourceAcl extends SourceAcl {
     response.status match {
       case 200 =>
         lastModified = response.header("Last-Modified")
-        val b64encodedContent = objectMapper.readTree(response.textBody).get("content").asText()
-        val data = new String(Base64.getDecoder.decode(b64encodedContent.replace("\n", "").replace("\r", "")), Charset.forName("UTF-8"))
+        val b64encodedContent =
+          objectMapper.readTree(response.textBody).get("content").asText()
+        val data = new String(
+          Base64.getDecoder.decode(
+            b64encodedContent.replace("\n", "").replace("\r", "")),
+          Charset.forName("UTF-8"))
         // use the CSV Parser
         Some(CsvAclParser.aclsFromReader(new StringReader(data)))
       case 304 =>
@@ -80,13 +85,14 @@ class GitHubSourceAcl extends SourceAcl {
         Some(
           SourceAclResult(
             Set(),
-            List(Try(throw HTTPException(Some("Failure to fetch file"), response)))))
+            List(Try(
+              throw HTTPException(Some("Failure to fetch file"), response)))))
     }
   }
 
   /**
-   * Close all the necessary underlying objects or connections belonging to this instance
-   */
+    * Close all the necessary underlying objects or connections belonging to this instance
+    */
   override def close(): Unit = {
     // HTTP
   }

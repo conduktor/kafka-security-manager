@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Feature flag for gRPC server (off by default)
 - Added gRPC reflection service
 - Fixed a nasty stability issue (#20).
+- using ScalaFMT instead of Scalariform
 
 ## [0.2] - 05/05/2018
 - Kafka 1.1.0
