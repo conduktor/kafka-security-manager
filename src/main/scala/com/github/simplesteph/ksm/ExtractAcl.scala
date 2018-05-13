@@ -1,12 +1,10 @@
 package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.parser.AclParser
-import kafka.security.auth.{ Acl, Authorizer, Resource }
-import org.slf4j.{ Logger, LoggerFactory }
+import kafka.security.auth.{Acl, Authorizer, Resource}
+import org.slf4j.{Logger, LoggerFactory}
 
-class ExtractAcl(
-  authorizer: Authorizer,
-  aclParser: AclParser) {
+class ExtractAcl(authorizer: Authorizer, aclParser: AclParser) {
 
   val log: Logger = LoggerFactory.getLogger(classOf[ExtractAcl].getSimpleName)
 

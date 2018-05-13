@@ -7,7 +7,7 @@ import com.github.simplesteph.ksm.parser.CsvAclParser
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 object KafkaSecurityManager extends App {
 
@@ -23,16 +23,14 @@ object KafkaSecurityManager extends App {
   if (appConfig.KSM.extract) {
     new ExtractAcl(appConfig.Authorizer.authorizer, CsvAclParser).extract()
   } else {
-    aclSynchronizer = new AclSynchronizer(
-      appConfig.Authorizer.authorizer,
-      appConfig.Source.sourceAcl,
-      appConfig.Notification.notification)
+    aclSynchronizer = new AclSynchronizer(appConfig.Authorizer.authorizer,
+                                          appConfig.Source.sourceAcl,
+                                          appConfig.Notification.notification)
 
     Try {
-      grpcServer = new KsmGrpcServer(
-        aclSynchronizer,
-        appConfig.GRPC.port,
-        appConfig.Feature.grpc)
+      grpcServer = new KsmGrpcServer(aclSynchronizer,
+                                     appConfig.GRPC.port,
+                                     appConfig.Feature.grpc)
       grpcServer.start()
     } match {
       case Success(_) =>
