@@ -1,10 +1,10 @@
 package com.github.simplesteph.ksm.grpc
 
-import com.github.simplesteph.ksm.AclSynchronizer
+import com.github.simplesteph.ksm.{ AclSynchronizer, KafkaSecurityManager }
 import com.security.kafka.pb.ksm.{ KsmServiceGrpc, KsmServiceHandler }
 import grpcgateway.server.{ GrpcGatewayServer, GrpcGatewayServerBuilder }
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.{ ManagedChannelBuilder,Server, ServerBuilder }
+import io.grpc.{ ManagedChannelBuilder, Server, ServerBuilder }
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
