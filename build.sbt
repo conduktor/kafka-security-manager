@@ -13,13 +13,12 @@ lazy val root = (project in file("."))
 
 resolvers ++= Seq(
   "Artima Maven Repository" at "http://repo.artima.com/releases",
-  "confluent" at "https://packages.confluent.io/maven/",
 )
 
 libraryDependencies ++= Seq(
   // kafka
   "org.apache.kafka" %% "kafka" % "1.1.0",
-  "net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1" % "test",
+  "net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1-nosr" % "test",
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",
