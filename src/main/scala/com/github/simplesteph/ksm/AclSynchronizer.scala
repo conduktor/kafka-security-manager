@@ -51,13 +51,17 @@ object AclSynchronizer {
 
 class AclSynchronizer(authorizer: Authorizer,
                       sourceAcl: SourceAcl,
-                      notification: Notification) {
+                      notification: Notification,
+                      readOnly: Boolean = false) {
 
   import AclSynchronizer._
 
   private var sourceAclsCache: SourceAclResult = _
 
-  def run(): Unit = {
+  if (readOnly) log.warn("READ-ONLY mode is activated")
+
+  // only runs if the sourceAcl is active (true for all except for `ReadOnlyKsm`
+  def run(): Unit = if (!readOnly) {
 
     // parse the source of the ACL
     Try(sourceAcl.refresh()) match {

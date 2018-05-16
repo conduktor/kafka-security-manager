@@ -1,7 +1,7 @@
 package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
-import com.github.simplesteph.ksm.source.DummySourceAcl
+import com.github.simplesteph.ksm.source.{DummySourceAcl, NoSourceAcl}
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.concurrent.Eventually
@@ -227,5 +227,42 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
     }
   }
 
+
+  "readOnlySource" should "never alter ACL" in {
+
+    withRunningKafka {
+      val simpleAclAuthorizer = new SimpleAclAuthorizer()
+
+      val configs = Map(
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+      )
+      simpleAclAuthorizer.configure(configs.asJava)
+
+      val noSourceAcl = new NoSourceAcl
+      val dummyNotification = new DummyNotification
+
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        noSourceAcl,
+        dummyNotification,
+        readOnly = true
+      )
+
+      simpleAclAuthorizer.addAcls(Set(acl1), res1)
+
+      eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
+        aclSynchronizer.getKafkaAcls.size shouldBe 1
+      }
+
+      aclSynchronizer.run()
+
+      val deadline = 3.seconds.fromNow
+      while(deadline.hasTimeLeft) {
+        aclSynchronizer.getKafkaAcls.size shouldBe 1
+        Thread.sleep(200)
+      }
+
+    }
+  }
 
 }

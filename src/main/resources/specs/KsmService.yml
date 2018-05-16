@@ -27,13 +27,21 @@ paths:
           schema:
             $ref: "#/definitions/GetAllAclsResponse"
 definitions:
-  KafkaPrincipalPb:
+  ResourcePb:
     type: object
     properties: 
-      principalType:
-        type: string
       name:
         type: string
+      kafkaResourceType:
+        type: string
+        enum:
+        - RESOURCE_TYPE_INVALID
+        - RESOURCE_TYPE_UNSET
+        - RESOURCE_TYPE_TOPIC
+        - RESOURCE_TYPE_GROUP
+        - RESOURCE_TYPE_CLUSTER
+        - RESOURCE_TYPE_TRANSACTIONALID
+        - RESOURCE_TYPE_DELEGATIONTOKEN
   AclPb:
     type: object
     properties: 
@@ -64,6 +72,13 @@ definitions:
         - OPERATION_TYPE_ALTERCONFIGS
         - OPERATION_TYPE_IDEMPOTENTWRITE
         - OPERATION_TYPE_ALL
+  KafkaPrincipalPb:
+    type: object
+    properties: 
+      principalType:
+        type: string
+      name:
+        type: string
   ResourceAndAclPb:
     type: object
     properties: 
@@ -71,6 +86,8 @@ definitions:
         $ref: "#/definitions/ResourcePb"
       acl:
         $ref: "#/definitions/AclPb"
+  GetAllAclsRequest:
+    type: object
   GetAllAclsResponse:
     type: object
     properties: 
@@ -78,20 +95,3 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/ResourceAndAclPb"
-  ResourcePb:
-    type: object
-    properties: 
-      name:
-        type: string
-      kafkaResourceType:
-        type: string
-        enum:
-        - RESOURCE_TYPE_INVALID
-        - RESOURCE_TYPE_UNSET
-        - RESOURCE_TYPE_TOPIC
-        - RESOURCE_TYPE_GROUP
-        - RESOURCE_TYPE_CLUSTER
-        - RESOURCE_TYPE_TRANSACTIONALID
-        - RESOURCE_TYPE_DELEGATIONTOKEN
-  GetAllAclsRequest:
-    type: object
