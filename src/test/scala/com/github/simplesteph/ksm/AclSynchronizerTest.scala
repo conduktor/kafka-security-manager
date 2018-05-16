@@ -1,7 +1,8 @@
 package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
-import com.github.simplesteph.ksm.source.{DummySourceAcl, NoSourceAcl}
+import com.github.simplesteph.ksm.source.{DummySourceAcl, NoSourceAcl, SourceAcl, SourceAclResult}
+import com.typesafe.config.Config
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.concurrent.Eventually
@@ -238,12 +239,22 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val noSourceAcl = new NoSourceAcl
+      val controlSourceAcl = new SourceAcl {
+        var refreshCalled = false
+        override val CONFIG_PREFIX: String = ""
+        override def configure(config: Config): Unit = {}
+        override def refresh(): Option[SourceAclResult] = {
+          refreshCalled = true
+          None
+        }
+        override def close(): Unit = {}
+      }
+
       val dummyNotification = new DummyNotification
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
-        noSourceAcl,
+        controlSourceAcl,
         dummyNotification,
         readOnly = true
       )
@@ -255,13 +266,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       }
 
       aclSynchronizer.run()
-
-      val deadline = 3.seconds.fromNow
-      while(deadline.hasTimeLeft) {
-        aclSynchronizer.getKafkaAcls.size shouldBe 1
-        Thread.sleep(200)
-      }
-
+      controlSourceAcl.refreshCalled shouldBe false
     }
   }
 
