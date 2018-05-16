@@ -70,14 +70,16 @@ Overall we use the [lightbend config](https://github.com/lightbend/config) libra
 ## Environment variables 
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
-- `EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
-- `REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
+- `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
+- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
+- `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
 - `AUTHORIZER_CLASS`: override the authorizer class if you're not using the `SimpleAclAuthorizer`
 - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
 - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.  
 - `SOURCE_CLASS`: Source class. Valid values include
-    - `com.github.simplesteph.ksm.source.FileSourceAcl` (default): get the ACL source from a file on disk. Good for POC
-    - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control. 
+    - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
+    - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
+    - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)

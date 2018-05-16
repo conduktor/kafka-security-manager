@@ -29,8 +29,13 @@ services:
   kafka-security-manager:
     image: simplesteph/kafka-security-manager:latest
     environment:
+      KSM_READONLY: false
       AUTHORIZER_ZOOKEEPER_CONNECT: "zoo1:2181"
-      SOURCE_FILE_FILENAME: "/example/acls.csv"
+      SOURCE_CLASS: "com.github.simplesteph.ksm.source.GitHubSourceAcl"
+      SOURCE_GITHUB_USER: "simplesteph"
+      SOURCE_GITHUB_REPO: "kafka-security-manager-example"
+      SOURCE_GITHUB_FILEPATH: "acls.csv"
+      FEATURE_GRPC: true
     volumes:
       - "./example:/example"
     depends_on:

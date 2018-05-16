@@ -25,7 +25,8 @@ object KafkaSecurityManager extends App {
   } else {
     aclSynchronizer = new AclSynchronizer(appConfig.Authorizer.authorizer,
                                           appConfig.Source.sourceAcl,
-                                          appConfig.Notification.notification)
+                                          appConfig.Notification.notification,
+                                          appConfig.KSM.readOnly)
 
     Try {
       grpcServer = new KsmGrpcServer(aclSynchronizer,
