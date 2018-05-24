@@ -8,8 +8,19 @@ services:
 scala:
   - 2.12.4
 
+before_install:
+- if [ $TRAVIS_PULL_REQUEST = 'false' ]; then openssl aes-256-cbc -K $encrypted_575a6d494c46_key
+  -iv $encrypted_575a6d494c46_iv -in travis/secrets.tar.enc -out travis/secrets.tar
+  -d; tar xv -C travis -f travis/secrets.tar; fi
+
 script:
   - ./test.sh
+
+after_success:
+# send every push to master to sonatype
+- [[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && "$TRAVIS_BRANCH" == "master" ]] && { sbt publishSigned ; };
+# send releases / tags to maven central
+- [[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && -n "$TRAVIS_TAG"]] && { sbt sonatypeRelease ; };
 
 # Improvement: move logic out of docker_push.sh into .travis.yml
 deploy:
