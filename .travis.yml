@@ -40,7 +40,6 @@ deploy:
 #    condition: "foo == bar && baz==bat"
 #    repo: simplesteph/kafka-security-manager
 
-
 before_cache:
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
