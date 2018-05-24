@@ -179,6 +179,12 @@ PRs are welcome, especially with the following:
 
 Please open an issue before opening a PR. 
 
+# Artifacts
+
+SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/simplesteph/ksm/)
+
+RELEASES artifacts are deployed to Maven Central
+
 # Used By...
 
 PR to README.md to add your company

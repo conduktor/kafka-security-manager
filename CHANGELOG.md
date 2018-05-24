@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added Read-Only mode (enabled by default) to make KSM more safe for new users (setting is `KSM_READONLY` and should be explicitly set to `false` for production)
 - Renamed a few environment variables in KSM (breaking)
 - `NoAclSource` is now the default AclSource (to be used with `KSM_READONLY=true`)
+- Artifacts are now deployed to Sonatype / Maven Central
 
 ## [0.2] - 05/05/2018
 - Kafka 1.1.0
