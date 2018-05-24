@@ -18,9 +18,9 @@ script:
 
 after_success:
 # send every push to master to sonatype
-- [[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && "$TRAVIS_BRANCH" == "master" ]] && { sbt publishSigned ; };
+  - '[[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && "$TRAVIS_BRANCH" == "master" ]] && { sbt publishSigned ; };'
 # send releases / tags to maven central
-- [[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && -n "$TRAVIS_TAG"]] && { sbt sonatypeRelease ; };
+  - '[[ -z "$TRAVIS_PULL_REQUEST_BRANCH" && -n "$TRAVIS_TAG"]] && { sbt sonatypeRelease ; };'
 
 # Improvement: move logic out of docker_push.sh into .travis.yml
 deploy:
