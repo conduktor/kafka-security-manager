@@ -61,3 +61,6 @@ PB.targets in Compile := Seq(
   // generate the Rest Gateway source code
   grpcgateway.generators.GatewayGenerator -> (sourceManaged in Compile).value
 )
+
+// Add the default sonatype repository setting
+publishTo := sonatypePublishTo.value
