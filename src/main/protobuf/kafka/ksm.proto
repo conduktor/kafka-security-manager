@@ -76,7 +76,7 @@ message GetAllAclsResponse {
 service KsmService {
     rpc GetAllAcls(GetAllAclsRequest) returns (GetAllAclsResponse) {
         option (google.api.http) = {
-            get: "/v1/KsmService/GetAllAcls"
+            get: "/api/v1/KsmService/GetAllAcls"
         };
     }
 }
