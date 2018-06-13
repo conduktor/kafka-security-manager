@@ -11,7 +11,7 @@ consumes:
 produces:
   - 'application/json'
 paths:
-  /v1/KsmService/GetAllAcls:
+  /api/v1/KsmService/GetAllAcls:
     get:
       tags:
         - KsmService

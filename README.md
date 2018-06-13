@@ -181,10 +181,13 @@ Please open an issue before opening a PR.
 
 # Artifacts
 
+By using the JAR dependency, you can create your own `SourceAcl`.
+
 SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/simplesteph/ksm/)
 
-RELEASES artifacts are deployed to Maven Central
+RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph):
 
-# Used By...
-
-PR to README.md to add your company
+`build.sbt`
+```
+"com.github.simplesteph" %% "kafka-security-manager" % "version"
+```
