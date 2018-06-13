@@ -164,8 +164,8 @@ The API is defined according to the proto file in [src/main/protobuf/](src/main/
 
 KSM Version | Kafka Version
 --- | ---
-0.3-SNAPSHOT | 1.1.x (Upgrade recommended)
-0.2 | 1.1.x 
+0.3 | 1.1.x
+0.2 | 1.1.x (upgrade to 0.3 recommended)
 0.1 | 1.0.x (might work for earlier versions)
 
 # Contributing
