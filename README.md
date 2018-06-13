@@ -31,6 +31,18 @@ sbt universal:stage
 
 This is a Scala app and therefore should run on the JVM like any other application
 
+# Artifacts
+
+By using the JAR dependency, you can create your own `SourceAcl`.
+
+SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/simplesteph/ksm/)
+
+RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph):
+
+`build.sbt` (see [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph) for the latest `version`)
+```
+libraryDependencies += "com.github.simplesteph" %% "kafka-security-manager" % "version"
+```
 
 # Configuration 
 
@@ -164,6 +176,7 @@ The API is defined according to the proto file in [src/main/protobuf/](src/main/
 
 KSM Version | Kafka Version
 --- | ---
+0.4-SNAPSHOT | 1.1.x
 0.3 | 1.1.x
 0.2 | 1.1.x (upgrade to 0.3 recommended)
 0.1 | 1.0.x (might work for earlier versions)
@@ -177,17 +190,4 @@ PRs are welcome, especially with the following:
 - External Sources for ACLs (JDBC, Microsoft AD, etc...)
 - Notification Channels (Email, etc...) 
 
-Please open an issue before opening a PR. 
-
-# Artifacts
-
-By using the JAR dependency, you can create your own `SourceAcl`.
-
-SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/simplesteph/ksm/)
-
-RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph):
-
-`build.sbt`
-```
-"com.github.simplesteph" %% "kafka-security-manager" % "version"
-```
+Please open an issue before opening a PR.
