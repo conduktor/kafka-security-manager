@@ -92,6 +92,10 @@ The [default configurations](src/main/resources/application.conf) can be overwri
     - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
     - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.simplesteph.ksm.source.S3SourceAcl`: get the ACL from S3. Good for when you have a S3 bucket managed by Terraform or Cloudformation. This requires `region`, `bucketname` and `objectkey`. See [Access credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for credentials management.
+      - `SOURCE_S3_REGION` AWS S3 Region
+      - `SOURCE_S3_BUCKETNAME` AWS S3 Bucket name
+      - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
