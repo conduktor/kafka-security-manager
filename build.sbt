@@ -42,7 +42,10 @@ libraryDependencies ++= Seq(
   "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
 
   // REST gateway generation
-  "beyondthelines" %% "grpcgatewayruntime" % "0.0.9" % "compile,protobuf"
+  "beyondthelines" %% "grpcgatewayruntime" % "0.0.9" % "compile,protobuf",
+
+  // AWS SDK to access S3
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.385"
 
 )
 
