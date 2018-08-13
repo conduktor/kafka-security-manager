@@ -1,3 +1,4 @@
 target/
 .idea/
 local.*
+src/main/resources/specs/KsmService.yml

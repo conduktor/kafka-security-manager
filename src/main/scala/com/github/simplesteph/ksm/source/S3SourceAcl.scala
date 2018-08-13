@@ -8,6 +8,8 @@ import com.github.simplesteph.ksm.parser.CsvAclParser
 import org.slf4j.LoggerFactory
 import com.typesafe.config.Config
 
+import java.util.Date
+
 class S3SourceAcl extends SourceAcl {
 
   private val log = LoggerFactory.getLogger(classOf[S3SourceAcl])
@@ -21,7 +23,7 @@ class S3SourceAcl extends SourceAcl {
   final val BUCKET_KEY  = "objectkey"
   final val REGION      = "region"
 
-  var lastModified: Long = -1
+  var lastModified: Date = new Date(0)
   var bucket: String = _
   var key: String = _
   var region: String = _
@@ -47,23 +49,18 @@ class S3SourceAcl extends SourceAcl {
     * @return
     */
   override def refresh(): Option[SourceAclResult] = {
-    try {
-      var s3Client = AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
-      var s3object = s3Client.getObject(new GetObjectRequest(bucket, key))
-      var reader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-      var s3LastModified = s3object.getObjectMetadata.getLastModified.getTime
-      if (s3LastModified > lastModified) {
-        lastModified = s3LastModified
-        val res = CsvAclParser.aclsFromReader(reader)
-        reader.close()
-        s3object.close()
-        Some(res)
-      } else {
-        None
-      }
-    } catch {
-      case e: Exception => log.warn(e.getMessage)
-        None
+    val s3Client = AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
+    val s3object = s3Client.getObject(new GetObjectRequest(bucket, key).withModifiedSinceConstraint(lastModified))
+    // Null is returned when S3 responds with 304 Not Modified
+    if (s3object != null) {
+      val reader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+      lastModified = s3object.getObjectMetadata.getLastModified
+      val res = CsvAclParser.aclsFromReader(reader)
+      reader.close()
+      s3object.close()
+      Some(res)
+    } else {
+      None
     }
   }
 
