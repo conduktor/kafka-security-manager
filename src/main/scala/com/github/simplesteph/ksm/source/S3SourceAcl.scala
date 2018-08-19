@@ -50,17 +50,16 @@ class S3SourceAcl extends SourceAcl {
     */
   override def refresh(): Option[SourceAclResult] = {
     val s3Client = AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
-    val s3object = s3Client.getObject(new GetObjectRequest(bucket, key).withModifiedSinceConstraint(lastModified))
+    val s3object = Option(s3Client.getObject(new GetObjectRequest(bucket, key).withModifiedSinceConstraint(lastModified)))
     // Null is returned when S3 responds with 304 Not Modified
-    if (s3object != null) {
-      val reader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-      lastModified = s3object.getObjectMetadata.getLastModified
-      val res = CsvAclParser.aclsFromReader(reader)
-      reader.close()
-      s3object.close()
-      Some(res)
-    } else {
-      None
+    s3object match {
+      case Some(bucket) => val reader = new BufferedReader(new InputStreamReader(bucket.getObjectContent))
+        lastModified = bucket.getObjectMetadata.getLastModified
+        val res = CsvAclParser.aclsFromReader(reader)
+        reader.close()
+        bucket.close()
+        Some(res)
+      case None => None
     }
   }
 
