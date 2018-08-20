@@ -176,6 +176,9 @@ This provides a REST API to consume data from KSM. Swagger definition is provide
 
 The API is defined according to the proto file in [src/main/protobuf/](src/main/protobuf/)
 
+# Upgrade Notes
+TODO: Mention to look for inter broker protocol version before doing this
+
 # Compatibility
 
 KSM Version | Kafka Version

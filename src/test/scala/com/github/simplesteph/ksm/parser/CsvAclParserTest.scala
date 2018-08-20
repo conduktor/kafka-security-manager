@@ -3,6 +3,7 @@ package com.github.simplesteph.ksm.parser
 import java.io.StringReader
 
 import kafka.security.auth._
+import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -17,7 +18,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
       "Host" -> "*",
   )
 
-  val resource = Resource(Topic, "test")
+  val resource = Resource(Topic, "test", PatternType.LITERAL)
   val acl = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
 
   "parseRow" should "correctly parse a Row" in {
@@ -38,9 +39,9 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val acl2 = Acl(SecurityUtils.parseKafkaPrincipal("User:bob"), Deny, "12.34.56.78", Write)
     val acl3 = Acl(SecurityUtils.parseKafkaPrincipal("User:peter"), Allow, "*", Create)
 
-    val res1 = Resource(Topic, "foo")
-    val res2 = Resource(Group, "bar")
-    val res3 = Resource(Cluster, "kafka-cluster")
+    val res1 = Resource(Topic, "foo", PatternType.LITERAL)
+    val res2 = Resource(Group, "bar", PatternType.LITERAL)
+    val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
     val res = CsvAclParser.aclsFromReader(new StringReader(csv))
 
@@ -70,9 +71,9 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val acl2 = Acl(SecurityUtils.parseKafkaPrincipal("User:bob"), Deny, "12.34.56.78", Write)
     val acl3 = Acl(SecurityUtils.parseKafkaPrincipal("User:peter"), Allow, "*", Create)
 
-    val res1 = Resource(Topic, "foo")
-    val res2 = Resource(Group, "bar")
-    val res3 = Resource(Cluster, "kafka-cluster")
+    val res1 = Resource(Topic, "foo", PatternType.LITERAL)
+    val res2 = Resource(Group, "bar", PatternType.LITERAL)
+    val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
     val res = CsvAclParser.aclsFromReader(new StringReader(csv))
 
@@ -109,17 +110,17 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
   "asCsv" should "correctly write CSV Row" in {
     val acl1 = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
-    val res1 = Resource(Topic, "foo")
+    val res1 = Resource(Topic, "foo", PatternType.LITERAL)
     val res = CsvAclParser.asCsv(res1, acl1)
-    res shouldBe "User:alice,Topic,foo,Read,Allow,*"
+    res shouldBe "User:alice,Topic,foo,Read,Allow,*,LITERAL"
   }
 
   "asCsv" should "correctly format entire ACL" in {
     val csv =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Write,Deny,12.34.56.78
-        |User:peter,Cluster,kafka-cluster,Create,Allow,*
+      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host,PatternType
+        |User:alice,Topic,foo,Read,Allow,*,LITERAL
+        |User:bob,Group,bar,Write,Deny,12.34.56.78,PREFIXED
+        |User:peter,Cluster,kafka-cluster,Create,Allow,*,LITERAL
         |""".stripMargin
 
 
@@ -127,9 +128,9 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val acl2 = Acl(SecurityUtils.parseKafkaPrincipal("User:bob"), Deny, "12.34.56.78", Write)
     val acl3 = Acl(SecurityUtils.parseKafkaPrincipal("User:peter"), Allow, "*", Create)
 
-    val res1 = Resource(Topic, "foo")
-    val res2 = Resource(Group, "bar")
-    val res3 = Resource(Cluster, "kafka-cluster")
+    val res1 = Resource(Topic, "foo", PatternType.LITERAL)
+    val res2 = Resource(Group, "bar", PatternType.PREFIXED)
+    val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
     val res = CsvAclParser.formatAcls(List((res1, acl1),(res2, acl2), (res3, acl3)))
 
