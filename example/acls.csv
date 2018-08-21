@@ -1,4 +1,6 @@
-KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-User:alice,Topic,foo,Read,Allow,*
-User:bob,Group,bar,Write,Deny,12.34.56.78
-User:peter,Cluster,kafka-cluster,Create,Allow,*
+KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+User:alice,Topic,LITERAL,foo,Read,Allow,*
+User:alice,Topic,PREFIXED,baz,Read,Allow,*
+User:bob,Group,LITERAL,bar,Write,Deny,12.34.56.78
+User:alice,Topic,PREFIXED,my-kafka-streams-app,Create,Allow,*
+User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*

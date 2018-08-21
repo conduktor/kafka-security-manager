@@ -18,6 +18,7 @@ message ResourceAndAclPb {
 message ResourcePb {
     string name = 1;
     ResourceTypePb kafka_resource_type = 2;
+    PatternTypePb pattern_type = 3;
 }
 
 enum ResourceTypePb {
@@ -28,6 +29,13 @@ enum ResourceTypePb {
     RESOURCE_TYPE_CLUSTER = 4;
     RESOURCE_TYPE_TRANSACTIONALID = 5;
     RESOURCE_TYPE_DELEGATIONTOKEN = 6;
+}
+
+enum PatternTypePb {
+    PATTERN_TYPE_INVALID = 0;
+    PATTERN_TYPE_UNSET = 1;
+    PATTERN_TYPE_LITERAL = 2;
+    PATTERN_TYPE_PREFIXED = 3;
 }
 
 message AclPb {

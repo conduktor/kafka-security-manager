@@ -2,13 +2,15 @@ package com.github.simplesteph.ksm.utils
 
 import com.security.kafka.pb.ksm._
 import kafka.security.auth._
+import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.security.auth.KafkaPrincipal
 
 object ProtoConversionUtils {
 
   def resourceToPb(resource: Resource): ResourcePb = {
     ResourcePb(name = resource.name,
-               kafkaResourceType = resourceTypeToPb(resource.resourceType))
+               kafkaResourceType = resourceTypeToPb(resource.resourceType),
+               patternType = patternTypeToPb(resource.patternType))
   }
 
   def aclToPb(acl: Acl): AclPb = {
@@ -27,6 +29,14 @@ object ProtoConversionUtils {
       case Cluster         => ResourceTypePb.RESOURCE_TYPE_CLUSTER
       case TransactionalId => ResourceTypePb.RESOURCE_TYPE_TRANSACTIONALID
       case DelegationToken => ResourceTypePb.RESOURCE_TYPE_DELEGATIONTOKEN
+    }
+  }
+
+  def patternTypeToPb(patternType: PatternType): PatternTypePb = {
+    patternType match {
+      case PatternType.LITERAL  => PatternTypePb.PATTERN_TYPE_LITERAL
+      case PatternType.PREFIXED => PatternTypePb.PATTERN_TYPE_PREFIXED
+      case _                    => PatternTypePb.PATTERN_TYPE_INVALID
     }
   }
 

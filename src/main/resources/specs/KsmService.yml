@@ -27,22 +27,6 @@ paths:
           schema:
             $ref: "#/definitions/GetAllAclsResponse"
 definitions:
-  ResourceAndAclPb:
-    type: object
-    properties: 
-      resource:
-        $ref: "#/definitions/ResourcePb"
-      acl:
-        $ref: "#/definitions/AclPb"
-  GetAllAclsResponse:
-    type: object
-    properties: 
-      resourceAndAcls:
-        type: array
-        items:
-          $ref: "#/definitions/ResourceAndAclPb"
-  GetAllAclsRequest:
-    type: object
   ResourcePb:
     type: object
     properties: 
@@ -58,13 +42,27 @@ definitions:
         - RESOURCE_TYPE_CLUSTER
         - RESOURCE_TYPE_TRANSACTIONALID
         - RESOURCE_TYPE_DELEGATIONTOKEN
-  KafkaPrincipalPb:
+      patternType:
+        type: string
+        enum:
+        - PATTERN_TYPE_INVALID
+        - PATTERN_TYPE_UNSET
+        - PATTERN_TYPE_LITERAL
+        - PATTERN_TYPE_PREFIXED
+  GetAllAclsResponse:
     type: object
     properties: 
-      principalType:
-        type: string
-      name:
-        type: string
+      resourceAndAcls:
+        type: array
+        items:
+          $ref: "#/definitions/ResourceAndAclPb"
+  ResourceAndAclPb:
+    type: object
+    properties: 
+      resource:
+        $ref: "#/definitions/ResourcePb"
+      acl:
+        $ref: "#/definitions/AclPb"
   AclPb:
     type: object
     properties: 
@@ -95,3 +93,12 @@ definitions:
         - OPERATION_TYPE_ALTERCONFIGS
         - OPERATION_TYPE_IDEMPOTENTWRITE
         - OPERATION_TYPE_ALL
+  GetAllAclsRequest:
+    type: object
+  KafkaPrincipalPb:
+    type: object
+    properties: 
+      principalType:
+        type: string
+      name:
+        type: string

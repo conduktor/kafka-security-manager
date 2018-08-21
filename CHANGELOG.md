@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.4-SNAPSHOT]
-
+- Added S3 Acl Source (#27)
+- Upgraded to Kafka 2.0
+- New format to ACLs that allows Patterns (like prefixes)
+- Upgrades to Docker Compose file
 
 ## [0.3] - 13/06/2018
 - Added gRPC endpoint to perform API calls on KSM (the goal is to build a UI on top of KSM)

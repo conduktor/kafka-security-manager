@@ -12,13 +12,14 @@ services:
         ZOO_SERVERS: server.1=zoo1:2888:3888
 
   kafka1:
-    image: confluentinc/cp-kafka:4.0.0
+    image: confluentinc/cp-kafka:5.0.0
     hostname: kafka1
     ports:
       - "9092:9092"
     environment:
-      # add the entry "127.0.0.1    kafka1" to your /etc/hosts file
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka1:9092"
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
       KAFKA_BROKER_ID: 1
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
@@ -31,10 +32,14 @@ services:
     environment:
       KSM_READONLY: false
       AUTHORIZER_ZOOKEEPER_CONNECT: "zoo1:2181"
-      SOURCE_CLASS: "com.github.simplesteph.ksm.source.GitHubSourceAcl"
-      SOURCE_GITHUB_USER: "simplesteph"
-      SOURCE_GITHUB_REPO: "kafka-security-manager-example"
-      SOURCE_GITHUB_FILEPATH: "acls.csv"
+      # FILE:
+      SOURCE_CLASS: "com.github.simplesteph.ksm.source.FileSourceAcl"
+      SOURCE_FILE_FILENAME: "example/acls.csv"
+      # GITHUB:
+#      SOURCE_CLASS: "com.github.simplesteph.ksm.source.GitHubSourceAcl"
+#      SOURCE_GITHUB_USER: "simplesteph"
+#      SOURCE_GITHUB_REPO: "kafka-security-manager-example"
+#      SOURCE_GITHUB_FILEPATH: "acls.csv"
       FEATURE_GRPC: true
     volumes:
       - "./example:/example"

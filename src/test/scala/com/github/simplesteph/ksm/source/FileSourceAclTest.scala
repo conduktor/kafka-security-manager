@@ -16,10 +16,10 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val file = File.createTempFile("ksm", "test")
 
     val content1 =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Write,Deny,12.34.56.78
-        |User:peter,Cluster,kafka-cluster,Create,Allow,*
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
         |""".stripMargin
 
     Files.write(Paths.get(file.toURI), content1.getBytes(StandardCharsets.UTF_8))
@@ -32,7 +32,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val acl3 = Acl(SecurityUtils.parseKafkaPrincipal("User:peter"), Allow, "*", Create)
 
     val res1 = Resource(Topic, "foo", PatternType.LITERAL)
-    val res2 = Resource(Group, "bar", PatternType.LITERAL)
+    val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
     fileSourceAcl.refresh() shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
@@ -43,10 +43,10 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val file = File.createTempFile("ksm", "test")
 
     val content1 =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Write,Deny,12.34.56.78
-        |User:peter,Cluster,kafka-cluster,Create,Allow,*
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
         |""".stripMargin
 
     Files.write(Paths.get(file.toURI), content1.getBytes(StandardCharsets.UTF_8))
@@ -59,14 +59,14 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val acl3 = Acl(SecurityUtils.parseKafkaPrincipal("User:peter"), Allow, "*", Create)
 
     val res1 = Resource(Topic, "foo", PatternType.LITERAL)
-    val res2 = Resource(Group, "bar", PatternType.LITERAL)
+    val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
     fileSourceAcl.refresh() shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
 
     val content2 =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
         |""".stripMargin
 
     Files.write(Paths.get(file.toURI), content2.getBytes(StandardCharsets.UTF_8))

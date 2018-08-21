@@ -20,8 +20,8 @@ class S3SourceAcl extends SourceAcl {
   override val CONFIG_PREFIX: String = "s3"
 
   final val BUCKET_NAME = "bucketname"
-  final val BUCKET_KEY  = "objectkey"
-  final val REGION      = "region"
+  final val BUCKET_KEY = "objectkey"
+  final val REGION = "region"
 
   var lastModified: Date = new Date(0)
   var bucket: String = _
@@ -33,7 +33,7 @@ class S3SourceAcl extends SourceAcl {
     */
   override def configure(config: Config): Unit = {
     bucket = config.getString(BUCKET_NAME)
-    key    = config.getString(BUCKET_KEY)
+    key = config.getString(BUCKET_KEY)
     region = config.getString(REGION)
   }
 
@@ -49,11 +49,16 @@ class S3SourceAcl extends SourceAcl {
     * @return
     */
   override def refresh(): Option[SourceAclResult] = {
-    val s3Client = AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
-    val s3object = Option(s3Client.getObject(new GetObjectRequest(bucket, key).withModifiedSinceConstraint(lastModified)))
+    val s3Client =
+      AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
+    val s3object = Option(
+      s3Client.getObject(new GetObjectRequest(bucket, key)
+        .withModifiedSinceConstraint(lastModified)))
     // Null is returned when S3 responds with 304 Not Modified
     s3object match {
-      case Some(bucket) => val reader = new BufferedReader(new InputStreamReader(bucket.getObjectContent))
+      case Some(bucket) =>
+        val reader = new BufferedReader(
+          new InputStreamReader(bucket.getObjectContent))
         lastModified = bucket.getObjectMetadata.getLastModified
         val res = CsvAclParser.aclsFromReader(reader)
         reader.close()

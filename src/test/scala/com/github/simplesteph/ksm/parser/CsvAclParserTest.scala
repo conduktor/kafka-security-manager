@@ -12,6 +12,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
   val row = Map(
     "KafkaPrincipal" -> "User:alice",
       "ResourceType" -> "Topic",
+      "PatternType" -> "LITERAL",
       "ResourceName" -> "test",
       "Operation" -> "Read",
       "PermissionType" -> "Allow",
@@ -27,11 +28,11 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
   "aclsFromCsv" should "correctly parse a Correct CSV" in {
     val csv =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Write,Deny,12.34.56.78
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,LITERAL,bar,Write,Deny,12.34.56.78
         |
-        |User:peter,Cluster,kafka-cluster,Create,Allow,*
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
         |""".stripMargin
 
 
@@ -60,10 +61,10 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     // 1 correct, 1 wrong data, 1 missing column
     val csv =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Wrong,Deny,12.34.56.78
-        |User:peter,Cluster,kafka-cluster,Create,Allow
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,PREFIXED,bar,Wrong,Deny,12.34.56.78
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow
         |""".stripMargin
 
 
@@ -96,10 +97,10 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     // 1 correct, 1 wrong data, 1 missing column
     val csv =
-      """KafkaPrincipal,ResourceType,ResourceName,PermissionType,Host
-        |User:alice,Topic,foo,Read,Allow,*
-        |User:bob,Group,bar,Wrong,Deny,12.34.56.78
-        |User:peter,Cluster,kafka-cluster,Create,Allow
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,PREFIXED,bar,Wrong,Deny,12.34.56.78
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow
         |""".stripMargin
 
     val res = CsvAclParser.aclsFromReader(new StringReader(csv))
@@ -112,15 +113,15 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val acl1 = Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
     val res1 = Resource(Topic, "foo", PatternType.LITERAL)
     val res = CsvAclParser.asCsv(res1, acl1)
-    res shouldBe "User:alice,Topic,foo,Read,Allow,*,LITERAL"
+    res shouldBe "User:alice,Topic,LITERAL,foo,Read,Allow,*"
   }
 
   "asCsv" should "correctly format entire ACL" in {
     val csv =
-      """KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host,PatternType
-        |User:alice,Topic,foo,Read,Allow,*,LITERAL
-        |User:bob,Group,bar,Write,Deny,12.34.56.78,PREFIXED
-        |User:peter,Cluster,kafka-cluster,Create,Allow,*,LITERAL
+      """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+        |User:alice,Topic,LITERAL,foo,Read,Allow,*
+        |User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
+        |User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
         |""".stripMargin
 
 
