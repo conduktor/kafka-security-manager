@@ -70,10 +70,12 @@ object CsvAclParser extends AclParser {
       case Success(pt)                        => pt
       case Failure(e: NoSuchElementException) =>
         // column is missing
-        throw new RuntimeException(s"""
-             |IMPORTANT: Since you upgraded to Kafka 2.0, your CSV needs to include an extra column '$PATTERN_TYPE_COL', after $RESOURCE_TYPE_COL and before $RESOURCE_NAME_COL. Read more at https://issues.apache.org/jira/browse/KAFKA-6841.
+        log.warn(s"""Since you upgraded to Kafka 2.0, your CSV needs to include an extra column '$PATTERN_TYPE_COL', after $RESOURCE_TYPE_COL and before $RESOURCE_NAME_COL.
              |The CSV header should be: KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
-             |For a quick fix, you can run the application with KSM_EXTRACT=true and replace your current CSV with the output of the command""".stripMargin)
+             |For a quick fix, you can run the application with KSM_EXTRACT=true and replace your current CSV with the output of the command
+             |For backwards compatibility, the default value $PATTERN_TYPE_COL=LITERAL has been chosen""".stripMargin)
+        // Default
+        PatternType.LITERAL
       case Failure(e) =>
         throw e
     }
