@@ -58,7 +58,14 @@ class AclSynchronizer(authorizer: Authorizer,
 
   private var sourceAclsCache: SourceAclResult = _
 
-  if (readOnly) log.warn("READ-ONLY mode is activated")
+  if (readOnly) {
+    log.warn("""
+        |=======================================================
+        |==========   READ-ONLY mode is activated      =========
+        |==========   To disable: KSM_READONLY=false   =========
+        |=======================================================
+      """.stripMargin)
+  }
 
   def run(): Unit = if (!readOnly) {
 

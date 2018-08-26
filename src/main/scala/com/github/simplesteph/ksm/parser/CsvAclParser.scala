@@ -5,10 +5,14 @@ import java.io.Reader
 import com.github.simplesteph.ksm.source.SourceAclResult
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
 import kafka.security.auth._
+import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
+import org.slf4j.LoggerFactory
 
 import scala.collection.immutable
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+
+class CsvAclParser
 
 /**
   * Parser that assumes that all ACLs are flattened
@@ -18,19 +22,24 @@ import scala.util.Try
   */
 object CsvAclParser extends AclParser {
 
+  private val log = LoggerFactory.getLogger(classOf[CsvAclParser])
+
   final val KAFKA_PRINCIPAL_COL = "KafkaPrincipal"
   final val RESOURCE_TYPE_COL = "ResourceType"
   final val RESOURCE_NAME_COL = "ResourceName"
   final val OPERATION_COL = "Operation"
   final val PERMISSION_TYPE_COL = "PermissionType"
   final val HOST_COL = "Host"
+  final val PATTERN_TYPE_COL = "PatternType"
 
   final val EXPECTED_COLS = List(KAFKA_PRINCIPAL_COL,
                                  RESOURCE_TYPE_COL,
+                                 PATTERN_TYPE_COL,
                                  RESOURCE_NAME_COL,
                                  OPERATION_COL,
                                  PERMISSION_TYPE_COL,
-                                 HOST_COL)
+                                 HOST_COL,
+  )
 
   // we treat empty lines as Nil hence the format override
   implicit val csvFormat: CSVFormat = new CSVFormat {
@@ -44,6 +53,7 @@ object CsvAclParser extends AclParser {
 
   /**
     * parse a row to return an ACL
+    *
     * @param row a map of column name to row value
     * @return an ACL
     */
@@ -55,8 +65,22 @@ object CsvAclParser extends AclParser {
     val operation = Operation.fromString(row(OPERATION_COL))
     val permissionType = PermissionType.fromString(row(PERMISSION_TYPE_COL))
     val host = row(HOST_COL)
+    val patternType = Try(
+      PatternType.fromString(row(PATTERN_TYPE_COL).toUpperCase)) match {
+      case Success(pt)                        => pt
+      case Failure(e: NoSuchElementException) =>
+        // column is missing
+        log.warn(s"""Since you upgraded to Kafka 2.0, your CSV needs to include an extra column '$PATTERN_TYPE_COL', after $RESOURCE_TYPE_COL and before $RESOURCE_NAME_COL.
+             |The CSV header should be: KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+             |For a quick fix, you can run the application with KSM_EXTRACT=true and replace your current CSV with the output of the command
+             |For backwards compatibility, the default value $PATTERN_TYPE_COL=LITERAL has been chosen""".stripMargin)
+        // Default
+        PatternType.LITERAL
+      case Failure(e) =>
+        throw e
+    }
 
-    val resource = Resource(resourceType, resourceName)
+    val resource = Resource(resourceType, resourceName, patternType)
     val acl = Acl(kafkaPrincipal, permissionType, host, operation)
 
     (resource, acl)
@@ -64,6 +88,7 @@ object CsvAclParser extends AclParser {
 
   /**
     * Parses all the ACL as provided by the reader that wraps the CSV content
+    *
     * @param reader we use the reader interface to use string and files interchangeably in the parser
     * @return sourceAclResult
     */
@@ -86,6 +111,7 @@ object CsvAclParser extends AclParser {
   def asCsv(r: Resource, a: Acl): String = {
     List(a.principal.toString,
          r.resourceType.toString,
+         r.patternType,
          r.name,
          a.operation.toString,
          a.permissionType.toString,

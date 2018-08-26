@@ -2,15 +2,15 @@ package com.github.simplesteph.ksm.utils
 
 import com.security.kafka.pb.ksm._
 import kafka.security.auth._
-import org.apache.kafka.common.security.auth.KafkaPrincipal
+import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{FlatSpec, Matchers}
 
 class ProtoConversionUtilsTest extends FlatSpec with Matchers {
 
   "resourceToPb" should "correctly convert a resource" in {
-    val resource: Resource = Resource(Topic, "foobar")
-    val resourcepb: ResourcePb = ResourcePb(name = "foobar", kafkaResourceType = ResourceTypePb.RESOURCE_TYPE_TOPIC)
+    val resource: Resource = Resource(Topic, "foobar", PatternType.LITERAL)
+    val resourcepb: ResourcePb = ResourcePb(name = "foobar", kafkaResourceType = ResourceTypePb.RESOURCE_TYPE_TOPIC, PatternTypePb.PATTERN_TYPE_LITERAL)
     ProtoConversionUtils.resourceToPb(resource) shouldBe resourcepb
   }
 

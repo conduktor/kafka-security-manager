@@ -18,8 +18,11 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "1.1.0",
-  "net.manub" %% "scalatest-embedded-kafka" % "1.1.0-kafka1.1-nosr" % "test",
+  "org.apache.kafka" %% "kafka" % "2.0.0",
+  "net.manub" %% "scalatest-embedded-kafka" % "2.0.0" % "test",
+
+  // test
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",

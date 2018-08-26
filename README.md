@@ -16,11 +16,13 @@ Your role is to ensure that Kafka Security Manager is never down, as it is now a
 
 A sample CSV to manage ACL is:
 ```
-KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-User:alice,Topic,foo,Read,Allow,*
-User:bob,Group,bar,Write,Deny,12.34.56.78
-User:peter,Cluster,kafka-cluster,Create,Allow,*
+KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+User:alice,Topic,LITERAL,foo,Read,Allow,*
+User:bob,Group,bar,PREFIXED,Write,Deny,12.34.56.78
+User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ``` 
+
+**Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
 
 # Building
 
@@ -136,11 +138,6 @@ docker-compose down
 
 For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/simplesteph/kafka-stack-docker-compose)
 
-Add the entry to your `/etc/hosts` file
-```
-127.0.0.1 kafka1
-```
-
 ## Extracting ACLs
 
 You can initially extract all your existing ACL in Kafka by running the program with the config `extract=true` or `export EXTRACT=true`
@@ -151,10 +148,10 @@ Output should look like:
 [2018-03-06 21:49:44,704] INFO Getting ACLs from Kafka (ExtractAcl)
 [2018-03-06 21:49:44,704] INFO Closing Authorizer (ExtractAcl)
 
-KafkaPrincipal,ResourceType,ResourceName,Operation,PermissionType,Host
-User:bob,Group,bar,Write,Deny,12.34.56.78
-User:alice,Topic,foo,Read,Allow,*
-User:peter,Cluster,kafka-cluster,Create,Allow,*
+KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
+User:alice,Topic,LITERAL,foo,Read,Allow,*
+User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ```
 
 You can then use place this CSV anywhere and use it as your source of truth. 
@@ -176,14 +173,17 @@ This provides a REST API to consume data from KSM. Swagger definition is provide
 
 The API is defined according to the proto file in [src/main/protobuf/](src/main/protobuf/)
 
+# Upgrade Notes
+TODO: Mention to look for inter broker protocol version before doing this
+
 # Compatibility
 
-KSM Version | Kafka Version
---- | ---
-0.4-SNAPSHOT | 1.1.x
-0.3 | 1.1.x
-0.2 | 1.1.x (upgrade to 0.3 recommended)
-0.1 | 1.0.x (might work for earlier versions)
+KSM Version | Kafka Version | Notes
+--- | --- | ---
+0.4-SNAPSHOT | 2.0.0 | important change: added column 'PatternType' in CSV
+0.3 | 1.1.x |
+0.2 | 1.1.x | upgrade to 0.3 recommended
+0.1 | 1.0.x | might work for earlier versions
 
 # Contributing
 
