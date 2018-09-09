@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.4-SNAPSHOT]
+## [0.4] - 09/09/2018
 - Added S3 Acl Source (#27)
 - Upgraded to Kafka 2.0
 - New format to ACLs that allows Patterns (like prefixes)
 - Upgrades to Docker Compose file
+- Improvements to Docker Compose file
+- Using OpenJDK-8 slim as the base image for Docker releases
 
 ## [0.3] - 13/06/2018
 - Added gRPC endpoint to perform API calls on KSM (the goal is to build a UI on top of KSM)
