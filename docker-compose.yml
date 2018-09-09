@@ -2,7 +2,7 @@ version: '2'
 
 services:
   zoo1:
-    image: zookeeper:3.4.9
+    image: zookeeper:3.4.13
     hostname: zoo1
     ports:
       - "2181:2181"
@@ -29,8 +29,11 @@ services:
 
   kafka-security-manager:
     image: simplesteph/kafka-security-manager:latest
+    ports:
+      - "50051:50051"
+      - "50052:50052"
     environment:
-      KSM_READONLY: false
+      KSM_READONLY: "false"
       AUTHORIZER_ZOOKEEPER_CONNECT: "zoo1:2181"
       # FILE:
       SOURCE_CLASS: "com.github.simplesteph.ksm.source.FileSourceAcl"
@@ -40,8 +43,8 @@ services:
 #      SOURCE_GITHUB_USER: "simplesteph"
 #      SOURCE_GITHUB_REPO: "kafka-security-manager-example"
 #      SOURCE_GITHUB_FILEPATH: "acls.csv"
-      FEATURE_GRPC: true
+      FEATURE_GRPC: "true"
     volumes:
-      - "./example:/example"
+      - ${PWD}/example:/opt/docker/example:ro
     depends_on:
       - kafka1

@@ -59,6 +59,7 @@ parallelExecution in Test := false
 // Docker stuff
 dockerRepository := Some("simplesteph")
 dockerUpdateLatest := true
+dockerBaseImage := "openjdk:8-jre-slim"
 
 PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value,
