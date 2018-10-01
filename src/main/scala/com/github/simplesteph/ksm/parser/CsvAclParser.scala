@@ -2,6 +2,8 @@ package com.github.simplesteph.ksm.parser
 
 import java.io.Reader
 
+import com.github.simplesteph.ksm.AppConfig
+import com.github.simplesteph.ksm.KafkaSecurityManager.config
 import com.github.simplesteph.ksm.source.SourceAclResult
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
 import kafka.security.auth._
@@ -41,9 +43,11 @@ object CsvAclParser extends AclParser {
                                  HOST_COL,
   )
 
+  val appConfig: AppConfig = new AppConfig(config)
+
   // we treat empty lines as Nil hence the format override
   implicit val csvFormat: CSVFormat = new CSVFormat {
-    val delimiter: Char = ','
+    val delimiter: Char = appConfig.KSM.csvDelimiter.charAt(0)
     val quoteChar: Char = '"'
     val escapeChar: Char = '"'
     val lineTerminator: String = "\r\n"
@@ -115,13 +119,13 @@ object CsvAclParser extends AclParser {
          r.name,
          a.operation.toString,
          a.permissionType.toString,
-         a.host).mkString(",")
+         a.host).mkString(appConfig.KSM.csvDelimiter)
   }
 
   override def formatAcls(acls: List[(Resource, Acl)]): String = {
     val sb = new StringBuilder
     // header
-    sb.append(EXPECTED_COLS.mkString(","))
+    sb.append(EXPECTED_COLS.mkString(appConfig.KSM.csvDelimiter))
     sb.append(System.getProperty("line.separator"))
     // rows
     acls.foreach {
