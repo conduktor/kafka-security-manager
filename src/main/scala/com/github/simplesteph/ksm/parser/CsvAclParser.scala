@@ -3,9 +3,9 @@ package com.github.simplesteph.ksm.parser
 import java.io.Reader
 
 import com.github.simplesteph.ksm.AppConfig
-import com.github.simplesteph.ksm.KafkaSecurityManager.config
 import com.github.simplesteph.ksm.source.SourceAclResult
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
+import com.typesafe.config.ConfigFactory
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
@@ -43,6 +43,7 @@ object CsvAclParser extends AclParser {
                                  HOST_COL,
   )
 
+  val config = ConfigFactory.load()
   val appConfig: AppConfig = new AppConfig(config)
 
   // we treat empty lines as Nil hence the format override
