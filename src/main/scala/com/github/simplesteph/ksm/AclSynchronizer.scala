@@ -1,9 +1,11 @@
 package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.Notification
+import com.github.simplesteph.ksm.parser.AclParser
 import com.github.simplesteph.ksm.source.{SourceAcl, SourceAclResult}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
+
 import scala.util.{Failure, Success, Try}
 
 object AclSynchronizer {
@@ -52,6 +54,7 @@ object AclSynchronizer {
 class AclSynchronizer(authorizer: Authorizer,
                       sourceAcl: SourceAcl,
                       notification: Notification,
+                      aclParser: AclParser,
                       readOnly: Boolean = false) {
 
   import AclSynchronizer._
@@ -70,7 +73,7 @@ class AclSynchronizer(authorizer: Authorizer,
   def run(): Unit = if (!readOnly) {
 
     // parse the source of the ACL
-    Try(sourceAcl.refresh()) match {
+    Try(sourceAcl.refresh(aclParser)) match {
       case Success(result) =>
         result match {
           // the source has not changed

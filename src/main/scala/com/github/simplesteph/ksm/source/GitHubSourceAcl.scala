@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.CsvAclParser
+import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
@@ -48,7 +48,7 @@ class GitHubSourceAcl extends SourceAcl {
     tokenOpt = Try(config.getString(AUTH_TOKEN_CONFIG)).toOption
   }
 
-  override def refresh(): Option[SourceAclResult] = {
+  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
     val url =
       s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -76,7 +76,7 @@ class GitHubSourceAcl extends SourceAcl {
             b64encodedContent.replace("\n", "").replace("\r", "")),
           Charset.forName("UTF-8"))
         // use the CSV Parser
-        Some(CsvAclParser.aclsFromReader(new StringReader(data)))
+        Some(aclParser.aclsFromReader(new StringReader(data)))
       case 304 =>
         None
       case _ =>

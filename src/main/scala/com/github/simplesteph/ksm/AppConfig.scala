@@ -50,7 +50,11 @@ class AppConfig(config: Config) {
     val refreshFrequencyMs: Int = ksmConfig.getInt("refresh.frequency.ms")
     val extract: Boolean = ksmConfig.getBoolean("extract")
     val readOnly: Boolean = ksmConfig.getBoolean("readonly")
-    val csvDelimiter: String = ksmConfig.getString("csv.delimiter")
+  }
+
+  object Parser {
+    private val aclParserConfig = config.getConfig("parser")
+    val csvDelimiter: Char = aclParserConfig.getString("csv.delimiter").charAt(0)
   }
 
   object GRPC {

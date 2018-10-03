@@ -1,5 +1,6 @@
 package com.github.simplesteph.ksm.source
 
+import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 
 trait SourceAcl {
@@ -24,7 +25,7 @@ trait SourceAcl {
     * Kafka Security Manager will not update Acls in Kafka until there are no errors in the result
     * @return
     */
-  def refresh(): Option[SourceAclResult]
+  def refresh(aclParser: AclParser): Option[SourceAclResult]
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance

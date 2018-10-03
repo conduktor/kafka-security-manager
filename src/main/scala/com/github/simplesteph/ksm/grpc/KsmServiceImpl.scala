@@ -2,12 +2,12 @@ package com.github.simplesteph.ksm.grpc
 
 import com.github.simplesteph.ksm.AclSynchronizer
 import com.github.simplesteph.ksm.utils.ProtoConversionUtils
+import com.security.kafka.pb.ksm.KsmServiceGrpc.KsmService
 import com.security.kafka.pb.ksm.{
   GetAllAclsRequest,
   GetAllAclsResponse,
   ResourceAndAclPb
 }
-import com.security.kafka.pb.ksm.KsmServiceGrpc.KsmService
 import kafka.security.auth.{Acl, Resource}
 
 import scala.concurrent.Future

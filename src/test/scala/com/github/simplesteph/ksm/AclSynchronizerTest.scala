@@ -1,7 +1,8 @@
 package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
-import com.github.simplesteph.ksm.source.{DummySourceAcl, NoSourceAcl, SourceAcl, SourceAclResult}
+import com.github.simplesteph.ksm.parser.{AclParser, CsvAclParser}
+import com.github.simplesteph.ksm.source.{DummySourceAcl, SourceAcl, SourceAclResult}
 import com.typesafe.config.Config
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
@@ -14,6 +15,9 @@ import scala.concurrent.duration._
 class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with Eventually {
 
   import TestFixtures._
+
+  val aclParser = new CsvAclParser()
+
 
   val kafkaGroupedAcls: Map[Resource, Set[Acl]] = Map(
     res1 -> Set(acl1, acl2),
@@ -50,12 +54,9 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       val dummySourceAcl = new DummySourceAcl
       val dummyNotification = new DummyNotification
+      val aclParser = new CsvAclParser()
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
-        simpleAclAuthorizer,
-        dummySourceAcl,
-        dummyNotification,
-      )
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser, false)
 
 
       // first iteration
@@ -110,11 +111,9 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       val dummySourceAcl = new DummySourceAcl
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
-        simpleAclAuthorizer,
-        dummySourceAcl,
-        new ConsoleNotification
-      )
+      val aclParser = new CsvAclParser()
+
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, new ConsoleNotification, aclParser)
 
       // first iteration
       aclSynchronizer.run()
@@ -154,11 +153,8 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val dummySourceAcl = new DummySourceAcl
       val dummyNotification = new DummyNotification
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
-        simpleAclAuthorizer,
-        dummySourceAcl,
-        dummyNotification,
-      )
+
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser)
 
 
       // first iteration
@@ -208,11 +204,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val dummySourceAcl = new DummySourceAcl
       val dummyNotification = new DummyNotification
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
-        simpleAclAuthorizer,
-        dummySourceAcl,
-        dummyNotification,
-      )
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser)
 
 
       // first iteration
@@ -243,7 +235,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
         var refreshCalled = false
         override val CONFIG_PREFIX: String = ""
         override def configure(config: Config): Unit = {}
-        override def refresh(): Option[SourceAclResult] = {
+        override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
           refreshCalled = true
           None
         }
@@ -252,12 +244,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       val dummyNotification = new DummyNotification
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
-        simpleAclAuthorizer,
-        controlSourceAcl,
-        dummyNotification,
-        readOnly = true
-      )
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, controlSourceAcl, dummyNotification, aclParser , readOnly = true)
 
       simpleAclAuthorizer.addAcls(Set(acl1), res1)
 

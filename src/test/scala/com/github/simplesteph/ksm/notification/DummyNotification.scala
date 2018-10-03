@@ -1,8 +1,6 @@
 package com.github.simplesteph.ksm.notification
-import java.util.concurrent.atomic.AtomicInteger
-
 import com.typesafe.config.Config
-import kafka.security.auth.{ Acl, Resource }
+import kafka.security.auth.{Acl, Resource}
 
 import scala.collection.mutable
 import scala.util.Try

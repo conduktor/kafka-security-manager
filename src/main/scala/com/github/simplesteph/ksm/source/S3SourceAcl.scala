@@ -1,14 +1,14 @@
 package com.github.simplesteph.ksm.source
 
+import java.io._
+import java.util.Date
+
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3._
 import com.amazonaws.services.s3.model._
-import java.io._
-import com.github.simplesteph.ksm.parser.CsvAclParser
-import org.slf4j.LoggerFactory
+import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
-
-import java.util.Date
+import org.slf4j.LoggerFactory
 
 class S3SourceAcl extends SourceAcl {
 
@@ -48,7 +48,7 @@ class S3SourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(): Option[SourceAclResult] = {
+  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
     val s3Client =
       AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
     val s3object = Option(
@@ -60,7 +60,7 @@ class S3SourceAcl extends SourceAcl {
         val reader = new BufferedReader(
           new InputStreamReader(bucket.getObjectContent))
         lastModified = bucket.getObjectMetadata.getLastModified
-        val res = CsvAclParser.aclsFromReader(reader)
+        val res = aclParser.aclsFromReader(reader)
         reader.close()
         bucket.close()
         Some(res)

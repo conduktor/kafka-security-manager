@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.5-SNAPSHOT]
-- 
+- New custom delimiter option for CsvAclParser
+- Refactoring to allow new AclParser formats
 
 ## [0.4] - 09/09/2018
 - Added S3 Acl Source (#27)

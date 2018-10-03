@@ -4,12 +4,15 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
+import com.github.simplesteph.ksm.parser.CsvAclParser
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class FileSourceAclTest extends FlatSpec with Matchers {
+
+  val csvlAclParser = new CsvAclParser()
 
   "fileSourceAcl Refresh" should "correctly parse a file" in {
 
@@ -35,7 +38,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    fileSourceAcl.refresh() shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
+    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
   }
 
   "fileSourceAcl Refresh" should "correctly parse a file and then refresh after changes" in {
@@ -62,7 +65,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    fileSourceAcl.refresh() shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
+    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
 
     val content2 =
       """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
@@ -73,7 +76,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     // we force the modification of the time of the file so that the test passes
     file.setLastModified(System.currentTimeMillis() + 10000)
 
-    fileSourceAcl.refresh() shouldBe Some(SourceAclResult(Set(res1 -> acl1), List()))
+    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1), List()))
 
   }
 
