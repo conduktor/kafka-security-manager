@@ -1,11 +1,10 @@
 package com.github.simplesteph.ksm.source
 
+import com.github.simplesteph.ksm.TestFixtures._
+import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
-import kafka.security.auth._
-import org.apache.kafka.common.utils.SecurityUtils
 
 import scala.util.Try
-import com.github.simplesteph.ksm.TestFixtures._
 
 class DummySourceAcl extends SourceAcl {
 
@@ -33,7 +32,7 @@ class DummySourceAcl extends SourceAcl {
   // all state changes
   val sars: Iterator[SourceAclResult] = List(sar1, sar2, sar3).iterator
 
-  override def refresh(): Option[SourceAclResult] = {
+  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
     if(noneNext){
       noneNext = false
       None
