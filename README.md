@@ -101,6 +101,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
+- `ACL_PARSER_CSV_DELIMITER`: Change the delimiter character for the CSV Parser (useful when you have SSL)
 
 # Running on Docker
 

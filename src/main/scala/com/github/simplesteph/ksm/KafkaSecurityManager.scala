@@ -19,7 +19,7 @@ object KafkaSecurityManager extends App {
   var isCancelled: AtomicBoolean = new AtomicBoolean(false)
   var grpcServer: KsmGrpcServer = _
   var aclSynchronizer: AclSynchronizer = _
-  val aclParser = new CsvAclParser(appConfig.KSM.csvDelimiter)
+  val aclParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
 
   if (appConfig.KSM.extract) {
     new ExtractAcl(appConfig.Authorizer.authorizer, aclParser).extract()
