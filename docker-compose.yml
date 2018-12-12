@@ -28,7 +28,7 @@ services:
       - zoo1
 
   kafka-security-manager:
-    image: simplesteph/kafka-security-manager:latest
+    image: simplesteph/kafka-security-manager:0.5
     ports:
       - "50051:50051"
       - "50052:50052"
