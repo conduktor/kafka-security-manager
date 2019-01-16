@@ -22,6 +22,10 @@ after_success:
 # send releases / tags to maven central
   - if [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ -n "$TRAVIS_TAG" ]; then { sbt publishSigned && sbt sonatypeRelease ; } fi;
 
+before_deploy:
+  # create release zip
+  - if [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ -n "$TRAVIS_TAG" ]; then { sbt universal:packageBin ; } fi;
+
 # Improvement: move logic out of docker_push.sh into .travis.yml
 deploy:
   - provider: script
@@ -39,6 +43,14 @@ deploy:
 #    tags: true / false  => has precendence over the branch condition
 #    condition: "foo == bar && baz==bat"
 #    repo: simplesteph/kafka-security-manager
+  - provider: releases
+    api_key: "$GITHUB_OAUTH_TOKEN"
+    file_glob: true
+    file: "target/universal/kafka-security-manager-*.zip"
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: -z "$TRAVIS_PULL_REQUEST_BRANCH"
 
 before_cache:
   # Tricks to avoid unnecessary cache updates
