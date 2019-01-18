@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.6-SNAPSHOT]
-
+- Added Bitbucket Server as an ACL source
+- Added sample ACL rules for a schema registry user
 
 ## [0.5] - 12/12/2018
 - New custom delimiter option for CsvAclParser

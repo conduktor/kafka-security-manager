@@ -7,6 +7,7 @@ import kafka.security.auth.Authorizer
 import kafka.utils.CoreUtils
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 class AppConfig(config: Config) {
 

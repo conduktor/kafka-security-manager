@@ -98,6 +98,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
       - `SOURCE_S3_REGION` AWS S3 Region
       - `SOURCE_S3_BUCKETNAME` AWS S3 Bucket name
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
+    - `com.github.simplesteph.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
