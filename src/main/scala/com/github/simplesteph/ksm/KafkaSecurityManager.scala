@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
+import java.util.concurrent.{ExecutionException, Executors, ScheduledExecutorService, TimeUnit}
 
 object KafkaSecurityManager extends App {
 
@@ -20,6 +21,7 @@ object KafkaSecurityManager extends App {
   var grpcServer: KsmGrpcServer = _
   var aclSynchronizer: AclSynchronizer = _
   val aclParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
+  val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
   if (appConfig.KSM.extract) {
     new ExtractAcl(appConfig.Authorizer.authorizer, aclParser).extract()
@@ -50,14 +52,14 @@ object KafkaSecurityManager extends App {
       }
     })
 
+    val handle = scheduler.scheduleAtFixedRate(aclSynchronizer, 0, appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
+
     try {
-      while (!isCancelled.get()) {
-        aclSynchronizer.run()
-        Thread.sleep(appConfig.KSM.refreshFrequencyMs)
-      }
-    } catch {
-      case e: Exception =>
-        log.error("Unexpected exception...", e)
+      handle.get
+    }
+    catch {
+      case e: ExecutionException =>
+        log.error("unexpected exception", e)
         shutdown()
     }
 
@@ -68,5 +70,6 @@ object KafkaSecurityManager extends App {
     isCancelled = new AtomicBoolean(true)
     aclSynchronizer.close()
     grpcServer.stop()
+    scheduler.shutdownNow()
   }
 }

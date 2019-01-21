@@ -55,7 +55,7 @@ class AclSynchronizer(authorizer: Authorizer,
                       sourceAcl: SourceAcl,
                       notification: Notification,
                       aclParser: AclParser,
-                      readOnly: Boolean = false) {
+                      readOnly: Boolean = false) extends Runnable {
 
   import AclSynchronizer._
 
@@ -71,7 +71,7 @@ class AclSynchronizer(authorizer: Authorizer,
   }
 
   def run(): Unit = if (!readOnly) {
-
+    log.debug("Refreshing ACLs...")
     // parse the source of the ACL
     Try(sourceAcl.refresh(aclParser)) match {
       case Success(result) =>
