@@ -95,8 +95,8 @@ class BitbucketServerSourceAcl extends SourceAcl {
         // One of the supplied commit IDs or refs was invalid.
         throwError(response)
       case 401 =>
-        // The currently authenticated user has insufficient permissions to view the repository.
-        throwError(response)
+        // authentication error
+        throw HTTPException(Some("Authentication exception"), response)
       case 403 =>
         // unauthorized
         throwError(response)
