@@ -59,7 +59,7 @@ class AclSynchronizer(authorizer: Authorizer,
 
   import AclSynchronizer._
 
-  private var sourceAclsCache: SourceAclResult = _
+  private var sourceAclsCache: Set[(Resource, Acl)] = _
 
   if (readOnly) {
     log.warn("""
@@ -78,26 +78,26 @@ class AclSynchronizer(authorizer: Authorizer,
         result match {
           // the source has not changed
           case None =>
-            if (sourceAclsCache != null && sourceAclsCache.errs.isEmpty) {
+            if (sourceAclsCache != null) {
               // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
-              applySourceAcls(sourceAclsCache.acls,
+              applySourceAcls(sourceAclsCache,
                               getKafkaAcls,
                               notification,
                               authorizer)
             }
           // the source has changed
           case Some(SourceAclResult(acls, errs)) =>
-            // we have a new result, so we cache it
-            sourceAclsCache = SourceAclResult(acls, errs)
             // normal execution
             if (errs.isEmpty) {
-              applySourceAcls(sourceAclsCache.acls,
+              // we have a new result, so we cache it
+              sourceAclsCache = acls
+              applySourceAcls(sourceAclsCache,
                               getKafkaAcls,
                               notification,
                               authorizer)
             } else {
               try {
-                log.error("Exceptions while parsing ACL source:")
+                log.error("Exceptions while refreshing ACL source:")
                 notification.notifyErrors(errs)
               } catch {
                 case _: Throwable => log.warn("Notifications module threw an exception, ignoring...")
