@@ -1,11 +1,12 @@
 package com.github.simplesteph.ksm.notification
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.simplesteph.ksm.parser.CsvParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.LoggerFactory
 import skinny.http.HTTP
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class SlackNotification extends Notification {
 
@@ -84,7 +85,14 @@ class SlackNotification extends Notification {
   }
 
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
-    sendToSlack(NotificationUtils.errorsToString(errs))
+
+    val messages = errs.map {
+      case Failure(cPE: CsvParserException) => s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}"
+      case Success(t) => s"refresh exception: ${t.getLocalizedMessage}"
+      case Failure(t) => s"refresh exception: ${t.getLocalizedMessage}"
+    }
+
+    sendToSlack(messages)
   }
 
   override def close(): Unit = {}

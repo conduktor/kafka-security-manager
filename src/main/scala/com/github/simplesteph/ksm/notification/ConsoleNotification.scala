@@ -1,9 +1,10 @@
 package com.github.simplesteph.ksm.notification
+import com.github.simplesteph.ksm.parser.CsvParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.Try
+import scala.util.{Failure, Try, Success}
 
 case class ConsoleNotification() extends Notification {
 
@@ -21,7 +22,11 @@ case class ConsoleNotification() extends Notification {
   override def configure(config: Config): Unit = ()
 
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
-    NotificationUtils.errorsToString(errs).foreach(println)
+    errs.foreach {
+      case Failure(cPE: CsvParserException) => log.error(s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}")
+      case Success(t) => log.error("refresh exception", t)
+      case Failure(t) => log.error("refresh exception", t)
+    }
   }
 
   override protected def notifyOne(action: String,
