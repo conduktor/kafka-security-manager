@@ -60,7 +60,8 @@ object KafkaSecurityManager extends App {
     catch {
       case e: ExecutionException =>
         log.error("unexpected exception", e)
-        shutdown()
+    } finally {
+      shutdown()
     }
 
   }
