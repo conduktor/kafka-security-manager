@@ -96,8 +96,12 @@ class AclSynchronizer(authorizer: Authorizer,
                               notification,
                               authorizer)
             } else {
-              log.error("Exceptions while parsing ACL source:")
-              notification.notifyErrors(errs)
+              try {
+                log.error("Exceptions while parsing ACL source:")
+                notification.notifyErrors(errs)
+              } catch {
+                case _: Throwable => log.warn("Notifications module threw an exception, ignoring...")
+              }
             }
         }
       case Failure(e) =>
