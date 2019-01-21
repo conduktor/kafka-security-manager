@@ -50,9 +50,15 @@ object KafkaSecurityManager extends App {
       }
     })
 
-    while (!isCancelled.get()) {
-      aclSynchronizer.run()
-      Thread.sleep(appConfig.KSM.refreshFrequencyMs)
+    try {
+      while (!isCancelled.get()) {
+        aclSynchronizer.run()
+        Thread.sleep(appConfig.KSM.refreshFrequencyMs)
+      }
+    } catch {
+      case e: Exception =>
+        log.error("Unexpected exception...", e)
+        shutdown()
     }
 
   }
