@@ -24,6 +24,13 @@ User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 
 **Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
 
+Current sources shipping with KSM include:
+- File
+- GitHub
+- BitBucket
+- Amazon S3
+- Build your own (and contribute back!)
+
 # Building
 
 ``` 
