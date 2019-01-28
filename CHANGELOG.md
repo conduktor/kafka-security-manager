@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.6-SNAPSHOT]
+## [0.6] - 28/01/2019
 - Added Bitbucket Server as an ACL source
 - Added sample ACL rules for a schema registry user
 - Important stability fixes in case of source refresh issue
