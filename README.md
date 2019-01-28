@@ -189,8 +189,9 @@ TODO: Mention to look for inter broker protocol version before doing this
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
+0.7-SNAPSHOT | 2.1.0 |
 0.6 | 2.0.0 | important stability fixes - please update
-0.5 | 2.0.0 | 
+0.5 | 2.0.0 |
 0.4 | 2.0.0 | important change: added column 'PatternType' in CSV
 0.3 | 1.1.x |
 0.2 | 1.1.x | upgrade to 0.3 recommended

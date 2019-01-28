@@ -2,7 +2,7 @@ name := "kafka-security-manager"
 
 organization := "com.github.simplesteph.ksm"
 
-version := "0.6"
+version := "0.7-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
