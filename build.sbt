@@ -18,8 +18,8 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "2.1.0",
-  "io.github.embeddedkafka" %% "embedded-kafka" % "2.1.0" % "test",
+  "org.apache.kafka" %% "kafka" % "2.1.1",
+  "io.github.embeddedkafka" %% "embedded-kafka" % "2.1.1" % "test",
 
   // test
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
