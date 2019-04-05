@@ -130,7 +130,7 @@ Alternatively, you can get the automatically built Docker images on [Docker Hub]
 Then apply to the docker run using for example (in EXTRACT mode):
 
 ```
-docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e EXTRACT=true \
+docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRACT=true \
             simplesteph/kafka-security-manager:latest
 ```
 
@@ -149,7 +149,7 @@ For full usage of the docker-compose file see [kafka-stack-docker-compose](https
 
 ## Extracting ACLs
 
-You can initially extract all your existing ACL in Kafka by running the program with the config `extract=true` or `export EXTRACT=true`
+You can initially extract all your existing ACL in Kafka by running the program with the config `extract=true` or `export KSM_EXTRACT=true`
 
 Output should look like:
 ```
