@@ -4,7 +4,7 @@ organization := "com.github.simplesteph.ksm"
 
 version := "0.7-SNAPSHOT"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.8"
 
 lazy val root = (project in file("."))
   .enablePlugins(JavaAppPackaging)
@@ -20,6 +20,9 @@ libraryDependencies ++= Seq(
   // kafka
   "org.apache.kafka" %% "kafka" % "2.1.1",
   "io.github.embeddedkafka" %% "embedded-kafka" % "2.1.1" % "test",
+
+  "org.apache.kafka" % "kafka-clients" % "2.1.1", // needed explicitly for proper classPath
+  "org.apache.kafka" % "kafka-clients" % "2.1.1" % Test classifier "test",
 
   // test
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,

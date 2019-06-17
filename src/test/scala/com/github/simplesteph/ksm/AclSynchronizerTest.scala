@@ -217,6 +217,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         aclSynchronizer.getKafkaAcls shouldBe Set((res1, acl1), (res1, acl2), (res2, acl3))
       }
+      aclSynchronizer.close()
     }
   }
 
@@ -254,6 +255,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       aclSynchronizer.run()
       controlSourceAcl.refreshCalled shouldBe false
+      aclSynchronizer.close()
     }
   }
 

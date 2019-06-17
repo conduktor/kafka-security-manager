@@ -30,7 +30,9 @@ class DummySourceAcl extends SourceAcl {
   val sar3 = SourceAclResult(Set(), List())
 
   // all state changes
-  val sars: Iterator[SourceAclResult] = List(sar1, sar2, sar3).iterator
+  val sars: List[SourceAclResult] = List(sar1, sar2, sar3)
+  // a states iterator, shifting its position changes current state
+  private val sarsIterator: Iterator[SourceAclResult] = sars.iterator
 
   override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
     if(noneNext){
@@ -40,7 +42,7 @@ class DummySourceAcl extends SourceAcl {
       errorNext = false
       Some(SourceAclResult(Set((res1, acl1)),
         List[Try[Throwable]](Try(new RuntimeException("triggered error")))))
-    } else Some(sars.next())
+    } else Some(sarsIterator.next())
   }
 
   def setNoneNext(): Unit ={
