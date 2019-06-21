@@ -110,13 +110,20 @@ The [default configurations](src/main/resources/application.conf) can be overwri
   - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
   - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
   
-  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`, configured with
-  - `ADMIN_CLIENT_ID` - An id string to pass to the server when making requests, for tracing/audit purposes
-  - `KAFKA_BOOTSTRAP_SERVERS` - a comma-separated list of Kafka brokers in a "bootstrap" Kafka cluster
-  
-     SASL in Admin Client maybe enabled with following options (don't forget `java.security.auth.login.config` system property):
-  - `ADMIN_CLIENT_SECURITY_PROTOCOL` - admin client `security.protocol` (default `PLAINTEXT`)
-  - `ADMIN_CLIENT_SASL_MECHANISM` - admin client `sasl.mechanism` (applies when using SASL protocol, default `PLAIN`)
+  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
+  configured with options for `org.apache.kafka.clients.admin.AdminClientConfig`:
+  - `ADMIN_CLIENT_ID` - `client.id`, an id to pass to the server when making requests, for tracing/audit purposes, default `kafka-security-manager`
+  Properties below are not provided to client unless environment variable is set:
+  - `ADMIN_CLIENT_BOOTSTRAP_SERVERS` - `bootstrap.servers`
+  - `ADMIN_CLIENT_SECURITY_PROTOCOL` - `security.protocol`
+  - `ADMIN_CLIENT_SASL_JAAS_CONFIG` -`sasl.jaas.config` - alternative to system jaas configuration
+  - `ADMIN_CLIENT_SASL_MECHANISM` - `sasl.mechanism`
+  - `ADMIN_CLIENT_SSL_KEY_PASSWORD` - `ssl.key.password`
+  - `ADMIN_CLIENT_SSL_KEYSTORE_LOCATION` - `ssl.keystore.location`
+  - `ADMIN_CLIENT_SSL_KEYSTORE_PASSWORD` - `ssl.keystore.password`
+  - `ADMIN_CLIENT_SSL_TRUSTSTORE_LOCATION` - `ssl.truststore.location`
+  - `ADMIN_CLIENT_SSL_TRUSTSTORE_PASSWORD` - `ssl.truststore.password`
+
 - `SOURCE_CLASS`: Source class. Valid values include
     - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC

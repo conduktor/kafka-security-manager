@@ -14,6 +14,7 @@ trait JaasConfiguration {
   final val jaasPropertyName = "java.security.auth.login.config"
   def jaasConfig: String = getClass.getClassLoader.getResource("test-jaas.conf").getFile
 
+  /** No way to configure zookeeper jaas in `embedded-kafka`, so have to patch system props */
   def withJaasSystemConfiguration[T](body: => T): T = {
     val originalPropValue: String = System.getProperty(jaasPropertyName)
     System.setProperty(jaasPropertyName, jaasConfig)
@@ -53,8 +54,13 @@ class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matcher
     AdminClientConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG -> zkConnectionTimeoutMs.toString,
     // enabling sasl
     AdminClientConfig.SECURITY_PROTOCOL_CONFIG -> "SASL_PLAINTEXT",
-    "sasl.mechanism" -> "PLAIN"
-  )
+    "sasl.mechanism" -> "PLAIN",
+    "sasl.jaas.config" -> List(
+        "org.apache.kafka.common.security.plain.PlainLoginModule", "required",
+         """username="admin"""",
+         """password="admin-secret"""",
+      ).mkString("", " ", ";")
+    )
 
   val dummySourceAcl = new DummySourceAcl
 

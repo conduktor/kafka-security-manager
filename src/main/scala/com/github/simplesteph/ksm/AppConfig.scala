@@ -16,7 +16,13 @@ class AppConfig(config: Config) {
     val authorizer: Authorizer =
       CoreUtils.createObject[Authorizer](authorizerClass)
 
-    private val authorizerConfig = config.getConfig("authorizer.config")
+    private val authorizerConfig = config.getConfig(
+      if (authorizer.isInstanceOf[compat.AdminClientAuthorizer]){
+        "authorizer.admin-client-config"
+      } else {
+        "authorizer.config"
+      }
+    )
     private val configMap = authorizerConfig.root().unwrapped().asScala.map {
       case (s, a) => (s, a.toString)
     }
