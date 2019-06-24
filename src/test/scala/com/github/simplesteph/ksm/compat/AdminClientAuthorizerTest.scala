@@ -1,5 +1,7 @@
 package com.github.simplesteph.ksm.compat
 
+import java.security.Security
+
 import com.github.simplesteph.ksm.AclSynchronizer
 import com.github.simplesteph.ksm.notification.DummyNotification
 import com.github.simplesteph.ksm.parser.CsvAclParser
@@ -7,16 +9,22 @@ import com.github.simplesteph.ksm.source.DummySourceAcl
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.{FlatSpec, Matchers}
 import org.apache.kafka.clients.admin.AdminClientConfig
+import org.scalatest.concurrent.Eventually
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 
 trait JaasConfiguration {
   final val jaasPropertyName = "java.security.auth.login.config"
   def jaasConfig: String = getClass.getClassLoader.getResource("test-jaas.conf").getFile
 
-  /** No way to configure zookeeper jaas in `embedded-kafka`, so have to patch system props */
+  private def currentSecurityProviders: Set[String] = Security.getProviders.map(_.getName).toSet
+
+  /** No way to configure zookeeper jaas in `embedded-kafka`, so have to patch system props.
+    * Also, once Jaas is used, it affects list of Security providers, so we revert it */
   def withJaasSystemConfiguration[T](body: => T): T = {
     val originalPropValue: String = System.getProperty(jaasPropertyName)
+    val originalProviders = currentSecurityProviders
     System.setProperty(jaasPropertyName, jaasConfig)
     try {
       body
@@ -27,11 +35,14 @@ trait JaasConfiguration {
       )(
         System.setProperty(jaasPropertyName, _)
       )
+      currentSecurityProviders.diff(originalProviders).foreach(
+        Security.removeProvider
+      )
     }
   }
 }
 
-class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matchers with JaasConfiguration {
+class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matchers with JaasConfiguration with Eventually {
 
   implicit final val embeddedKafkaConfig: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
     customBrokerProperties = Map(
@@ -71,16 +82,24 @@ class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matcher
     new AclSynchronizer(authorizer, dummySourceAcl, new DummyNotification, new CsvAclParser)
   }
 
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
+    timeout = 3000.milliseconds, interval = 200 milliseconds
+  )
+
   "syncronizer with AdminClient based authorizer" should "synchronize acls properly" in {
     withJaasSystemConfiguration {
       withRunningKafka {
         val synchronizer = newSynchronizer
-        synchronizer.getKafkaAcls shouldBe Set.empty
+        eventually {
+          synchronizer.getKafkaAcls shouldBe Set.empty
+        }
         // transition to next state happens each time `.refresh(...)` called internally per synchronizer.run
         dummySourceAcl.sars.foreach(
           sourceAclResult => {
             synchronizer.run()
-            synchronizer.getKafkaAcls shouldBe sourceAclResult.acls
+            eventually {
+              synchronizer.getKafkaAcls shouldBe sourceAclResult.acls
+            }
           }
         )
         synchronizer.close()
