@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.7-SNAPSHOT]
 - Kafka 2.1.1
+- Fix fox basic auth (Issue #51)
 
 ## [0.6] - 28/01/2019
 - Added Bitbucket Server as an ACL source
