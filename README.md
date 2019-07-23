@@ -55,7 +55,7 @@ libraryDependencies += "com.github.simplesteph" %% "kafka-security-manager" % "v
 
 # Configuration 
 
-## Security configuration
+## Security configuration - Zookeeper client
 
 Make sure the app is using a property file and launch options similar to your broker so that it can 
 1. Authenticate to Zookeeper using secure credentials (usually done with JAAS)
@@ -79,6 +79,18 @@ Client {
 };
 ```
 
+## Security configuration - Admin client
+When configured authorizer class is `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
+`kafka-security-manager` will use kafka admin client instead of direct zookeeper connection.
+Configuration example would be
+```
+KafkaClient {
+  org.apache.kafka.common.security.plain.PlainLoginModule required
+  username="admin"
+  password="admin-secret";
+};
+```
+
 ## Configuration file
 
 For a list of configuration see [application.conf](src/main/resources/application.conf). You can customise them using environment variables or create your own `application.conf` file and pass it at runtime doing:
@@ -94,9 +106,24 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
 - `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
 - `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
-- `AUTHORIZER_CLASS`: override the authorizer class if you're not using the `SimpleAclAuthorizer`
-- `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
-- `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.  
+- `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
+  - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
+  - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
+  
+  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
+  configured with options for `org.apache.kafka.clients.admin.AdminClientConfig`:
+  - `ADMIN_CLIENT_ID` - `client.id`, an id to pass to the server when making requests, for tracing/audit purposes, default `kafka-security-manager`
+  Properties below are not provided to client unless environment variable is set:
+  - `ADMIN_CLIENT_BOOTSTRAP_SERVERS` - `bootstrap.servers`
+  - `ADMIN_CLIENT_SECURITY_PROTOCOL` - `security.protocol`
+  - `ADMIN_CLIENT_SASL_JAAS_CONFIG` -`sasl.jaas.config` - alternative to system jaas configuration
+  - `ADMIN_CLIENT_SASL_MECHANISM` - `sasl.mechanism`
+  - `ADMIN_CLIENT_SSL_KEY_PASSWORD` - `ssl.key.password`
+  - `ADMIN_CLIENT_SSL_KEYSTORE_LOCATION` - `ssl.keystore.location`
+  - `ADMIN_CLIENT_SSL_KEYSTORE_PASSWORD` - `ssl.keystore.password`
+  - `ADMIN_CLIENT_SSL_TRUSTSTORE_LOCATION` - `ssl.truststore.location`
+  - `ADMIN_CLIENT_SSL_TRUSTSTORE_PASSWORD` - `ssl.truststore.password`
+
 - `SOURCE_CLASS`: Source class. Valid values include
     - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
