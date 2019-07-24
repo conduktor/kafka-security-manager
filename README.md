@@ -216,6 +216,7 @@ TODO: Mention to look for inter broker protocol version before doing this
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
+0.8-SNAPSHOT | 2.1.1 | 
 0.7 | 2.1.1 | Kafka Based ACL refresher available (no zookeeper dependency)
 0.6 | 2.0.0 | important stability fixes - please update
 0.5 | 2.0.0 |
