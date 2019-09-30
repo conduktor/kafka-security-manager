@@ -58,7 +58,7 @@ object KafkaSecurityManager extends App {
         log.info("Single run mode: ACL will be synchornized once.")
         aclSynchronizer.run()
       } else {
-        log.info("Continues mode: ACL will be synchornized with period "+ appConfig.KSM.refreshFrequencyMs +" ms.")
+        log.info("Continuous mode: ACL will be synchronized every "+ appConfig.KSM.refreshFrequencyMs +" ms.")
         val handle = scheduler.scheduleAtFixedRate(aclSynchronizer, 0, appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
         handle.get
       }
