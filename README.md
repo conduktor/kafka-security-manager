@@ -105,7 +105,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
 - `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
-- `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default
+- `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `-1` then KMS executes ACL synchronization just once and exits
 - `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
   - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
   - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.

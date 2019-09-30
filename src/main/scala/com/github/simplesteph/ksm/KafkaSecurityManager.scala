@@ -51,11 +51,17 @@ object KafkaSecurityManager extends App {
         shutdown()
       }
     })
-
-    val handle = scheduler.scheduleAtFixedRate(aclSynchronizer, 0, appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
-
+    
     try {
-      handle.get
+      //if appConfig.KSM.refreshFrequencyMs is equal to -1 the aclSyngronizer is run just once.
+      if(appConfig.KSM.refreshFrequencyMs == -1){
+        log.info("Single run mode: ACL will be synchornized once.")
+        aclSynchronizer.run()
+      } else {
+        log.info("Continuous mode: ACL will be synchronized every "+ appConfig.KSM.refreshFrequencyMs +" ms.")
+        val handle = scheduler.scheduleAtFixedRate(aclSynchronizer, 0, appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
+        handle.get
+      }
     }
     catch {
       case e: ExecutionException =>
