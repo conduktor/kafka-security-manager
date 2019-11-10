@@ -1,6 +1,7 @@
 language: scala
 sudo: required
 jdk: oraclejdk8
+dist: trusty
 
 services:
   - docker
