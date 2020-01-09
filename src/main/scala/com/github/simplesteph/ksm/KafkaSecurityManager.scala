@@ -53,8 +53,8 @@ object KafkaSecurityManager extends App {
     })
     
     try {
-      //if appConfig.KSM.refreshFrequencyMs is equal to -1 the aclSyngronizer is run just once.
-      if(appConfig.KSM.refreshFrequencyMs == -1){
+      //if appConfig.KSM.refreshFrequencyMs is equal or less than 0 the aclSyngronizer is run just once.
+      if(appConfig.KSM.refreshFrequencyMs <= 0){
         log.info("Single run mode: ACL will be synchornized once.")
         aclSynchronizer.run()
       } else {
