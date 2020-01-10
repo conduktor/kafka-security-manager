@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/simplesteph/kafka-security-manager.svg?branch=master)](https://travis-ci.org/simplesteph/kafka-security-manager)
+[![Build Status](https://travis-ci.com/simplesteph/kafka-security-manager.svg?branch=master)](https://travis-ci.com/simplesteph/kafka-security-manager)
 
 # Kafka Security Manager
 
