@@ -203,7 +203,7 @@ By default KSM binds to port 50051, but you can configure this using the `GRPC_P
 ## gRPC Gateway (REST Endpoint)
 By default KSM binds to port 50052, but you can configure this using the `GRPC_GATEWAY_PORT` environment variable.
 
-This provides a REST API to consume data from KSM. Swagger definition is provided at [src/main/resources/specs/KsmService.yml](src/main/resources/specs/KsmService.yml)
+This provides a REST API to consume data from KSM.
 
 ## Service Definition
 
