@@ -27,6 +27,7 @@ User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 Current sources shipping with KSM include:
 - File
 - GitHub
+- GitLab (using Personal Auth Tokens)
 - BitBucket
 - Amazon S3
 - Build your own (and contribute back!)
@@ -128,6 +129,13 @@ The [default configurations](src/main/resources/application.conf) can be overwri
     - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
     - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.simplesteph.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using pesonal access tokens. Great to get started quickly and store the ACL securely under version control.
+      - `SOURCE_GITLAB_REPOID` GitLab project id
+      - `SOURCE_GITLAB_FILEPATH` Path to the ACL file in GitLab project
+      - `SOURCE_GITLAB_BRANCH` Git Branch name
+      - `SOURCE_GITLAB_HOSTNAME` GitLab Hostname
+      - `SOURCE_GITLAB_ACCESSTOKEN` GitLab Personal Access Token. See [Personal access tokens
+](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) to authenticate with the GitLab API.
     - `com.github.simplesteph.ksm.source.S3SourceAcl`: get the ACL from S3. Good for when you have a S3 bucket managed by Terraform or Cloudformation. This requires `region`, `bucketname` and `objectkey`. See [Access credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for credentials management.
       - `SOURCE_S3_REGION` AWS S3 Region
       - `SOURCE_S3_BUCKETNAME` AWS S3 Bucket name
