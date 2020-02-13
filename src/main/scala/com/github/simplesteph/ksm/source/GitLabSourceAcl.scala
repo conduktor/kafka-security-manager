@@ -16,8 +16,7 @@ class GitLabSourceAcl extends SourceAcl {
 
   private val log = LoggerFactory.getLogger(classOf[GitLabSourceAcl])
 
-  override val CONFIG_PREFIX: String = "gitlab"
-  final val USER_CONFIG = "user"
+  override val CONFIG_PREFIX: String = "gitlab"  
   final val REPOID_CONFIG = "repoid"
   final val FILEPATH_CONFIG = "filepath"
   final val BRANCH_CONFIG = "branch"
@@ -26,7 +25,6 @@ class GitLabSourceAcl extends SourceAcl {
 
   var lastModified: Option[String] = None
   val objectMapper = new ObjectMapper()
-  var user: String = _
   var repoid: String = _
   var filepath: String = _
   var branch: String = _
@@ -36,10 +34,7 @@ class GitLabSourceAcl extends SourceAcl {
   /**
     * internal config definition for the module
     */
-  override def configure(config: Config): Unit = {
-    //log.debug(config)
-
-    user = config.getString(USER_CONFIG)
+  override def configure(config: Config): Unit = {    
     repoid = config.getString(REPOID_CONFIG)
     filepath = config.getString(FILEPATH_CONFIG)
     branch = config.getString(BRANCH_CONFIG)
