@@ -50,27 +50,27 @@ class GitLabSourceAcl extends SourceAcl {
     // auth header
     request.header("PRIVATE-TOKEN", s" $accessToken")
 
+    if (lastModified != None) {
+      val metadata: Response = HTTP.head(request)      
+      if (lastModified == metadata.header("X-Gitlab-Commit-Id")){
+        log.info(s"No changes were detected in the ACL file ${filepath}. Skipping .... ")
+        None
+      }
+    }
+    
     val response: Response = HTTP.get(request)
 
     response.status match {
       case 200 =>
         val responseJSON = objectMapper.readTree(response.textBody)
-        val commitId = responseJSON.get("commit_id").asText()
-        if (lastModified == Some(commitId)) {
-          log.info(s"No changes were detected in the ACL file ${filepath}. Skipping .... ")
-          None
-        } else {
-          lastModified = Some(commitId)
-          val b64encodedContent = responseJSON.get("content").asText()
-          val data = new String(
-            Base64.getDecoder.decode(
-              b64encodedContent.replace("\n", "").replace("\r", "")),
-            Charset.forName("UTF-8"))
-          // use the CSV Parser
-          Some(aclParser.aclsFromReader(new StringReader(data)))
-        }        
-      case 304 =>
-        None
+        lastModified = Some(responseJSON.get("commit_id").asText())        
+        val b64encodedContent = responseJSON.get("content").asText()
+        val data = new String(
+          Base64.getDecoder.decode(
+            b64encodedContent.replace("\n", "").replace("\r", "")),
+          Charset.forName("UTF-8"))
+        // use the CSV Parser
+        Some(aclParser.aclsFromReader(new StringReader(data)))
       case _ =>
         // we got an http error so we propagate it
         log.warn(response.asString)
