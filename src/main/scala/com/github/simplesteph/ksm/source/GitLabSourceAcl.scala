@@ -16,11 +16,11 @@ class GitLabSourceAcl extends SourceAcl {
 
   private val log = LoggerFactory.getLogger(classOf[GitLabSourceAcl])
 
-  override val CONFIG_PREFIX: String = "gitlab"  
+  override val CONFIG_PREFIX: String = "gitlab"
   final val REPOID_CONFIG = "repoid"
   final val FILEPATH_CONFIG = "filepath"
   final val BRANCH_CONFIG = "branch"
-  final val HOSTNAME_CONFIG = "hostname"  
+  final val HOSTNAME_CONFIG = "hostname"
   final val ACCESSTOKEN_CONFIG = "accesstoken"
 
   var lastModified: Option[String] = None
@@ -34,7 +34,7 @@ class GitLabSourceAcl extends SourceAcl {
   /**
     * internal config definition for the module
     */
-  override def configure(config: Config): Unit = {    
+  override def configure(config: Config): Unit = {
     repoid = config.getString(REPOID_CONFIG)
     filepath = config.getString(FILEPATH_CONFIG)
     branch = config.getString(BRANCH_CONFIG)
@@ -49,36 +49,38 @@ class GitLabSourceAcl extends SourceAcl {
 
     // auth header
     request.header("PRIVATE-TOKEN", s" $accessToken")
+    val metadata: Response = HTTP.head(request)
+    val commitId = metadata.header("X-Gitlab-Commit-Id")
 
-    if (lastModified != None) {
-      val metadata: Response = HTTP.head(request)      
-      if (lastModified == metadata.header("X-Gitlab-Commit-Id")){
+    log.debug(s"lastModified: ${lastModified}")
+    log.debug(s"commitId from Head: ${commitId}")
+
+    lastModified match {
+      case `commitId` =>
         log.info(s"No changes were detected in the ACL file ${filepath}. Skipping .... ")
         None
-      }
-    }
-    
-    val response: Response = HTTP.get(request)
-
-    response.status match {
-      case 200 =>
-        val responseJSON = objectMapper.readTree(response.textBody)
-        lastModified = Some(responseJSON.get("commit_id").asText())        
-        val b64encodedContent = responseJSON.get("content").asText()
-        val data = new String(
-          Base64.getDecoder.decode(
-            b64encodedContent.replace("\n", "").replace("\r", "")),
-          Charset.forName("UTF-8"))
-        // use the CSV Parser
-        Some(aclParser.aclsFromReader(new StringReader(data)))
       case _ =>
-        // we got an http error so we propagate it
-        log.warn(response.asString)
-        Some(
-          SourceAclResult(
-            Set(),
-            List(Try(
-              throw HTTPException(Some("Failure to fetch file"), response)))))
+        val response: Response = HTTP.get(request)
+        response.status match {
+          case 200 =>
+            val responseJSON = objectMapper.readTree(response.textBody)
+            lastModified = Some(responseJSON.get("commit_id").asText())
+            val b64encodedContent = responseJSON.get("content").asText()
+            val data = new String(
+              Base64.getDecoder.decode(
+                b64encodedContent.replace("\n", "").replace("\r", "")),
+              Charset.forName("UTF-8"))
+            // use the CSV Parser
+            Some(aclParser.aclsFromReader(new StringReader(data)))
+          case _ =>
+            // we got an http error so we propagate it
+            log.warn(response.asString)
+            Some(
+              SourceAclResult(
+                Set(),
+                List(Try(
+                  throw HTTPException(Some("Failure to fetch file"), response)))))
+        }
     }
   }
 
