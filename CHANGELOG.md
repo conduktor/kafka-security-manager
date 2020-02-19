@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.9 - SNAPSHOT]
 - TODO: Upgrade to Kafka 2.4.x (PR welcome)
 - Added Bitbucket Cloud as an ACL source
+- Added GitLab as an ACL souce
 
 ## [0.8 - 10/01/2020]
 - Added possibility to run AclSyncornizer just once and then stop KSM (Issue #56)
