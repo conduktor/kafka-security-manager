@@ -38,6 +38,8 @@ libraryDependencies ++= Seq(
 
   // parsers
   "com.github.tototoshi" %% "scala-csv" % "1.3.5",
+  "io.circe" %% "circe-yaml" % "0.8.0",
+  "io.circe" % "circe-generic_2.12" % "0.11.1",
 
   // APIs
   "org.skinny-framework" %% "skinny-http-client" % "2.3.7",
