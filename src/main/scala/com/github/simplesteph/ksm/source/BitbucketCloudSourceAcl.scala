@@ -23,6 +23,8 @@ class BitbucketCloudSourceAcl extends SourceAcl {
   final val FILEPATH_CONFIG = "filepath"
   final val AUTH_USERNAME_CONFIG = "auth.username"
   final val AUTH_PASSWORD_CONFIG = "auth.password"
+  final val HTTP_CONN_TIMEOUT_MS = "http.conn.timeout.ms"
+  final val HTTP_READ_TIMEOUT_MS = "http.read.timeout.ms"
 
   var lastCommit: Option[String] = None
 
@@ -32,6 +34,8 @@ class BitbucketCloudSourceAcl extends SourceAcl {
   var filePath: String = _
   var username: String = _
   var password: String = _
+  var connTimeout: Int = _
+  var readTimeout: Int = _
 
   /**
     * internal config definition for the module
@@ -43,12 +47,17 @@ class BitbucketCloudSourceAcl extends SourceAcl {
     filePath = config.getString(FILEPATH_CONFIG)
     username = config.getString(AUTH_USERNAME_CONFIG)
     password = config.getString(AUTH_PASSWORD_CONFIG)
+    connTimeout = config.getInt(HTTP_CONN_TIMEOUT_MS)
+    readTimeout = config.getInt(HTTP_READ_TIMEOUT_MS)
   }
 
   override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
+    request.enableThrowingIOException(true)
+    request.connectTimeoutMillis(connTimeout)
+    request.readTimeoutMillis(readTimeout)
 
     // add authentication header
     val basicB64 = Base64.getEncoder.encodeToString(s"$username:$password".getBytes(Charset.forName("UTF-8")))
