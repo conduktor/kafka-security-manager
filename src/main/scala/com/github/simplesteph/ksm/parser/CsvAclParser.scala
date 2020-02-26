@@ -9,7 +9,6 @@ import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -67,8 +66,6 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
 
     (resource, acl)
   }
-
-  case class ParserError(data: String, errorMessage: String )
 
   /**
     * Parses all the ACL as provided by the reader that wraps the CSV content
