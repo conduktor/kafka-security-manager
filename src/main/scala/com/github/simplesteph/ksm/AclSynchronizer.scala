@@ -15,24 +15,29 @@ object AclSynchronizer {
 
   // transform Kafka ACLs to make them more agreeable to deal with
   def flattenKafkaAcls(
-      kafkaGroupedAcls: Map[Resource, Set[Acl]]): Set[(Resource, Acl)] = {
+      kafkaGroupedAcls: Map[Resource, Set[Acl]]
+  ): Set[(Resource, Acl)] = {
     kafkaGroupedAcls.keySet.flatMap(resource =>
-      kafkaGroupedAcls(resource).map((resource, _)))
+      kafkaGroupedAcls(resource).map((resource, _))
+    )
   }
 
   // group the ACL by resource
   def regroupAcls(
-      flattenedAcls: Set[(Resource, Acl)]): Map[Resource, Set[Acl]] = {
+      flattenedAcls: Set[(Resource, Acl)]
+  ): Map[Resource, Set[Acl]] = {
     flattenedAcls
       .groupBy { case (r: Resource, _: Acl) => r }
       .mapValues(_.map((y: (Resource, Acl)) => y._2))
   }
 
   // apply changes to Zookeeper / Kafka security and store the results in Notification object
-  def applySourceAcls(sourceAcls: Set[(Resource, Acl)],
-                      kafkaAcls: Set[(Resource, Acl)],
-                      notification: Notification,
-                      authZ: Authorizer): Unit = {
+  def applySourceAcls(
+      sourceAcls: Set[(Resource, Acl)],
+      kafkaAcls: Set[(Resource, Acl)],
+      notification: Notification,
+      authZ: Authorizer
+  ): Unit = {
     if (sourceAcls == kafkaAcls) {
       log.info("No ACL changes")
     } else {
@@ -51,11 +56,13 @@ object AclSynchronizer {
   }
 }
 
-class AclSynchronizer(authorizer: Authorizer,
-                      sourceAcl: SourceAcl,
-                      notification: Notification,
-                      aclParser: AclParser,
-                      readOnly: Boolean = false) extends Runnable {
+class AclSynchronizer(
+    authorizer: Authorizer,
+    sourceAcl: SourceAcl,
+    notification: Notification,
+    aclParser: AclParser,
+    readOnly: Boolean = false
+) extends Runnable {
 
   import AclSynchronizer._
 
@@ -80,10 +87,12 @@ class AclSynchronizer(authorizer: Authorizer,
           case None =>
             if (sourceAclsCache != null) {
               // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
-              applySourceAcls(sourceAclsCache,
+              applySourceAcls(
+                sourceAclsCache,
                 getKafkaAcls,
                 notification,
-                authorizer)
+                authorizer
+              )
             }
           case Some(reader) =>
             val sourceAclResult = aclParser.aclsFromReader(reader)
@@ -93,16 +102,22 @@ class AclSynchronizer(authorizer: Authorizer,
               case Right(ksmAcls) =>
                 // we have a new result, so we cache it
                 sourceAclsCache = ksmAcls
-                applySourceAcls(sourceAclsCache,
-                getKafkaAcls,
-                notification,
-                authorizer)
+                applySourceAcls(
+                  sourceAclsCache,
+                  getKafkaAcls,
+                  notification,
+                  authorizer
+                )
               case Left(parsingExceptions: List[Exception]) =>
                 // parsing exceptions we want to notify
-                log.error("Exceptions while refreshing ACL source:",
-                parsingExceptions.map(e => e.toString).mkString("\n"))
-                  // ugly but for now this will do
-                notification.notifyErrors(parsingExceptions.map(e => Try(throw e)))
+                log.error(
+                  "Exceptions while refreshing ACL source:",
+                  parsingExceptions.map(e => e.toString).mkString("\n")
+                )
+                // ugly but for now this will do
+                notification.notifyErrors(
+                  parsingExceptions.map(e => Try(throw e))
+                )
             }
         }
       case Failure(e) =>
@@ -111,7 +126,8 @@ class AclSynchronizer(authorizer: Authorizer,
           log.error("Exceptions while refreshing ACL source:", e)
           notification.notifyErrors(List(Try(e)))
         } catch {
-          case _: Throwable => log.warn("Notifications module threw an exception, ignoring...")
+          case _: Throwable =>
+            log.warn("Notifications module threw an exception, ignoring...")
         }
         log.error("Refreshing the source threw an unexpected exception", e)
     }

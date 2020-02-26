@@ -4,7 +4,14 @@ import java.util
 
 import kafka.network.RequestChannel
 import kafka.security.SecurityUtils
-import kafka.security.auth.{Acl, Authorizer, Operation, PermissionType, Resource, ResourceType}
+import kafka.security.auth.{
+  Acl,
+  Authorizer,
+  Operation,
+  PermissionType,
+  Resource,
+  ResourceType
+}
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.common.utils.{SecurityUtils => JavaSecurityUtils}
 import org.apache.kafka.common.acl.{AccessControlEntry, AclBindingFilter}
@@ -32,17 +39,18 @@ trait AdminClientAuthorizerBase extends Authorizer {
   protected def client: AdminClient
 
   override def addAcls(acls: Set[Acl], resource: Resource): Unit =
-    client.createAcls(
-      acls.map(acl => SecurityUtils.convertToAclBinding(resource, acl)).asJava
-    ).all().get()
+    client
+      .createAcls(
+        acls.map(acl => SecurityUtils.convertToAclBinding(resource, acl)).asJava
+      )
+      .all()
+      .get()
 
   override def removeAcls(acls: Set[Acl], resource: Resource): Boolean =
     !client
       .deleteAcls(
         acls
-          .map(
-            acl => SecurityUtils.convertToAclBinding(resource, acl).toFilter
-          )
+          .map(acl => SecurityUtils.convertToAclBinding(resource, acl).toFilter)
           .asJava
       )
       .all()
@@ -55,8 +63,12 @@ trait AdminClientAuthorizerBase extends Authorizer {
       .values()
       .get()
       .asScala
-      .groupBy(aclBinding => JavaAclConversions.resourceFromPattern(aclBinding.pattern()))
-      .mapValues(_.map(aclBinding => JavaAclConversions.aclFromEntry(aclBinding.entry())).toSet)
+      .groupBy(aclBinding =>
+        JavaAclConversions.resourceFromPattern(aclBinding.pattern())
+      )
+      .mapValues(
+        _.map(aclBinding => JavaAclConversions.aclFromEntry(aclBinding.entry())).toSet
+      )
 
   //<editor-fold desc="Interface methods not used by kafka-security-manager">
 
@@ -66,9 +78,11 @@ trait AdminClientAuthorizerBase extends Authorizer {
 
   override def getAcls(principal: KafkaPrincipal): Map[Resource, Set[Acl]] = ???
 
-  override def authorize(session: RequestChannel.Session,
-                         operation: Operation,
-                         resource: Resource): Boolean = ???
+  override def authorize(
+      session: RequestChannel.Session,
+      operation: Operation,
+      resource: Resource
+  ): Boolean = ???
   //</editor-fold>
 }
 

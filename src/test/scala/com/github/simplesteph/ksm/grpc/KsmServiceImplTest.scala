@@ -14,11 +14,38 @@ class KsmServiceImplTest extends AsyncFlatSpec with Matchers {
 
   val dummySourceAcl = new DummySourceAcl
 
-  val ksmServiceImpl = new KsmServiceImpl(new AclSynchronizer(new DummyAuthorizer(), dummySourceAcl, new DummyNotification, new CsvAclParser))
+  val ksmServiceImpl = new KsmServiceImpl(
+    new AclSynchronizer(
+      new DummyAuthorizer(),
+      dummySourceAcl,
+      new DummyNotification,
+      new CsvAclParser
+    )
+  )
 
   "getAllAcls" should "return all Acls" in {
-    ksmServiceImpl.getAllAcls(new GetAllAclsRequest) map {
-      getAclResponse => getAclResponse shouldBe GetAllAclsResponse(Vector(ResourceAndAclPb(Some(ResourcePb("foo", RESOURCE_TYPE_TOPIC,PatternTypePb.PATTERN_TYPE_LITERAL)), Some(AclPb(Some(KafkaPrincipalPb("User", "alice")), PERMISSION_TYPE_ALLOW, "*", OPERATION_TYPE_READ)))))
+    ksmServiceImpl.getAllAcls(new GetAllAclsRequest) map { getAclResponse =>
+      getAclResponse shouldBe GetAllAclsResponse(
+        Vector(
+          ResourceAndAclPb(
+            Some(
+              ResourcePb(
+                "foo",
+                RESOURCE_TYPE_TOPIC,
+                PatternTypePb.PATTERN_TYPE_LITERAL
+              )
+            ),
+            Some(
+              AclPb(
+                Some(KafkaPrincipalPb("User", "alice")),
+                PERMISSION_TYPE_ALLOW,
+                "*",
+                OPERATION_TYPE_READ
+              )
+            )
+          )
+        )
+      )
 
     }
   }

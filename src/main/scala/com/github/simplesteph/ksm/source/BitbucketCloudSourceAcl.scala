@@ -51,15 +51,16 @@ class BitbucketCloudSourceAcl extends SourceAcl {
     val request: Request = new Request(url)
 
     // add authentication header
-    val basicB64 = Base64.getEncoder.encodeToString(s"$username:$password".getBytes(Charset.forName("UTF-8")))
+    val basicB64 = Base64.getEncoder.encodeToString(
+      s"$username:$password".getBytes(Charset.forName("UTF-8"))
+    )
     request.header("Authorization", s"Basic $basicB64")
 
     val response: Response = HTTP.get(request)
     response.status match {
       case 200 =>
         // we receive a valid response
-        val reader = new BufferedReader(
-          new StringReader(response.textBody))
+        val reader = new BufferedReader(new StringReader(response.textBody))
         Some(reader)
       case _ =>
         // uncaught error

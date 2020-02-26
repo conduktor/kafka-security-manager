@@ -46,7 +46,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
     val permissionType = PermissionType.fromString(row(PERMISSION_TYPE_COL))
     val host = row(HOST_COL)
     val patternType = Try(
-      PatternType.fromString(row(PATTERN_TYPE_COL).toUpperCase)) match {
+      PatternType.fromString(row(PATTERN_TYPE_COL).toUpperCase)
+    ) match {
       case Success(pt)                        => pt
       case Failure(e: NoSuchElementException) =>
         // column is missing
@@ -54,7 +55,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
           s"""Since you upgraded to Kafka 2.0, your CSV needs to include an extra column '$PATTERN_TYPE_COL', after $RESOURCE_TYPE_COL and before $RESOURCE_NAME_COL.
                     |The CSV header should be: KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
                     |For a quick fix, you can run the application with KSM_EXTRACT=true and replace your current CSV with the output of the command
-                    |For backwards compatibility, the default value $PATTERN_TYPE_COL=LITERAL has been chosen""".stripMargin)
+                    |For backwards compatibility, the default value $PATTERN_TYPE_COL=LITERAL has been chosen""".stripMargin
+        )
         // Default
         PatternType.LITERAL
       case Failure(e) =>
@@ -78,16 +80,18 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
 
     // parse the CSV
     val parsed: List[Either[CsvParserException, (Resource, Acl)]] = csv.map {
-      row => try {
-        Right(parseRow(row))
-      } catch {
-        case e: Exception =>
-          Left(new CsvParserException(row, e))
-      }
+      row =>
+        try {
+          Right(parseRow(row))
+        } catch {
+          case e: Exception =>
+            Left(new CsvParserException(row, e))
+        }
     }
 
-    val errors: List[CsvParserException] = parsed.filter(_.isLeft).map(_.left.get)
-    if (errors.nonEmpty){
+    val errors: List[CsvParserException] =
+      parsed.filter(_.isLeft).map(_.left.get)
+    if (errors.nonEmpty) {
       // return all the parsing exceptions
       SourceAclResult(Left(errors))
     } else {
@@ -98,13 +102,15 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
   }
 
   def asCsv(r: Resource, a: Acl): String = {
-    List(a.principal.toString,
-         r.resourceType.toString,
-         r.patternType,
-         r.name,
-         a.operation.toString,
-         a.permissionType.toString,
-         a.host).mkString(delimiterInput.toString)
+    List(
+      a.principal.toString,
+      r.resourceType.toString,
+      r.patternType,
+      r.name,
+      a.operation.toString,
+      a.permissionType.toString,
+      a.host
+    ).mkString(delimiterInput.toString)
   }
 
   override def formatAcls(acls: List[(Resource, Acl)]): String = {
@@ -134,13 +140,14 @@ object CsvAclParser {
   final val HOST_COL = "Host"
   final val PATTERN_TYPE_COL = "PatternType"
 
-  final val EXPECTED_COLS = List(KAFKA_PRINCIPAL_COL,
-                                 RESOURCE_TYPE_COL,
-                                 PATTERN_TYPE_COL,
-                                 RESOURCE_NAME_COL,
-                                 OPERATION_COL,
-                                 PERMISSION_TYPE_COL,
-                                 HOST_COL,
+  final val EXPECTED_COLS = List(
+    KAFKA_PRINCIPAL_COL,
+    RESOURCE_TYPE_COL,
+    PATTERN_TYPE_COL,
+    RESOURCE_NAME_COL,
+    OPERATION_COL,
+    PERMISSION_TYPE_COL,
+    HOST_COL
   )
 
 }

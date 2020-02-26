@@ -9,7 +9,11 @@ import org.apache.kafka.common.security.auth.KafkaPrincipal
 
 class DummyAuthorizer() extends Authorizer {
 
-  override def authorize(session: RequestChannel.Session, operation: Operation, resource: Resource): Boolean = ???
+  override def authorize(
+      session: RequestChannel.Session,
+      operation: Operation,
+      resource: Resource
+  ): Boolean = ???
 
   override def addAcls(acls: Set[Acl], resource: Resource): Unit = ???
 

@@ -52,14 +52,17 @@ class BitbucketServerSourceAcl extends SourceAcl {
 
   override def refresh(): Option[Reader] = {
     // get changes since last commit
-    val url = s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
+    val url =
+      s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
     val request: Request = new Request(url)
     request.queryParam("path", filePath)
     // optionally add the last commit if available
     lastCommit.foreach(s => request.queryParam("since", s))
 
     // add authentication header
-    val basicB64 = Base64.getEncoder.encodeToString(s"$username:$password".getBytes(Charset.forName("UTF-8")))
+    val basicB64 = Base64.getEncoder.encodeToString(
+      s"$username:$password".getBytes(Charset.forName("UTF-8"))
+    )
     request.header("Authorization", s"Basic $basicB64")
 
     val response: Response = HTTP.get(request)
@@ -70,7 +73,8 @@ class BitbucketServerSourceAcl extends SourceAcl {
         val hasNewCommits = values.size() > 0
         if (hasNewCommits) {
 
-          val rawRetrieveUrl = s"$protocol://$hostname:$port/projects/$project/repos/$repo/browse/$filePath?raw"
+          val rawRetrieveUrl =
+            s"$protocol://$hostname:$port/projects/$project/repos/$repo/browse/$filePath?raw"
 
           val fileRetrievalRequest = new Request(rawRetrieveUrl)
           fileRetrievalRequest.header("Authorization", s"Basic $basicB64")

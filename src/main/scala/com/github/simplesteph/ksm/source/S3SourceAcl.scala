@@ -52,13 +52,17 @@ class S3SourceAcl extends SourceAcl {
     val s3Client =
       AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
     val s3object = Option(
-      s3Client.getObject(new GetObjectRequest(bucket, key)
-        .withModifiedSinceConstraint(lastModified)))
+      s3Client.getObject(
+        new GetObjectRequest(bucket, key)
+          .withModifiedSinceConstraint(lastModified)
+      )
+    )
     // Null is returned when S3 responds with 304 Not Modified
     s3object match {
       case Some(bucket) =>
         val reader = new BufferedReader(
-          new InputStreamReader(bucket.getObjectContent))
+          new InputStreamReader(bucket.getObjectContent)
+        )
         lastModified = bucket.getObjectMetadata.getLastModified
         bucket.close()
         Some(reader)

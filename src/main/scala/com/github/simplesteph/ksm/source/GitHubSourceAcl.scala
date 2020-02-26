@@ -72,9 +72,10 @@ class GitHubSourceAcl extends SourceAcl {
         val b64encodedContent =
           objectMapper.readTree(response.textBody).get("content").asText()
         val data = new String(
-          Base64.getDecoder.decode(
-            b64encodedContent.replace("\n", "").replace("\r", "")),
-          Charset.forName("UTF-8"))
+          Base64.getDecoder
+            .decode(b64encodedContent.replace("\n", "").replace("\r", "")),
+          Charset.forName("UTF-8")
+        )
         // use the CSV Parser
         Some(new StringReader(data))
       case 304 =>

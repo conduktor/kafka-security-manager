@@ -8,26 +8,23 @@ import com.typesafe.config.Config
 
 class DummySourceAcl extends SourceAcl {
 
-
   var noneNext = false
   var errorNext = false
   val csvAclParser: CsvAclParser = new CsvAclParser()
 
   // initial state
   val sar1 = Set(
-      res1 -> acl1,
-      res1 -> acl2,
-      res2 -> acl3,
-    )
-
-
+    res1 -> acl1,
+    res1 -> acl2,
+    res2 -> acl3
+  )
 
   // one deletion, one add
   val sar2 = Set(
-      res1 -> acl1,
-      res2 -> acl3,
-      res3 -> acl2
-    )
+    res1 -> acl1,
+    res2 -> acl3,
+    res3 -> acl2
+  )
 
   // all gone
   val sar3 = Set()
@@ -38,18 +35,20 @@ class DummySourceAcl extends SourceAcl {
   private val sarsIterator = sars.iterator
 
   override def refresh(): Option[Reader] = {
-    if(noneNext){
+    if (noneNext) {
       noneNext = false
       None
     } else if (errorNext) {
       errorNext = false
       throw new RuntimeException("triggered error")
     } else {
-      Some(new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList)))
+      Some(
+        new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList))
+      )
     }
   }
 
-  def setNoneNext(): Unit ={
+  def setNoneNext(): Unit = {
     noneNext = true
   }
 

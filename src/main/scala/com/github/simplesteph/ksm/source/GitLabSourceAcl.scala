@@ -57,7 +57,9 @@ class GitLabSourceAcl extends SourceAcl {
 
     lastModified match {
       case `commitId` =>
-        log.info(s"No changes were detected in the ACL file ${filepath}. Skipping .... ")
+        log.info(
+          s"No changes were detected in the ACL file ${filepath}. Skipping .... "
+        )
         None
       case _ =>
         val response: Response = HTTP.get(request)
@@ -67,9 +69,10 @@ class GitLabSourceAcl extends SourceAcl {
             lastModified = Some(responseJSON.get("commit_id").asText())
             val b64encodedContent = responseJSON.get("content").asText()
             val data = new String(
-              Base64.getDecoder.decode(
-                b64encodedContent.replace("\n", "").replace("\r", "")),
-              Charset.forName("UTF-8"))
+              Base64.getDecoder
+                .decode(b64encodedContent.replace("\n", "").replace("\r", "")),
+              Charset.forName("UTF-8")
+            )
             // use the CSV Parser
             Some(new StringReader(data))
           case _ =>

@@ -8,9 +8,11 @@ import org.apache.kafka.common.security.auth.KafkaPrincipal
 object ProtoConversionUtils {
 
   def resourceToPb(resource: Resource): ResourcePb = {
-    ResourcePb(name = resource.name,
-               kafkaResourceType = resourceTypeToPb(resource.resourceType),
-               patternType = patternTypeToPb(resource.patternType))
+    ResourcePb(
+      name = resource.name,
+      kafkaResourceType = resourceTypeToPb(resource.resourceType),
+      patternType = patternTypeToPb(resource.patternType)
+    )
   }
 
   def aclToPb(acl: Acl): AclPb = {
@@ -41,8 +43,10 @@ object ProtoConversionUtils {
   }
 
   def principalToPb(kafkaPrincipal: KafkaPrincipal): KafkaPrincipalPb = {
-    KafkaPrincipalPb(name = kafkaPrincipal.getName,
-                     principalType = kafkaPrincipal.getPrincipalType)
+    KafkaPrincipalPb(
+      name = kafkaPrincipal.getName,
+      principalType = kafkaPrincipal.getPrincipalType
+    )
   }
 
   def permissionTypeToPb(permissionType: PermissionType): PermissionTypePb = {

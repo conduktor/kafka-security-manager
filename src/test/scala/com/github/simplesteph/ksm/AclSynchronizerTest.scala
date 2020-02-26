@@ -2,9 +2,16 @@ package com.github.simplesteph.ksm
 
 import java.io.Reader
 
-import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
+import com.github.simplesteph.ksm.notification.{
+  ConsoleNotification,
+  DummyNotification
+}
 import com.github.simplesteph.ksm.parser.{AclParser, CsvAclParser}
-import com.github.simplesteph.ksm.source.{DummySourceAcl, SourceAcl, SourceAclResult}
+import com.github.simplesteph.ksm.source.{
+  DummySourceAcl,
+  SourceAcl,
+  SourceAclResult
+}
 import com.typesafe.config.Config
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
@@ -14,16 +21,19 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
-class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with Eventually {
+class AclSynchronizerTest
+    extends FlatSpec
+    with EmbeddedKafka
+    with Matchers
+    with Eventually {
 
   import TestFixtures._
 
   val aclParser = new CsvAclParser()
 
-
   val kafkaGroupedAcls: Map[Resource, Set[Acl]] = Map(
     res1 -> Set(acl1, acl2),
-    res2 -> Set(acl3),
+    res2 -> Set(acl3)
   )
 
   val kafkaFlattenedAcls = Set(res1 -> acl1, res1 -> acl2, res2 -> acl3)
@@ -37,8 +47,12 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
   }
 
   "regroupAcls and flattenKafkaAcls" should "compose to identity" in {
-    AclSynchronizer.flattenKafkaAcls(AclSynchronizer.regroupAcls(kafkaFlattenedAcls)) shouldBe kafkaFlattenedAcls
-    AclSynchronizer.regroupAcls(AclSynchronizer.flattenKafkaAcls(kafkaGroupedAcls)) shouldBe kafkaGroupedAcls
+    AclSynchronizer.flattenKafkaAcls(
+      AclSynchronizer.regroupAcls(kafkaFlattenedAcls)
+    ) shouldBe kafkaFlattenedAcls
+    AclSynchronizer.regroupAcls(
+      AclSynchronizer.flattenKafkaAcls(kafkaGroupedAcls)
+    ) shouldBe kafkaGroupedAcls
   }
 
   // modify dynamically?
@@ -50,7 +64,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
 
       val configs = Map(
-        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}"
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
@@ -58,8 +72,13 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val dummyNotification = new DummyNotification
       val aclParser = new CsvAclParser()
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser, false)
-
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        dummySourceAcl,
+        dummyNotification,
+        aclParser,
+        false
+      )
 
       // first iteration
       dummyNotification.reset()
@@ -67,7 +86,8 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 3
       dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+        simpleAclAuthorizer
+          .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
       // second iteration
@@ -76,7 +96,11 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 1
       dummyNotification.removedAcls.size shouldBe 1
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
+        simpleAclAuthorizer.getAcls() shouldBe Map(
+          res1 -> Set(acl1),
+          res2 -> Set(acl3),
+          res3 -> Set(acl2)
+        )
       }
 
       // third iteration
@@ -86,7 +110,11 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 0
       dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
+        simpleAclAuthorizer.getAcls() shouldBe Map(
+          res1 -> Set(acl1),
+          res2 -> Set(acl3),
+          res3 -> Set(acl2)
+        )
       }
 
       // fourth iteration
@@ -107,7 +135,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
 
       val configs = Map(
-        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}"
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
@@ -115,26 +143,36 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       val aclParser = new CsvAclParser()
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, new ConsoleNotification, aclParser)
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        dummySourceAcl,
+        new ConsoleNotification,
+        aclParser
+      )
 
       // first iteration
       aclSynchronizer.run()
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+        simpleAclAuthorizer
+          .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
-
 
       // changes to the ACLs through Kafka directly
       simpleAclAuthorizer.addAcls(Set(acl3, acl1), res3) // we add bad Acls
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         // wait for the bad Acls to settle in Kafka
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3), res3 -> Set(acl3, acl1))
+        simpleAclAuthorizer.getAcls() shouldBe Map(
+          res1 -> Set(acl1, acl2),
+          res2 -> Set(acl3),
+          res3 -> Set(acl3, acl1)
+        )
       }
       // apply KSM and see if Acls come back to normal
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         dummySourceAcl.setNoneNext()
         aclSynchronizer.run()
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+        simpleAclAuthorizer
+          .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
       aclSynchronizer.close()
@@ -142,22 +180,24 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
     }
   }
 
-
   "applySourcesAcls" should "do nothing as long as there are errors" in {
     withRunningKafka {
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
 
       val configs = Map(
-        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}"
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
       val dummySourceAcl = new DummySourceAcl
       val dummyNotification = new DummyNotification
 
-
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser)
-
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        dummySourceAcl,
+        dummyNotification,
+        aclParser
+      )
 
       // first iteration
       dummyNotification.reset()
@@ -165,7 +205,8 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 3
       dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+        simpleAclAuthorizer
+          .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
 
       // error iteration
@@ -176,9 +217,9 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.removedAcls.size shouldBe 0
       dummyNotification.errorCounter shouldBe 1
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
+        simpleAclAuthorizer
+          .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
-
 
       // second iteration
       dummyNotification.reset()
@@ -186,28 +227,35 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 1
       dummyNotification.removedAcls.size shouldBe 1
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        simpleAclAuthorizer.getAcls() shouldBe Map(res1 -> Set(acl1), res2 -> Set(acl3), res3 -> Set(acl2))
+        simpleAclAuthorizer.getAcls() shouldBe Map(
+          res1 -> Set(acl1),
+          res2 -> Set(acl3),
+          res3 -> Set(acl2)
+        )
       }
 
       aclSynchronizer.close()
     }
   }
 
-
   "getKafkaAcls" should "return all the Acls" in {
     withRunningKafka {
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
 
       val configs = Map(
-        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}"
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
       val dummySourceAcl = new DummySourceAcl
       val dummyNotification = new DummyNotification
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, dummySourceAcl, dummyNotification, aclParser)
-
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        dummySourceAcl,
+        dummyNotification,
+        aclParser
+      )
 
       // first iteration
 //      aclSynchronizer.run()
@@ -217,12 +265,15 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       dummyNotification.addedAcls.size shouldBe 3
       dummyNotification.removedAcls.size shouldBe 0
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
-        aclSynchronizer.getKafkaAcls shouldBe Set((res1, acl1), (res1, acl2), (res2, acl3))
+        aclSynchronizer.getKafkaAcls shouldBe Set(
+          (res1, acl1),
+          (res1, acl2),
+          (res2, acl3)
+        )
       }
       aclSynchronizer.close()
     }
   }
-
 
   "readOnlySource" should "never alter ACL" in {
 
@@ -230,7 +281,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
 
       val configs = Map(
-        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}",
+        "zookeeper.connect" -> s"localhost:${EmbeddedKafkaConfig.defaultConfig.zooKeeperPort}"
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
@@ -247,7 +298,13 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
 
       val dummyNotification = new DummyNotification
 
-      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(simpleAclAuthorizer, controlSourceAcl, dummyNotification, aclParser , readOnly = true)
+      val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
+        simpleAclAuthorizer,
+        controlSourceAcl,
+        dummyNotification,
+        aclParser,
+        readOnly = true
+      )
 
       simpleAclAuthorizer.addAcls(Set(acl1), res1)
 
