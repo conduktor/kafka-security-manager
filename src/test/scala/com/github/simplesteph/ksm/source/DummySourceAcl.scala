@@ -1,48 +1,52 @@
 package com.github.simplesteph.ksm.source
 
-import com.github.simplesteph.ksm.TestFixtures._
-import com.github.simplesteph.ksm.parser.AclParser
-import com.typesafe.config.Config
+import java.io.{Reader, StringReader}
 
-import scala.util.Try
+import com.github.simplesteph.ksm.TestFixtures._
+import com.github.simplesteph.ksm.parser.CsvAclParser
+import com.typesafe.config.Config
 
 class DummySourceAcl extends SourceAcl {
 
 
   var noneNext = false
   var errorNext = false
+  val csvAclParser: CsvAclParser = new CsvAclParser()
 
   // initial state
-  val sar1 = SourceAclResult(Set(
-    res1 -> acl1,
-    res1 -> acl2,
-    res2 -> acl3,
-  ), List())
+  val sar1 = Set(
+      res1 -> acl1,
+      res1 -> acl2,
+      res2 -> acl3,
+    )
+
+
 
   // one deletion, one add
-  val sar2 = SourceAclResult(Set(
-    res1 -> acl1,
-    res2 -> acl3,
-    res3 -> acl2
-  ), List())
+  val sar2 = Set(
+      res1 -> acl1,
+      res2 -> acl3,
+      res3 -> acl2
+    )
 
   // all gone
-  val sar3 = SourceAclResult(Set(), List())
+  val sar3 = Set()
 
   // all state changes
-  val sars: List[SourceAclResult] = List(sar1, sar2, sar3)
+  val sars = List(sar1, sar2, sar3)
   // a states iterator, shifting its position changes current state
-  private val sarsIterator: Iterator[SourceAclResult] = sars.iterator
+  private val sarsIterator = sars.iterator
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     if(noneNext){
       noneNext = false
       None
     } else if (errorNext) {
       errorNext = false
-      Some(SourceAclResult(Set((res1, acl1)),
-        List[Try[Throwable]](Try(new RuntimeException("triggered error")))))
-    } else Some(sarsIterator.next())
+      throw new RuntimeException("triggered error")
+    } else {
+      Some(new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList)))
+    }
   }
 
   def setNoneNext(): Unit ={

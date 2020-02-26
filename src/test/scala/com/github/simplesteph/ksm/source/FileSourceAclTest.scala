@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm.source
 
-import java.io.File
+import java.io.{File, Reader}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -38,7 +38,9 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
+    val reader = fileSourceAcl.refresh().get
+    csvlAclParser.aclsFromReader(reader).result shouldBe Right(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3))
+
   }
 
   "fileSourceAcl Refresh" should "correctly parse a file and then refresh after changes" in {
@@ -65,7 +67,9 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3), List()))
+    val reader1: Reader = fileSourceAcl.refresh().get
+    csvlAclParser.aclsFromReader(reader1).result shouldBe Right(Set(res1 -> acl1, res2 -> acl2, res3 -> acl3))
+    reader1.close()
 
     val content2 =
       """KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
@@ -76,8 +80,9 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     // we force the modification of the time of the file so that the test passes
     file.setLastModified(System.currentTimeMillis() + 10000)
 
-    fileSourceAcl.refresh(csvlAclParser) shouldBe Some(SourceAclResult(Set(res1 -> acl1), List()))
-
+    val reader2 = fileSourceAcl.refresh().get
+    csvlAclParser.aclsFromReader(reader2).result shouldBe Right(Set(res1 -> acl1))
+    reader2.close()
   }
 
 }

@@ -1,5 +1,7 @@
 package com.github.simplesteph.ksm
 
+import java.io.Reader
+
 import com.github.simplesteph.ksm.notification.{ConsoleNotification, DummyNotification}
 import com.github.simplesteph.ksm.parser.{AclParser, CsvAclParser}
 import com.github.simplesteph.ksm.source.{DummySourceAcl, SourceAcl, SourceAclResult}
@@ -236,7 +238,7 @@ class AclSynchronizerTest extends FlatSpec with EmbeddedKafka with Matchers with
         var refreshCalled = false
         override val CONFIG_PREFIX: String = ""
         override def configure(config: Config): Unit = {}
-        override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+        override def refresh(): Option[Reader] = {
           refreshCalled = true
           None
         }

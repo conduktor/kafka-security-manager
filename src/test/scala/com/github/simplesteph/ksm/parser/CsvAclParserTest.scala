@@ -47,9 +47,9 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     val res = csvAclParser.aclsFromReader(new StringReader(csv))
 
-    res.errs shouldBe List()
+    res.result.isRight shouldBe true
 
-    res.acls shouldBe Set(
+    res.result.right.get shouldBe Set(
       res1 -> acl1,
       res2 -> acl2,
       res3 -> acl3
@@ -78,17 +78,9 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     val res = csvAclParser.aclsFromReader(new StringReader(csv))
 
-    res.errs.size shouldBe 2
-    val throwable1 = res.errs.head.get
-    throwable1.getClass shouldBe classOf[CsvParserException]
-    throwable1.asInstanceOf[CsvParserException].printRow() should include("bob")
-
-    val throwable2 = res.errs.head.get
-    throwable2.getClass shouldBe classOf[CsvParserException]
-
-    res.acls shouldBe Set(
-      res1 -> acl1,
-    )
+    res.result.left.get.size shouldBe 2
+    val csvParserException = res.result.left.get.head
+    csvParserException.printRow() should include("bob")
 
   }
 
@@ -105,7 +97,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     val res = csvAclParser.aclsFromReader(new StringReader(csv))
 
-    res.errs.size shouldBe 3
+    res.result.left.get.size shouldBe 3
 
   }
 
@@ -161,9 +153,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
 
     val res = funnyCsvAclParser.aclsFromReader(new StringReader(csv))
 
-    res.errs shouldBe List()
-
-    res.acls shouldBe Set(
+    res.result.right.get shouldBe Set(
       res1 -> acl1,
       res2 -> acl2,
       res3 -> acl3

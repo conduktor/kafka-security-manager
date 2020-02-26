@@ -2,7 +2,7 @@ package com.github.simplesteph.ksm
 
 import com.github.simplesteph.ksm.notification.Notification
 import com.github.simplesteph.ksm.parser.AclParser
-import com.github.simplesteph.ksm.source.{SourceAcl, SourceAclResult}
+import com.github.simplesteph.ksm.source.SourceAcl
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -73,7 +73,7 @@ class AclSynchronizer(authorizer: Authorizer,
   def run(): Unit = if (!readOnly) {
     log.debug("Refreshing ACLs...")
     // parse the source of the ACL
-    Try(sourceAcl.refresh(aclParser)) match {
+    Try(sourceAcl.refresh()) match {
       case Success(result) =>
         result match {
           // the source has not changed
@@ -81,31 +81,39 @@ class AclSynchronizer(authorizer: Authorizer,
             if (sourceAclsCache != null) {
               // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
               applySourceAcls(sourceAclsCache,
-                              getKafkaAcls,
-                              notification,
-                              authorizer)
+                getKafkaAcls,
+                notification,
+                authorizer)
             }
-          // the source has changed
-          case Some(SourceAclResult(acls, errs)) =>
-            // normal execution
-            if (errs.isEmpty) {
-              // we have a new result, so we cache it
-              sourceAclsCache = acls
-              applySourceAcls(sourceAclsCache,
-                              getKafkaAcls,
-                              notification,
-                              authorizer)
-            } else {
-              try {
-                log.error("Exceptions while refreshing ACL source:")
-                notification.notifyErrors(errs)
-              } catch {
-                case _: Throwable => log.warn("Notifications module threw an exception, ignoring...")
-              }
+          case Some(reader) =>
+            val sourceAclResult = aclParser.aclsFromReader(reader)
+            reader.close()
+            sourceAclResult.result match {
+              // the source has changed
+              case Right(ksmAcls) =>
+                // we have a new result, so we cache it
+                sourceAclsCache = ksmAcls
+                applySourceAcls(sourceAclsCache,
+                getKafkaAcls,
+                notification,
+                authorizer)
+              case Left(parsingExceptions: List[Exception]) =>
+                // parsing exceptions we want to notify
+                log.error("Exceptions while refreshing ACL source:",
+                parsingExceptions.map(e => e.toString).mkString("\n"))
+                  // ugly but for now this will do
+                notification.notifyErrors(parsingExceptions.map(e => Try(throw e)))
             }
         }
       case Failure(e) =>
-        log.error("Refreshing the source failed", e)
+        // errors such as HTTP exceptions when refreshing
+        try {
+          log.error("Exceptions while refreshing ACL source:", e)
+          notification.notifyErrors(List(Try(e)))
+        } catch {
+          case _: Throwable => log.warn("Notifications module threw an exception, ignoring...")
+        }
+        log.error("Refreshing the source threw an unexpected exception", e)
     }
   }
 

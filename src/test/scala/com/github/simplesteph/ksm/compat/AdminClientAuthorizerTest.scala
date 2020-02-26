@@ -86,7 +86,7 @@ class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matcher
     timeout = 3000.milliseconds, interval = 200 milliseconds
   )
 
-  "syncronizer with AdminClient based authorizer" should "synchronize acls properly" in {
+  "synchronize with AdminClient based authorizer" should "synchronize acls properly" in {
     withJaasSystemConfiguration {
       withRunningKafka {
         val synchronizer = newSynchronizer
@@ -98,7 +98,7 @@ class AdminClientAuthorizerTest extends FlatSpec with EmbeddedKafka with Matcher
           sourceAclResult => {
             synchronizer.run()
             eventually {
-              synchronizer.getKafkaAcls shouldBe sourceAclResult.acls
+              synchronizer.getKafkaAcls shouldBe sourceAclResult
             }
           }
         )

@@ -68,6 +68,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
     (resource, acl)
   }
 
+  case class ParserError(data: String, errorMessage: String )
+
   /**
     * Parses all the ACL as provided by the reader that wraps the CSV content
     *
@@ -78,16 +80,24 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
     val csv = CSVReader.open(reader).allWithHeaders().filter(_.nonEmpty)
 
     // parse the CSV
-    val parsed: immutable.List[Try[(Resource, Acl)]] = csv.map(row =>
-      Try {
-        parseRow(row)
-      }.recoverWith[(Resource, Acl)] {
-        case (t: Throwable) => Try(throw new CsvParserException(row, t))
-    })
+    val parsed: List[Either[CsvParserException, (Resource, Acl)]] = csv.map {
+      row => try {
+        Right(parseRow(row))
+      } catch {
+        case e: Exception =>
+          Left(new CsvParserException(row, e))
+      }
+    }
 
-    val acls = parsed.filter(_.isSuccess).map(_.get).toSet
-    val errors = parsed.filter(_.isFailure).map(_.failed)
-    SourceAclResult(acls, errors)
+    val errors: List[CsvParserException] = parsed.filter(_.isLeft).map(_.left.get)
+    if (errors.nonEmpty){
+      // return all the parsing exceptions
+      SourceAclResult(Left(errors))
+    } else {
+      // return all the successfully parsed rows
+      val acls = parsed.filter(_.isRight).map(_.right.get).toSet
+      SourceAclResult(Right(acls))
+    }
   }
 
   def asCsv(r: Resource, a: Acl): String = {

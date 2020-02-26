@@ -1,16 +1,13 @@
 package com.github.simplesteph.ksm.source
 
-import java.io.StringReader
+import java.io.{Reader, StringReader}
 import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
-
-import scala.util.Try
 
 class BitbucketServerSourceAcl extends SourceAcl {
 
@@ -53,7 +50,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
     password = config.getString(AUTH_PASSWORD_CONFIG)
   }
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     // get changes since last commit
     val url = s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
     val request: Request = new Request(url)
@@ -83,40 +80,20 @@ class BitbucketServerSourceAcl extends SourceAcl {
               // update the last commit id
               lastCommit = Some(values.get(0).get("id").asText())
               val data = fileResponse.textBody
-              Some(aclParser.aclsFromReader(new StringReader(data)))
+              Some(new StringReader(data))
             case _ =>
               // throw error as you can't retrieve the file
-              throwError(fileResponse)
+              log.warn(response.asString)
+              throw HTTPException(Some(response.asString), response)
           }
         } else {
           None
         }
-      case 400 =>
-        // One of the supplied commit IDs or refs was invalid.
-        throwError(response)
-      case 401 =>
-        // authentication error
-        throw HTTPException(Some("Authentication exception"), response)
-      case 403 =>
-        // unauthorized
-        throwError(response)
-      case 404 =>
-        // The repository does not exist.
-        throwError(response)
       case _ =>
         // uncaught error
-        throwError(response)
+        log.warn(response.asString)
+        throw HTTPException(Some(response.asString), response)
     }
-  }
-
-  def throwError(response: Response): Option[SourceAclResult] = {
-    // we got an http error so we propagate it
-    log.warn(response.asString)
-    Some(
-      SourceAclResult(
-        Set(),
-        List(Try(
-          throw HTTPException(Some("Failure to fetch file"), response)))))
   }
 
   /**

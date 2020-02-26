@@ -45,7 +45,7 @@ class BitbucketCloudSourceAcl extends SourceAcl {
     password = config.getString(AUTH_PASSWORD_CONFIG)
   }
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
@@ -60,36 +60,12 @@ class BitbucketCloudSourceAcl extends SourceAcl {
         // we receive a valid response
         val reader = new BufferedReader(
           new StringReader(response.textBody))
-        val res = aclParser.aclsFromReader(reader)
-        reader.close()
-        Some(res)
-
-      case 400 =>
-        // One of the supplied commit IDs or refs was invalid.
-        throwError(response)
-      case 401 =>
-        // authentication error
-        throw HTTPException(Some("Authentication exception"), response)
-      case 403 =>
-        // unauthorized
-        throwError(response)
-      case 404 =>
-        // The repository does not exist.
-        throwError(response)
+        Some(reader)
       case _ =>
         // uncaught error
-        throwError(response)
+        log.warn(response.asString)
+        throw HTTPException(Some(response.asString), response)
     }
-  }
-
-  def throwError(response: Response): Option[SourceAclResult] = {
-    // we got an http error so we propagate it
-    log.warn(response.asString)
-    Some(
-      SourceAclResult(
-        Set(),
-        List(Try(
-          throw HTTPException(Some("Failure to fetch file"), response)))))
   }
 
   /**

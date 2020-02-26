@@ -48,7 +48,7 @@ class S3SourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh: Option[Reader] = {
     val s3Client =
       AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
     val s3object = Option(
@@ -60,10 +60,8 @@ class S3SourceAcl extends SourceAcl {
         val reader = new BufferedReader(
           new InputStreamReader(bucket.getObjectContent))
         lastModified = bucket.getObjectMetadata.getLastModified
-        val res = aclParser.aclsFromReader(reader)
-        reader.close()
         bucket.close()
-        Some(res)
+        Some(reader)
       case None => None
     }
   }

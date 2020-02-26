@@ -1,6 +1,6 @@
 package com.github.simplesteph.ksm.source
 
-import java.io.StringReader
+import java.io.{Reader, StringReader}
 import java.nio.charset.Charset
 import java.util.Base64
 
@@ -42,7 +42,7 @@ class GitLabSourceAcl extends SourceAcl {
     accessToken = config.getString(ACCESSTOKEN_CONFIG)
   }
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -71,15 +71,11 @@ class GitLabSourceAcl extends SourceAcl {
                 b64encodedContent.replace("\n", "").replace("\r", "")),
               Charset.forName("UTF-8"))
             // use the CSV Parser
-            Some(aclParser.aclsFromReader(new StringReader(data)))
+            Some(new StringReader(data))
           case _ =>
             // we got an http error so we propagate it
             log.warn(response.asString)
-            Some(
-              SourceAclResult(
-                Set(),
-                List(Try(
-                  throw HTTPException(Some("Failure to fetch file"), response)))))
+            throw new HTTPException(Some(response.asString), response)
         }
     }
   }

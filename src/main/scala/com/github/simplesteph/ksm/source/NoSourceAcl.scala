@@ -1,4 +1,6 @@
 package com.github.simplesteph.ksm.source
+import java.io.Reader
+
 import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 
@@ -25,7 +27,7 @@ class NoSourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = None
+  override def refresh(): Option[Reader] = None
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance
