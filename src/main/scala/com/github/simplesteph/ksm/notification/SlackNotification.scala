@@ -87,7 +87,8 @@ class SlackNotification extends Notification {
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
 
     val messages = errs.map {
-      case Failure(cPE: CsvParserException) => s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}"
+      case Failure(cPE: CsvParserException) =>
+        s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}"
       case Success(t) => s"refresh exception: ${t.getLocalizedMessage}"
       case Failure(t) => s"refresh exception: ${t.getLocalizedMessage}"
     }

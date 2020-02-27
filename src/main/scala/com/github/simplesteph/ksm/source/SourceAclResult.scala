@@ -1,13 +1,19 @@
 package com.github.simplesteph.ksm.source
 
+import com.github.simplesteph.ksm.parser.CsvParserException
+import com.github.simplesteph.ksm.source.SourceAclResult.{
+  ksmAcls,
+  ParsingExceptions
+}
 import kafka.security.auth.{Acl, Resource}
 
-import scala.util.Try
+object SourceAclResult {
+  type ksmAcls = Set[(Resource, Acl)]
+  type ParsingExceptions = List[CsvParserException]
+}
 
 /**
   * Case Class that wraps a complicated result
-  * @param acls Set of successfully parsed ACLs
-  * @param errs List of errors that were caught during processing
+  * @param result Set of successfully parsed ACLs, or exceptions
   */
-case class SourceAclResult(acls: Set[(Resource, Acl)],
-                           errs: List[Try[Throwable]])
+case class SourceAclResult(result: Either[ParsingExceptions, ksmAcls])

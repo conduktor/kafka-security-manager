@@ -8,7 +8,12 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
-import java.util.concurrent.{ExecutionException, Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{
+  ExecutionException,
+  Executors,
+  ScheduledExecutorService,
+  TimeUnit
+}
 
 object KafkaSecurityManager extends App {
 
@@ -26,17 +31,21 @@ object KafkaSecurityManager extends App {
   if (appConfig.KSM.extract) {
     new ExtractAcl(appConfig.Authorizer.authorizer, aclParser).extract()
   } else {
-    aclSynchronizer = new AclSynchronizer(appConfig.Authorizer.authorizer,
-                                          appConfig.Source.sourceAcl,
-                                          appConfig.Notification.notification,
-                                          aclParser,
-                                          appConfig.KSM.readOnly)
+    aclSynchronizer = new AclSynchronizer(
+      appConfig.Authorizer.authorizer,
+      appConfig.Source.sourceAcl,
+      appConfig.Notification.notification,
+      aclParser,
+      appConfig.KSM.readOnly
+    )
 
     Try {
-      grpcServer = new KsmGrpcServer(aclSynchronizer,
-                                     appConfig.GRPC.port,
-                                     appConfig.GRPC.gatewayPort,
-                                     appConfig.Feature.grpc)
+      grpcServer = new KsmGrpcServer(
+        aclSynchronizer,
+        appConfig.GRPC.port,
+        appConfig.GRPC.gatewayPort,
+        appConfig.Feature.grpc
+      )
       grpcServer.start()
     } match {
       case Success(_) =>
@@ -51,19 +60,25 @@ object KafkaSecurityManager extends App {
         shutdown()
       }
     })
-    
+
     try {
       //if appConfig.KSM.refreshFrequencyMs is equal or less than 0 the aclSyngronizer is run just once.
-      if(appConfig.KSM.refreshFrequencyMs <= 0){
+      if (appConfig.KSM.refreshFrequencyMs <= 0) {
         log.info("Single run mode: ACL will be synchornized once.")
         aclSynchronizer.run()
       } else {
-        log.info("Continuous mode: ACL will be synchronized every "+ appConfig.KSM.refreshFrequencyMs +" ms.")
-        val handle = scheduler.scheduleAtFixedRate(aclSynchronizer, 0, appConfig.KSM.refreshFrequencyMs, TimeUnit.MILLISECONDS)
+        log.info(
+          "Continuous mode: ACL will be synchronized every " + appConfig.KSM.refreshFrequencyMs + " ms."
+        )
+        val handle = scheduler.scheduleAtFixedRate(
+          aclSynchronizer,
+          0,
+          appConfig.KSM.refreshFrequencyMs,
+          TimeUnit.MILLISECONDS
+        )
         handle.get
       }
-    }
-    catch {
+    } catch {
       case e: ExecutionException =>
         log.error("unexpected exception", e)
     } finally {

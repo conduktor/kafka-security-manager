@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
-class KsmGrpcServer(aclSynchronizer: AclSynchronizer,
-                    port: Int,
-                    gatewayPort: Int,
-                    enabled: Boolean) {
+class KsmGrpcServer(
+    aclSynchronizer: AclSynchronizer,
+    port: Int,
+    gatewayPort: Int,
+    enabled: Boolean
+) {
 
   val log = LoggerFactory.getLogger(KsmServiceGrpc.getClass)
 
@@ -28,7 +30,8 @@ class KsmGrpcServer(aclSynchronizer: AclSynchronizer,
         .forPort(port)
         .addService(ProtoReflectionService.newInstance())
         .addService(
-          KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ec))
+          KsmServiceGrpc.bindService(new KsmServiceImpl(aclSynchronizer), ec)
+        )
         .build()
       server.start()
       log.info(s"gRPC Server started on port $port")

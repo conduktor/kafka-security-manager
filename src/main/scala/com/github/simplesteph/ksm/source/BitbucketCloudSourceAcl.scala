@@ -4,12 +4,9 @@ import java.io._
 import java.nio.charset.Charset
 import java.util.Base64
 
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
-
-import scala.util.Try
 
 class BitbucketCloudSourceAcl extends SourceAcl {
 
@@ -45,51 +42,30 @@ class BitbucketCloudSourceAcl extends SourceAcl {
     password = config.getString(AUTH_PASSWORD_CONFIG)
   }
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
 
     // add authentication header
-    val basicB64 = Base64.getEncoder.encodeToString(s"$username:$password".getBytes(Charset.forName("UTF-8")))
+    val basicB64 = Base64.getEncoder.encodeToString(
+      s"$username:$password".getBytes(Charset.forName("UTF-8"))
+    )
     request.header("Authorization", s"Basic $basicB64")
 
     val response: Response = HTTP.get(request)
     response.status match {
       case 200 =>
         // we receive a valid response
-        val reader = new BufferedReader(
-          new StringReader(response.textBody))
-        val res = aclParser.aclsFromReader(reader)
-        reader.close()
-        Some(res)
-
-      case 400 =>
-        // One of the supplied commit IDs or refs was invalid.
-        throwError(response)
-      case 401 =>
-        // authentication error
-        throw HTTPException(Some("Authentication exception"), response)
-      case 403 =>
-        // unauthorized
-        throwError(response)
-      case 404 =>
-        // The repository does not exist.
-        throwError(response)
+        val reader = new BufferedReader(new StringReader(response.textBody))
+        Some(reader)
       case _ =>
         // uncaught error
-        throwError(response)
+        log.warn(response.asString)
+        throw HTTPException(Some(response.asString), response)
     }
-  }
-
-  def throwError(response: Response): Option[SourceAclResult] = {
-    // we got an http error so we propagate it
-    log.warn(response.asString)
-    Some(
-      SourceAclResult(
-        Set(),
-        List(Try(
-          throw HTTPException(Some("Failure to fetch file"), response)))))
   }
 
   /**

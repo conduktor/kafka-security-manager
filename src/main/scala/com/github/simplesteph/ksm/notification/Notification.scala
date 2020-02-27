@@ -22,8 +22,10 @@ trait Notification {
     * @param added ACLs that have been added
     * @param removed ACLs that have been removed
     */
-  def notifySuccess(added: Set[(Resource, Acl)],
-                    removed: Set[(Resource, Acl)]): Unit = {
+  def notifySuccess(
+      added: Set[(Resource, Acl)],
+      removed: Set[(Resource, Acl)]
+  ): Unit = {
     notifyOne("ADDED", added)
     notifyOne("REMOVED", removed)
   }

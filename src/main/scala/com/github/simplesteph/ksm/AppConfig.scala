@@ -17,7 +17,7 @@ class AppConfig(config: Config) {
       CoreUtils.createObject[Authorizer](authorizerClass)
 
     private val authorizerConfig = config.getConfig(
-      if (authorizer.isInstanceOf[compat.AdminClientAuthorizer]){
+      if (authorizer.isInstanceOf[compat.AdminClientAuthorizer]) {
         "authorizer.admin-client-config"
       } else {
         "authorizer.config"
@@ -61,7 +61,8 @@ class AppConfig(config: Config) {
 
   object Parser {
     private val aclParserConfig = config.getConfig("parser")
-    val csvDelimiter: Char = aclParserConfig.getString("csv.delimiter").charAt(0)
+    val csvDelimiter: Char =
+      aclParserConfig.getString("csv.delimiter").charAt(0)
   }
 
   object GRPC {

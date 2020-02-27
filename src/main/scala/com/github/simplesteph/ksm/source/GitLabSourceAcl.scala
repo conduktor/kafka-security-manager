@@ -1,16 +1,13 @@
 package com.github.simplesteph.ksm.source
 
-import java.io.StringReader
+import java.io.{Reader, StringReader}
 import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
-
-import scala.util.Try
 
 class GitLabSourceAcl extends SourceAcl {
 
@@ -42,10 +39,12 @@ class GitLabSourceAcl extends SourceAcl {
     accessToken = config.getString(ACCESSTOKEN_CONFIG)
   }
 
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
 
     // auth header
     request.header("PRIVATE-TOKEN", s" $accessToken")
@@ -57,7 +56,9 @@ class GitLabSourceAcl extends SourceAcl {
 
     lastModified match {
       case `commitId` =>
-        log.info(s"No changes were detected in the ACL file ${filepath}. Skipping .... ")
+        log.info(
+          s"No changes were detected in the ACL file ${filepath}. Skipping .... "
+        )
         None
       case _ =>
         val response: Response = HTTP.get(request)
@@ -67,19 +68,16 @@ class GitLabSourceAcl extends SourceAcl {
             lastModified = Some(responseJSON.get("commit_id").asText())
             val b64encodedContent = responseJSON.get("content").asText()
             val data = new String(
-              Base64.getDecoder.decode(
-                b64encodedContent.replace("\n", "").replace("\r", "")),
-              Charset.forName("UTF-8"))
+              Base64.getDecoder
+                .decode(b64encodedContent.replace("\n", "").replace("\r", "")),
+              Charset.forName("UTF-8")
+            )
             // use the CSV Parser
-            Some(aclParser.aclsFromReader(new StringReader(data)))
+            Some(new StringReader(data))
           case _ =>
             // we got an http error so we propagate it
             log.warn(response.asString)
-            Some(
-              SourceAclResult(
-                Set(),
-                List(Try(
-                  throw HTTPException(Some("Failure to fetch file"), response)))))
+            throw new HTTPException(Some(response.asString), response)
         }
     }
   }

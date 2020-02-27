@@ -23,14 +23,17 @@ case class ConsoleNotification() extends Notification {
 
   override def notifyErrors(errs: List[Try[Throwable]]): Unit = {
     errs.foreach {
-      case Failure(cPE: CsvParserException) => log.error(s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}")
+      case Failure(cPE: CsvParserException) =>
+        log.error(s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}")
       case Success(t) => log.error("refresh exception", t)
       case Failure(t) => log.error("refresh exception", t)
     }
   }
 
-  override protected def notifyOne(action: String,
-                                   acls: Set[(Resource, Acl)]): Unit = {
+  override protected def notifyOne(
+      action: String,
+      acls: Set[(Resource, Acl)]
+  ): Unit = {
     if (acls.nonEmpty) {
       acls.foreach {
         case (resource, acl) =>

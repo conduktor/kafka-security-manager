@@ -6,7 +6,6 @@ import java.util.Date
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3._
 import com.amazonaws.services.s3.model._
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 
@@ -48,22 +47,24 @@ class S3SourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(aclParser: AclParser): Option[SourceAclResult] = {
+  override def refresh(): Option[Reader] = {
     val s3Client =
       AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
     val s3object = Option(
-      s3Client.getObject(new GetObjectRequest(bucket, key)
-        .withModifiedSinceConstraint(lastModified)))
+      s3Client.getObject(
+        new GetObjectRequest(bucket, key)
+          .withModifiedSinceConstraint(lastModified)
+      )
+    )
     // Null is returned when S3 responds with 304 Not Modified
     s3object match {
       case Some(bucket) =>
         val reader = new BufferedReader(
-          new InputStreamReader(bucket.getObjectContent))
+          new InputStreamReader(bucket.getObjectContent)
+        )
         lastModified = bucket.getObjectMetadata.getLastModified
-        val res = aclParser.aclsFromReader(reader)
-        reader.close()
         bucket.close()
-        Some(res)
+        Some(reader)
       case None => None
     }
   }
