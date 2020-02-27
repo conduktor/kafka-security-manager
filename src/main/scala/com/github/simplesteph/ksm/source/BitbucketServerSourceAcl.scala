@@ -55,6 +55,9 @@ class BitbucketServerSourceAcl extends SourceAcl {
     val url =
       s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
+
     request.queryParam("path", filePath)
     // optionally add the last commit if available
     lastCommit.foreach(s => request.queryParam("since", s))

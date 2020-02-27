@@ -5,7 +5,6 @@ import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
@@ -52,6 +51,8 @@ class GitHubSourceAcl extends SourceAcl {
     val url =
       s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
 
     // authentication if present
     basicOpt.foreach(basic => {

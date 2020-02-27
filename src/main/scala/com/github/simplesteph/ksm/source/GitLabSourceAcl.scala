@@ -5,12 +5,9 @@ import java.nio.charset.Charset
 import java.util.Base64
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
-
-import scala.util.Try
 
 class GitLabSourceAcl extends SourceAcl {
 
@@ -46,6 +43,8 @@ class GitLabSourceAcl extends SourceAcl {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
 
     // auth header
     request.header("PRIVATE-TOKEN", s" $accessToken")

@@ -4,12 +4,9 @@ import java.io._
 import java.nio.charset.Charset
 import java.util.Base64
 
-import com.github.simplesteph.ksm.parser.AclParser
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
-
-import scala.util.Try
 
 class BitbucketCloudSourceAcl extends SourceAcl {
 
@@ -49,6 +46,8 @@ class BitbucketCloudSourceAcl extends SourceAcl {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
+    // super important in order to properly fail in case a timeout happens for example
+    request.enableThrowingIOException(true)
 
     // add authentication header
     val basicB64 = Base64.getEncoder.encodeToString(
