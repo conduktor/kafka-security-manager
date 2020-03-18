@@ -23,9 +23,11 @@ class BitbucketServerSourceAcl extends SourceAcl {
   final val FILEPATH_CONFIG = "filepath"
   final val AUTH_USERNAME_CONFIG = "auth.username"
   final val AUTH_PASSWORD_CONFIG = "auth.password"
+  final val BRANCH_CONFIG = "branch"
 
   var lastCommit: Option[String] = None
   val objectMapper = new ObjectMapper()
+  var http: HTTP = HTTP
 
   var hostname: String = _
   var port: String = _
@@ -35,6 +37,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
   var filePath: String = _
   var username: String = _
   var password: String = _
+  var branch: Option[String] = _
 
   /**
     * internal config definition for the module
@@ -48,6 +51,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
     filePath = config.getString(FILEPATH_CONFIG)
     username = config.getString(AUTH_USERNAME_CONFIG)
     password = config.getString(AUTH_PASSWORD_CONFIG)
+    branch = Option(config.getString(BRANCH_CONFIG))
   }
 
   override def refresh(): Option[Reader] = {
@@ -57,6 +61,10 @@ class BitbucketServerSourceAcl extends SourceAcl {
     val request: Request = new Request(url)
     // super important in order to properly fail in case a timeout happens for example
     request.enableThrowingIOException(true)
+
+    if (branch.isDefined) {
+      request.queryParam("until", branch.get)
+    }
 
     request.queryParam("path", filePath)
     // optionally add the last commit if available
@@ -68,7 +76,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
     )
     request.header("Authorization", s"Basic $basicB64")
 
-    val response: Response = HTTP.get(request)
+    val response: Response = http.get(request)
     response.status match {
       case 200 =>
         // we receive a valid response
@@ -80,8 +88,11 @@ class BitbucketServerSourceAcl extends SourceAcl {
             s"$protocol://$hostname:$port/projects/$project/repos/$repo/browse/$filePath?raw"
 
           val fileRetrievalRequest = new Request(rawRetrieveUrl)
+          if (branch.isDefined) {
+            fileRetrievalRequest.queryParam("at", branch.get)
+          }
           fileRetrievalRequest.header("Authorization", s"Basic $basicB64")
-          val fileResponse = HTTP.get(fileRetrievalRequest)
+          val fileResponse = http.get(fileRetrievalRequest)
           fileResponse.status match {
             case 200 =>
               // update the last commit id
