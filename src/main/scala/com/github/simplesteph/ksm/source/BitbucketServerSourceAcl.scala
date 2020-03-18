@@ -51,7 +51,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
     filePath = config.getString(FILEPATH_CONFIG)
     username = config.getString(AUTH_USERNAME_CONFIG)
     password = config.getString(AUTH_PASSWORD_CONFIG)
-    branch = Option(config.getString(BRANCH_CONFIG))
+    branch = Option().filter({ _ => config.hasPath(BRANCH_CONFIG)}).map({_ => config.getString(BRANCH_CONFIG)})
   }
 
   override def refresh(): Option[Reader] = {
