@@ -62,9 +62,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
     // super important in order to properly fail in case a timeout happens for example
     request.enableThrowingIOException(true)
 
-    if (branch.isDefined) {
-      request.queryParam("until", branch.get)
-    }
+    branch.foreach(it => request.queryParam("until", it))
 
     request.queryParam("path", filePath)
     // optionally add the last commit if available
@@ -88,9 +86,7 @@ class BitbucketServerSourceAcl extends SourceAcl {
             s"$protocol://$hostname:$port/projects/$project/repos/$repo/browse/$filePath?raw"
 
           val fileRetrievalRequest = new Request(rawRetrieveUrl)
-          if (branch.isDefined) {
-            fileRetrievalRequest.queryParam("at", branch.get)
-          }
+          branch.foreach(it => fileRetrievalRequest.queryParam("at", it))
           fileRetrievalRequest.header("Authorization", s"Basic $basicB64")
           val fileResponse = http.get(fileRetrievalRequest)
           fileResponse.status match {
