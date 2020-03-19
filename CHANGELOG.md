@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.9 - SNAPSHOT]
 - TODO: Upgrade to Kafka 2.4.x (PR welcome)
 - Added Bitbucket Cloud as an ACL source
+- Added Branch parameter for Bitbucket Server ACL Source
 - Added GitLab as an ACL souce
 - Massive refactor to better handle refresh and parsing exceptions
 
