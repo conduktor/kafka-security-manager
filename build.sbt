@@ -75,3 +75,10 @@ PB.targets in Compile := Seq(
 
 // Add the default sonatype repository setting
 publishTo := sonatypePublishTo.value
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", _ @ _*) => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}
+
+assemblyJarName in assembly := s"${name.value}-${version.value}.jar"

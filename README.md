@@ -8,7 +8,7 @@ Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by le
 
 There are several advantages to this:
 - **Kafka administration is done outside of Kafka:** anyone with access to the external ACL source can manage Kafka Security
-- **Prevents intruders:** if someone were to add ACLs to Kafka using the CLI, they would be reverted by KSM within 10 seconds. 
+- **Prevents intruders:** if someone were to add ACLs to Kafka using the CLI, they would be reverted by KSM within 10 seconds.
 - **Full auditability:** KSM provides the guarantee that ACLs in Kafka are those in the external source. Additionally, if for example your external source is GitHub, then PRs, PR approvals and commit history will provide Audit the full log of who did what to the ACLs and when
 - **Notifications**: KSM can notify external channels (such as Slack) in order to give feedback to admins when ACLs are changed. This is particularly useful to ensure that 1) ACL changes are correctly applied 2) ACL are not changed in Kafka directly.
 
@@ -20,7 +20,7 @@ KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Ho
 User:alice,Topic,LITERAL,foo,Read,Allow,*
 User:bob,Group,bar,PREFIXED,Write,Deny,12.34.56.78
 User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
-``` 
+```
 
 **Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
 
@@ -34,11 +34,14 @@ Current sources shipping with KSM include:
 
 # Building
 
-``` 
+```
 sbt clean test
 sbt universal:stage
 ```
-
+Fat JAR:
+```
+sbt clean assembly
+```
 This is a Scala app and therefore should run on the JVM like any other application
 
 # Artifacts
@@ -54,18 +57,18 @@ RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#sear
 libraryDependencies += "com.github.simplesteph" %% "kafka-security-manager" % "version"
 ```
 
-# Configuration 
+# Configuration
 
 ## Security configuration - Zookeeper client
 
-Make sure the app is using a property file and launch options similar to your broker so that it can 
+Make sure the app is using a property file and launch options similar to your broker so that it can
 1. Authenticate to Zookeeper using secure credentials (usually done with JAAS)
 2. Apply Zookeeper ACL if enabled
 
-*Kafka Security Manager does not connect to Kafka.* 
+*Kafka Security Manager does not connect to Kafka.*
 
 Sample run for a typical SASL Setup:
-``` 
+```
 target/universal/stage/bin/kafka-security-manager -Djava.security.auth.login.config=conf/jaas.conf
 ```
 
@@ -101,7 +104,7 @@ target/universal/stage/bin/kafka-security-manager -Dconfig.file=path/to/config-f
 
 Overall we use the [lightbend config](https://github.com/lightbend/config) library to configure this project.
 
-## Environment variables 
+## Environment variables
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
@@ -110,7 +113,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 - `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
   - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
   - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
-  
+
   No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
   configured with options for `org.apache.kafka.clients.admin.AdminClientConfig`:
   - `ADMIN_CLIENT_ID` - `client.id`, an id to pass to the server when making requests, for tracing/audit purposes, default `kafka-security-manager`
@@ -142,7 +145,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
     - `com.github.simplesteph.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
     - `com.github.simplesteph.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
-- `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka. 
+- `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
 - `ACL_PARSER_CSV_DELIMITER`: Change the delimiter character for the CSV Parser (useful when you have SSL)
@@ -170,7 +173,7 @@ docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRA
             simplesteph/kafka-security-manager:latest
 ```
 
-Any of the environment variables described above can be used by the docker run command with the `-e ` options. 
+Any of the environment variables described above can be used by the docker run command with the `-e ` options.
 
 ## Example
 
@@ -199,13 +202,13 @@ User:alice,Topic,LITERAL,foo,Read,Allow,*
 User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ```
 
-You can then use place this CSV anywhere and use it as your source of truth. 
+You can then use place this CSV anywhere and use it as your source of truth.
 
 # External API
 To activate this feature, set `FEATURE_GRPC=true`.
 
 ## gRPC Endpoint
-Kafka Security Manager exposes a GRPC endpoint to be consumed by external systems. The use case is to build a UI on top of KSM or some level of automation. 
+Kafka Security Manager exposes a GRPC endpoint to be consumed by external systems. The use case is to build a UI on top of KSM or some level of automation.
 
 By default KSM binds to port 50051, but you can configure this using the `GRPC_PORT` environment variable.
 
@@ -225,8 +228,8 @@ TODO: Mention to look for inter broker protocol version before doing this
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-0.9-SNAPSHOT | 2.3.1 | TODO: Upgrade to Kafka 2.4.x (PR welcome) 
-0.8 | 2.3.1 | Add a "run once" mode 
+0.9-SNAPSHOT | 2.3.1 | TODO: Upgrade to Kafka 2.4.x (PR welcome)
+0.8 | 2.3.1 | Add a "run once" mode
 0.7 | 2.1.1 | Kafka Based ACL refresher available (no zookeeper dependency)
 0.6 | 2.0.0 | important stability fixes - please update
 0.5 | 2.0.0 |
@@ -237,11 +240,11 @@ KSM Version | Kafka Version | Notes
 
 # Contributing
 
-You can break the API / configs as long as we haven't reached 1.0. Each API break would introduce a new version number. 
+You can break the API / configs as long as we haven't reached 1.0. Each API break would introduce a new version number.
 
 PRs are welcome, especially with the following:
 - Code refactoring  / cleanup / renaming
 - External Sources for ACLs (JDBC, Microsoft AD, etc...)
-- Notification Channels (Email, etc...) 
+- Notification Channels (Email, etc...)
 
 Please open an issue before opening a PR.
