@@ -2,7 +2,7 @@ name := "kafka-security-manager"
 
 organization := "com.github.simplesteph.ksm"
 
-version := "0.9-SNAPSHOT"
+version := "0.10-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
@@ -52,7 +52,12 @@ libraryDependencies ++= Seq(
   "beyondthelines" %% "grpcgatewayruntime" % "0.0.9" % "compile,protobuf",
 
   // AWS SDK to access S3
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.385"
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.385",
+
+  //Google Cloud Secret Manager
+  "com.google.cloud" % "google-cloud-secretmanager" % "1.0.1",
+
+  "com.google.api" % "gax-grpc" % "1.56.0"
 
 )
 
