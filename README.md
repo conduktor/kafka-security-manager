@@ -146,7 +146,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
     - `com.github.simplesteph.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
     - `com.github.simplesteph.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
-    - `com.github.simplesteph.ksm.source.GoogleSecretManagerAcl`: get teh ACL from Google Secret Manager using Google Cloud SDK. This requires `projectid` and `label_filter`:
+    - `com.github.simplesteph.ksm.source.GoogleSecretManagerAcl`: get the ACL from Google Secret Manager using Google Cloud SDK. You can store ACL contents in many secrets as you want (secrets contents are limited in 64kb) and filter it using labels. Use the same ACL CSV layout and **do not include** the Header. This requires `projectid` and `label_filter`:
       - `SOURCE_GCP_PROJECTID`: GCP Project ID
       - `SOURCE_GCP_LABEL_FILTER`: You can filter Secrets using the format: `label=value,label2=value`
       - `GOOGLE_APPLICATION_CREDENTIALS`: One option to configure your GCP credentials. More information: [GCP Authentication](https://cloud.google.com/docs/authentication/getting-started)
