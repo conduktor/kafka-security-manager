@@ -147,8 +147,9 @@ The [default configurations](src/main/resources/application.conf) can be overwri
     - `com.github.simplesteph.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
     - `com.github.simplesteph.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
     - `com.github.simplesteph.ksm.source.GoogleSecretManagerAcl`: get teh ACL from Google Secret Manager using Google Cloud SDK. This requires `projectid` and `label_filter`:
-      - `SOURCE_GCP_PROJECTID` GCP Project ID
-      - `SOURCE_GCP_LABEL_FILTER` You can filter Secrets using the format: `label=value,label2=value` 
+      - `SOURCE_GCP_PROJECTID`: GCP Project ID
+      - `SOURCE_GCP_LABEL_FILTER`: You can filter Secrets using the format: `label=value,label2=value`
+      - `GOOGLE_APPLICATION_CREDENTIALS`: One option to configure your GCP credentials. More information: [GCP Authentication](https://cloud.google.com/docs/authentication/getting-started)
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
     - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
