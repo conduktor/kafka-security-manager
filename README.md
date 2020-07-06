@@ -18,7 +18,7 @@ A sample CSV to manage ACL is:
 ```
 KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
 User:alice,Topic,LITERAL,foo,Read,Allow,*
-User:bob,Group,bar,PREFIXED,Write,Deny,12.34.56.78
+User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
 User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ```
 
