@@ -3,7 +3,7 @@ package com.github.simplesteph.ksm.compat
 import java.util
 
 import kafka.network.RequestChannel
-import kafka.security.SecurityUtils
+import kafka.security.authorizer.AuthorizerWrapper
 import kafka.security.auth.{
   Acl,
   Authorizer,
@@ -41,7 +41,7 @@ trait AdminClientAuthorizerBase extends Authorizer {
   override def addAcls(acls: Set[Acl], resource: Resource): Unit =
     client
       .createAcls(
-        acls.map(acl => SecurityUtils.convertToAclBinding(resource, acl)).asJava
+        acls.map(acl => AuthorizerWrapper.convertToAclBinding(resource, acl)).asJava
       )
       .all()
       .get()
@@ -50,7 +50,7 @@ trait AdminClientAuthorizerBase extends Authorizer {
     !client
       .deleteAcls(
         acls
-          .map(acl => SecurityUtils.convertToAclBinding(resource, acl).toFilter)
+          .map(acl => AuthorizerWrapper.convertToAclBinding(resource, acl).toFilter)
           .asJava
       )
       .all()
