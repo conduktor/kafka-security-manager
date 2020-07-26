@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   // kafka
   "org.apache.kafka" %% "kafka" % "2.5.0",
   "io.github.embeddedkafka" %% "embedded-kafka" % "2.5.0" % "test",
+  "io.findify" %% "s3mock" % "0.2.6" % "test",
 
   "org.apache.kafka" % "kafka-clients" % "2.5.0", // needed explicitly for proper classPath
   "org.apache.kafka" % "kafka-clients" % "2.5.0" % Test classifier "test",
