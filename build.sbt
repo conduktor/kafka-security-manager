@@ -19,8 +19,8 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   // kafka
-  "org.apache.kafka" %% "kafka" % "2.3.1",
-  "io.github.embeddedkafka" %% "embedded-kafka" % "2.3.1" % "test",
+  "org.apache.kafka" %% "kafka" % "2.5.0",
+  "io.github.embeddedkafka" %% "embedded-kafka" % "2.5.0" % "test",
   "io.findify" %% "s3mock" % "0.2.6" % "test",
 
   "org.apache.kafka" % "kafka-clients" % "2.5.0", // needed explicitly for proper classPath
