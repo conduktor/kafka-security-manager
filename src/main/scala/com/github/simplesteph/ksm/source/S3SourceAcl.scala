@@ -27,6 +27,15 @@ class S3SourceAcl extends SourceAcl {
   var key: String = _
   var region: String = _
 
+  def configure(bucketName: String, objectKey: String, regn: String): Unit = {
+    bucket = bucketName
+    key = objectKey
+    region = regn
+  }
+
+  def s3Client(): AmazonS3 =
+    AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
+
   /**
     * internal config definition for the module
     */
@@ -48,10 +57,9 @@ class S3SourceAcl extends SourceAcl {
     * @return
     */
   override def refresh(): Option[Reader] = {
-    val s3Client =
-      AmazonS3ClientBuilder.standard.withRegion(Regions.fromName(region)).build
+    val s3 = s3Client()
     val s3object = Option(
-      s3Client.getObject(
+      s3.getObject(
         new GetObjectRequest(bucket, key)
           .withModifiedSinceConstraint(lastModified)
       )
@@ -63,8 +71,13 @@ class S3SourceAcl extends SourceAcl {
           new InputStreamReader(bucket.getObjectContent)
         )
         lastModified = bucket.getObjectMetadata.getLastModified
+
+        val content =
+          Stream.continually(reader.readLine()).takeWhile(_ != null).mkString
+
+        reader.close()
         bucket.close()
-        Some(reader)
+        Some(new BufferedReader(new StringReader(content)))
       case None => None
     }
   }
