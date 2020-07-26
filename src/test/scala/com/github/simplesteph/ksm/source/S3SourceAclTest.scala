@@ -11,23 +11,23 @@ class S3SourceAclTest extends FlatSpec with Matchers {
 
 
     //this starts the mock s3 api
-    val s3SourceTopic = new DummyS3SourceAcl()
+    val s3SourceAcl = new DummyS3SourceAcl()
 
     val bucket = "testbucket"
     val key = UUID.randomUUID().toString
     val region = "us-east-1"
     val content = "hello"
 
-    val client = s3SourceTopic.s3Client()
+    val client = s3SourceAcl.s3Client()
 
     client.createBucket(bucket)
 
     //put the test file
     client.putObject(bucket, key, content)
 
-    s3SourceTopic.configure(bucket, key, region)
+    s3SourceAcl.configure(bucket, key, region)
 
-    val reader = s3SourceTopic.refresh()
+    val reader = s3SourceAcl.refresh()
 
     reader match {
       case None => fail() // didn't read
@@ -37,7 +37,7 @@ class S3SourceAclTest extends FlatSpec with Matchers {
         content shouldBe read
     }
 
-    s3SourceTopic.api.shutdown // kills the underlying actor system. Use api.stop() to just unbind the port.
+    s3SourceAcl.api.shutdown // kills the underlying actor system. Use api.stop() to just unbind the port.
 
   }
 }
