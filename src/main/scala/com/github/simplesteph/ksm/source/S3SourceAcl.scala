@@ -73,7 +73,7 @@ class S3SourceAcl extends SourceAcl {
         lastModified = bucket.getObjectMetadata.getLastModified
 
         val content =
-          Stream.continually(reader.readLine()).takeWhile(_ != null).mkString
+          Stream.continually(reader.readLine()).takeWhile(_ != null).map(_.concat("\n")).mkString
 
         reader.close()
         bucket.close()

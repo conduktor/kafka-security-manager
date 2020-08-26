@@ -16,7 +16,10 @@ class S3SourceAclTest extends FlatSpec with Matchers {
     val bucket = "testbucket"
     val key = UUID.randomUUID().toString
     val region = "us-east-1"
-    val content = "hello"
+    val content =
+      """hello
+        |world
+        |""".stripMargin
 
     val client = s3SourceAcl.s3Client()
 
@@ -32,7 +35,7 @@ class S3SourceAclTest extends FlatSpec with Matchers {
     reader match {
       case None => fail() // didn't read
       case Some(x: BufferedReader) =>
-        val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).mkString
+        val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).map(_.concat("\n")).mkString
 
         content shouldBe read
     }
