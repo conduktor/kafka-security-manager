@@ -61,12 +61,14 @@ class AclSynchronizer(
     sourceAcl: SourceAcl,
     notification: Notification,
     aclParser: AclParser,
+    numFailedRefreshesBeforeNotification: Int,
     readOnly: Boolean = false
 ) extends Runnable {
 
   import AclSynchronizer._
 
   private var sourceAclsCache: Set[(Resource, Acl)] = _
+  private var failedRefreshes: Int = 0
 
   if (readOnly) {
     log.warn("""
@@ -82,6 +84,7 @@ class AclSynchronizer(
     // parse the source of the ACL
     Try(sourceAcl.refresh()) match {
       case Success(result) =>
+        failedRefreshes = 0
         result match {
           // the source has not changed
           case None =>
@@ -122,9 +125,13 @@ class AclSynchronizer(
         }
       case Failure(e) =>
         // errors such as HTTP exceptions when refreshing
+        failedRefreshes += 1
         try {
           log.error("Exceptions while refreshing ACL source:", e)
-          notification.notifyErrors(List(Try(e)))
+          if(failedRefreshes >= numFailedRefreshesBeforeNotification){
+            notification.notifyErrors(List(Try(e)))
+            failedRefreshes = 0
+          }
         } catch {
           case _: Throwable =>
             log.warn("Notifications module threw an exception, ignoring...")
