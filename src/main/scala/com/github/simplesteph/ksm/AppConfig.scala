@@ -55,6 +55,7 @@ class AppConfig(config: Config) {
   object KSM {
     private val ksmConfig = config.getConfig("ksm")
     val refreshFrequencyMs: Int = ksmConfig.getInt("refresh.frequency.ms")
+    val numFailedRefreshesBeforeNotification: Int = ksmConfig.getInt("num.failed.refreshes.before.notification")
     val extract: Boolean = ksmConfig.getBoolean("extract")
     val readOnly: Boolean = ksmConfig.getBoolean("readonly")
   }

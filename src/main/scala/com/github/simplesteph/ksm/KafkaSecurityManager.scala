@@ -36,6 +36,7 @@ object KafkaSecurityManager extends App {
       appConfig.Source.sourceAcl,
       appConfig.Notification.notification,
       aclParser,
+      appConfig.KSM.numFailedRefreshesBeforeNotification,
       appConfig.KSM.readOnly
     )
 

@@ -19,7 +19,8 @@ class KsmServiceImplTest extends AsyncFlatSpec with Matchers {
       new DummyAuthorizer(),
       dummySourceAcl,
       new DummyNotification,
-      new CsvAclParser
+      new CsvAclParser,
+      1
     )
   )
 

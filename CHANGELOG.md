@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10 - 02/18/2021]
+- Added config to control how often notifications on ACL Source refreshes are sent
+- Fixed (#87) by ensuring that content from S3 buckets is read from the stream completely before the bucket is closed
+- Fixed (#88) S3SourceAcl from BufferedReader bug
+
 ## [0.9 - 08/07/2020]
 - Upgrade to Kafka 2.5.0
 - Added Bitbucket Cloud as an ACL source

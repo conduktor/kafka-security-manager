@@ -93,7 +93,8 @@ class AdminClientAuthorizerTest
       authorizer,
       dummySourceAcl,
       new DummyNotification,
-      new CsvAclParser
+      new CsvAclParser,
+      1
     )
   }
 

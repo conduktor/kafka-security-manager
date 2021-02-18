@@ -110,6 +110,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
 - `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
 - `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `0` or negative value, for example `-1`, then KMS executes ACL synchronization just once and exits
+- `KSM_NUM_FAILED_REFRESHES_BEFORE_NOTIFICATION=1`: how many times that the refresh of a Source needs to fail (e.g. HTTP timeouts) before a notification is sent. Any value less than or equal to `1` here will notify on every failure to refresh.
 - `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
   - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
   - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
@@ -228,7 +229,8 @@ TODO: Mention to look for inter broker protocol version before doing this
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-0.9-SNAPSHOT | 2.3.1 | TODO: Upgrade to Kafka 2.4.x (PR welcome)
+0.10 | 2.5.x | Add configurable num failed refreshes before notification 
+0.9 | 2.5.x | Upgrade to Kafka 2.5.x
 0.8 | 2.3.1 | Add a "run once" mode
 0.7 | 2.1.1 | Kafka Based ACL refresher available (no zookeeper dependency)
 0.6 | 2.0.0 | important stability fixes - please update
