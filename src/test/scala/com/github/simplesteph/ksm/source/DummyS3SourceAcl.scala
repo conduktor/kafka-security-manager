@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}

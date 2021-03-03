@@ -1,6 +1,6 @@
 name := "kafka-security-manager"
 
-organization := "com.github.simplesteph.ksm"
+organization := "com.github.conduktor.ksm"
 
 version := "0.9-SNAPSHOT"
 
@@ -57,12 +57,12 @@ libraryDependencies ++= Seq(
 
 )
 
-mainClass in Compile := Some("com.github.simplesteph.ksm.KafkaSecurityManager")
+mainClass in Compile := Some("com.github.conduktor.ksm.KafkaSecurityManager")
 
 parallelExecution in Test := false
 
 // Docker stuff
-dockerRepository := Some("simplesteph")
+dockerRepository := Some("conduktor")
 dockerUpdateLatest := true
 dockerBaseImage := "openjdk:8-jre-slim"
 

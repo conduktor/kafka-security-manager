@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.parser
+package com.github.conduktor.ksm.parser
 
 /**
   * Wrapper to exceptions in order to keep data of the row that failed

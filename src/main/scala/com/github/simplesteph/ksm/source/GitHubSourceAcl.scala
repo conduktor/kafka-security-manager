@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import java.io.{Reader, StringReader}
 import java.nio.charset.Charset

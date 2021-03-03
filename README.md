@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.com/simplesteph/kafka-security-manager.svg?branch=master)](https://travis-ci.com/simplesteph/kafka-security-manager)
 
+# An open-source project by   [![Conduktor.io](https://www.conduktor.io/uploads/conduktor.svg)](https://conduktor.io/)
+
+This project is sponsored by [Conduktor.io](https://www.conduktor.io/), a graphical desktop user interface for Apache Kafka.
+With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
+
 # Kafka Security Manager
 
 Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source.
@@ -48,13 +53,13 @@ This is a Scala app and therefore should run on the JVM like any other applicati
 
 By using the JAR dependency, you can create your own `SourceAcl`.
 
-SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/simplesteph/ksm/)
+SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/github/conduktor/ksm/)
 
-RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph):
+RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.conduktor):
 
-`build.sbt` (see [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.simplesteph) for the latest `version`)
+`build.sbt` (see [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.conduktor) for the latest `version`)
 ```
-libraryDependencies += "com.github.simplesteph" %% "kafka-security-manager" % "version"
+libraryDependencies += "com.github.conduktor" %% "kafka-security-manager" % "version"
 ```
 
 # Configuration
@@ -84,7 +89,7 @@ Client {
 ```
 
 ## Security configuration - Admin client
-When configured authorizer class is `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
+When configured authorizer class is `com.github.conduktor.ksm.compat.AdminClientAuthorizer`,
 `kafka-security-manager` will use kafka admin client instead of direct zookeeper connection.
 Configuration example would be
 ```
@@ -115,7 +120,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
   - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
   - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
 
-  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.simplesteph.ksm.compat.AdminClientAuthorizer`,
+  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `com.github.conduktor.ksm.compat.AdminClientAuthorizer`,
   configured with options for `org.apache.kafka.clients.admin.AdminClientConfig`:
   - `ADMIN_CLIENT_ID` - `client.id`, an id to pass to the server when making requests, for tracing/audit purposes, default `kafka-security-manager`
   Properties below are not provided to client unless environment variable is set:
@@ -130,25 +135,25 @@ The [default configurations](src/main/resources/application.conf) can be overwri
   - `ADMIN_CLIENT_SSL_TRUSTSTORE_PASSWORD` - `ssl.truststore.password`
 
 - `SOURCE_CLASS`: Source class. Valid values include
-    - `com.github.simplesteph.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
-    - `com.github.simplesteph.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
-    - `com.github.simplesteph.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
-    - `com.github.simplesteph.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using pesonal access tokens. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.conduktor.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
+    - `com.github.conduktor.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
+    - `com.github.conduktor.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using pesonal access tokens. Great to get started quickly and store the ACL securely under version control.
       - `SOURCE_GITLAB_REPOID` GitLab project id
       - `SOURCE_GITLAB_FILEPATH` Path to the ACL file in GitLab project
       - `SOURCE_GITLAB_BRANCH` Git Branch name
       - `SOURCE_GITLAB_HOSTNAME` GitLab Hostname
       - `SOURCE_GITLAB_ACCESSTOKEN` GitLab Personal Access Token. See [Personal access tokens
 ](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) to authenticate with the GitLab API.
-    - `com.github.simplesteph.ksm.source.S3SourceAcl`: get the ACL from S3. Good for when you have a S3 bucket managed by Terraform or Cloudformation. This requires `region`, `bucketname` and `objectkey`. See [Access credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for credentials management.
+    - `com.github.conduktor.ksm.source.S3SourceAcl`: get the ACL from S3. Good for when you have a S3 bucket managed by Terraform or Cloudformation. This requires `region`, `bucketname` and `objectkey`. See [Access credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for credentials management.
       - `SOURCE_S3_REGION` AWS S3 Region
       - `SOURCE_S3_BUCKETNAME` AWS S3 Bucket name
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
-    - `com.github.simplesteph.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
-    - `com.github.simplesteph.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
+    - `com.github.conduktor.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
+    - `com.github.conduktor.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
-    - `com.github.simplesteph.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
-    - `com.github.simplesteph.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
+    - `com.github.conduktor.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
+    - `com.github.conduktor.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
 - `ACL_PARSER_CSV_DELIMITER`: Change the delimiter character for the CSV Parser (useful when you have SSL)
 
 # Running on Docker
@@ -161,7 +166,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
 
 ## Docker Hub
 
-Alternatively, you can get the automatically built Docker images on [Docker Hub](https://hub.docker.com/r/simplesteph/kafka-security-manager)  
+Alternatively, you can get the automatically built Docker images on [Docker Hub](https://hub.docker.com/r/conduktor/kafka-security-manager)  
 
 ## Running
 
@@ -171,7 +176,7 @@ Then apply to the docker run using for example (in EXTRACT mode):
 
 ```
 docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRACT=true \
-            simplesteph/kafka-security-manager:latest
+            conduktor/kafka-security-manager:latest
 ```
 
 Any of the environment variables described above can be used by the docker run command with the `-e ` options.
@@ -185,7 +190,7 @@ docker-compose logs kafka-security-manager
 docker-compose down
 ```
 
-For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/simplesteph/kafka-stack-docker-compose)
+For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/conduktor/kafka-stack-docker-compose)
 
 ## Extracting ACLs
 

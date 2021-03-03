@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.compat
+package com.github.conduktor.ksm.compat
 
 import java.util
 

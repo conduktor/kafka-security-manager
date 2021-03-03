@@ -4,9 +4,9 @@
 
 docker_push(){
     echo "Pushing tag $1 to docker hub"
-    docker tag "simplesteph/kafka-security-manager:latest" "simplesteph/kafka-security-manager:$1"
+    docker tag "conduktor/kafka-security-manager:latest" "conduktor/kafka-security-manager:$1"
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-    docker push "simplesteph/kafka-security-manager:$1"
+    docker push "conduktor/kafka-security-manager:$1"
 }
 
 # TRAVIS_TAG: If the current build is for a git tag, this variable is set to the tag’s name.

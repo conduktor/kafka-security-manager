@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.notification
+package com.github.conduktor.ksm.notification
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 

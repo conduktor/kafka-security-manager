@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.parser
+package com.github.conduktor.ksm.parser
 
 import java.io.StringReader
 

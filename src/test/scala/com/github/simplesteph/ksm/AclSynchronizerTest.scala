@@ -1,13 +1,13 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
 import java.io.Reader
 
-import com.github.simplesteph.ksm.notification.{
+import com.github.conduktor.ksm.notification.{
   ConsoleNotification,
   DummyNotification
 }
-import com.github.simplesteph.ksm.parser.{AclParser, CsvAclParser}
-import com.github.simplesteph.ksm.source.{
+import com.github.conduktor.ksm.parser.{AclParser, CsvAclParser}
+import com.github.conduktor.ksm.source.{
   DummySourceAcl,
   SourceAcl,
   SourceAclResult

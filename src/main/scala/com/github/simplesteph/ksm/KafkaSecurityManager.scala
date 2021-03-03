@@ -1,9 +1,9 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.github.simplesteph.ksm.grpc.KsmGrpcServer
-import com.github.simplesteph.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.grpc.KsmGrpcServer
+import com.github.conduktor.ksm.parser.CsvAclParser
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
