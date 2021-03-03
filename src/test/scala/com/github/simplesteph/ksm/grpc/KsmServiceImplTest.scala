@@ -1,9 +1,9 @@
-package com.github.simplesteph.ksm.grpc
+package com.github.conduktor.ksm.grpc
 
-import com.github.simplesteph.ksm.notification.DummyNotification
-import com.github.simplesteph.ksm.parser.CsvAclParser
-import com.github.simplesteph.ksm.source.DummySourceAcl
-import com.github.simplesteph.ksm.{AclSynchronizer, DummyAuthorizer}
+import com.github.conduktor.ksm.notification.DummyNotification
+import com.github.conduktor.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.source.DummySourceAcl
+import com.github.conduktor.ksm.{AclSynchronizer, DummyAuthorizer}
 import com.security.kafka.pb.ksm.OperationTypePb._
 import com.security.kafka.pb.ksm.PermissionTypePb._
 import com.security.kafka.pb.ksm.ResourceTypePb._

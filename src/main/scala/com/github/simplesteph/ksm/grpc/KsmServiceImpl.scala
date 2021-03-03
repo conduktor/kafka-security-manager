@@ -1,7 +1,7 @@
-package com.github.simplesteph.ksm.grpc
+package com.github.conduktor.ksm.grpc
 
-import com.github.simplesteph.ksm.AclSynchronizer
-import com.github.simplesteph.ksm.utils.ProtoConversionUtils
+import com.github.conduktor.ksm.AclSynchronizer
+import com.github.conduktor.ksm.utils.ProtoConversionUtils
 import com.security.kafka.pb.ksm.KsmServiceGrpc.KsmService
 import com.security.kafka.pb.ksm.{
   GetAllAclsRequest,

@@ -1,7 +1,7 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
-import com.github.simplesteph.ksm.parser.CsvParserException
-import com.github.simplesteph.ksm.source.SourceAclResult.{
+import com.github.conduktor.ksm.parser.CsvParserException
+import com.github.conduktor.ksm.source.SourceAclResult.{
   ksmAcls,
   ParsingExceptions
 }

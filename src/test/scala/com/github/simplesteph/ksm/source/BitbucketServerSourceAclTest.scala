@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import java.io.{BufferedReader, Reader}
 import java.util.Base64

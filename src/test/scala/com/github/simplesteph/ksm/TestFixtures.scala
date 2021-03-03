@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType

@@ -1,17 +1,17 @@
 // Your profile name of the sonatype account. The default is the same with the organization value
-sonatypeProfileName := "com.github.simplesteph"
+sonatypeProfileName := "com.github.conduktor"
 
 // To sync with Maven central, you need to supply the following information:
 publishMavenStyle := true
 
 // License of your choice
-licenses ++= Seq("MIT" -> url("https://github.com/simplesteph/kafka-security-manager/blob/master/LICENSE.txt"))
+licenses ++= Seq("MIT" -> url("https://github.com/conduktor/kafka-security-manager/blob/master/LICENSE.txt"))
 
 // Where is the source code hosted
 import xerial.sbt.Sonatype._
-sonatypeProjectHosting := Some(GitHubHosting("simplesteph", "kafka-security-manager", "simplesteph@users.noreply.github.com"))
+sonatypeProjectHosting := Some(GitHubHosting("conduktor", "kafka-security-manager", "conduktor@users.noreply.github.com"))
 
-developers := List(Developer(id="simplesteph",name="Stephane Maarek",email="simplesteph@users.noreply.github.com",url=  url("https://github.com/simplesteph")))
+developers := List(Developer(id="conduktor",name="Stephane Maarek",email="conduktor@users.noreply.github.com",url=  url("https://github.com/conduktor")))
 
 credentials ++= (for {
   username <- sys.env.get("SONATYPE_USERNAME")

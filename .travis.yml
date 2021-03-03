@@ -43,7 +43,7 @@ deploy:
       condition: -z "$TRAVIS_PULL_REQUEST_BRANCH"
 #    tags: true / false  => has precendence over the branch condition
 #    condition: "foo == bar && baz==bat"
-#    repo: simplesteph/kafka-security-manager
+#    repo: conduktor/kafka-security-manager
   - provider: releases
     api_key: "$GITHUB_OAUTH_TOKEN"
     file_glob: true

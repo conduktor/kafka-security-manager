@@ -1,7 +1,7 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
-import com.github.simplesteph.ksm.notification.Notification
-import com.github.simplesteph.ksm.source.SourceAcl
+import com.github.conduktor.ksm.notification.Notification
+import com.github.conduktor.ksm.source.SourceAcl
 import com.typesafe.config.Config
 import kafka.security.auth.Authorizer
 import kafka.utils.CoreUtils

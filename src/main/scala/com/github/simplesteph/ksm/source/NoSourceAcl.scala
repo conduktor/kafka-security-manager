@@ -1,7 +1,7 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 import java.io.Reader
 
-import com.github.simplesteph.ksm.parser.AclParser
+import com.github.conduktor.ksm.parser.AclParser
 import com.typesafe.config.Config
 
 class NoSourceAcl extends SourceAcl {

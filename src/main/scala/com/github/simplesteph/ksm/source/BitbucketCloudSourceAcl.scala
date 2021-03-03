@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import java.io._
 import java.nio.charset.Charset

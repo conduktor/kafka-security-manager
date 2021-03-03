@@ -1,10 +1,10 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import java.io.{File, Reader}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import com.github.simplesteph.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.parser.CsvAclParser
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils

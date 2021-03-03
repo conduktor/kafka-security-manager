@@ -1,4 +1,4 @@
-package com.github.simplesteph.ksm.utils
+package com.github.conduktor.ksm.utils
 
 import com.security.kafka.pb.ksm._
 import kafka.security.auth._

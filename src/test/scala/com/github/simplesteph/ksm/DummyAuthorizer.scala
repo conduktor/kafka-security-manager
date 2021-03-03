@@ -1,8 +1,8 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
 import java.util
 
-import com.github.simplesteph.ksm.TestFixtures._
+import com.github.conduktor.ksm.TestFixtures._
 import kafka.network.RequestChannel
 import kafka.security.auth.{Acl, Authorizer, Operation, Resource}
 import org.apache.kafka.common.security.auth.KafkaPrincipal

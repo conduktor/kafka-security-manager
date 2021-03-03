@@ -1,5 +1,5 @@
-package com.github.simplesteph.ksm.notification
-import com.github.simplesteph.ksm.parser.CsvParserException
+package com.github.conduktor.ksm.notification
+import com.github.conduktor.ksm.parser.CsvParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.{Logger, LoggerFactory}

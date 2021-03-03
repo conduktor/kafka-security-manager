@@ -1,11 +1,11 @@
-package com.github.simplesteph.ksm.compat
+package com.github.conduktor.ksm.compat
 
 import java.security.Security
 
-import com.github.simplesteph.ksm.AclSynchronizer
-import com.github.simplesteph.ksm.notification.DummyNotification
-import com.github.simplesteph.ksm.parser.CsvAclParser
-import com.github.simplesteph.ksm.source.DummySourceAcl
+import com.github.conduktor.ksm.AclSynchronizer
+import com.github.conduktor.ksm.notification.DummyNotification
+import com.github.conduktor.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.source.DummySourceAcl
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.scalatest.{FlatSpec, Matchers}
 import org.apache.kafka.clients.admin.AdminClientConfig

@@ -1,6 +1,6 @@
-package com.github.simplesteph.ksm.grpc
+package com.github.conduktor.ksm.grpc
 
-import com.github.simplesteph.ksm.AclSynchronizer
+import com.github.conduktor.ksm.AclSynchronizer
 import com.security.kafka.pb.ksm.{KsmServiceGrpc, KsmServiceHandler}
 import grpcgateway.server.{GrpcGatewayServer, GrpcGatewayServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService

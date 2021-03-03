@@ -1,9 +1,9 @@
-package com.github.simplesteph.ksm.source
+package com.github.conduktor.ksm.source
 
 import java.io.{Reader, StringReader}
 
-import com.github.simplesteph.ksm.TestFixtures._
-import com.github.simplesteph.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.TestFixtures._
+import com.github.conduktor.ksm.parser.CsvAclParser
 import com.typesafe.config.Config
 
 class DummySourceAcl extends SourceAcl {

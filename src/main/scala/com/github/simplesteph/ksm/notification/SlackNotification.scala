@@ -1,6 +1,6 @@
-package com.github.simplesteph.ksm.notification
+package com.github.conduktor.ksm.notification
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.simplesteph.ksm.parser.CsvParserException
+import com.github.conduktor.ksm.parser.CsvParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.LoggerFactory

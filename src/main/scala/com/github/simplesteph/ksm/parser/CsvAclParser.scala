@@ -1,8 +1,8 @@
-package com.github.simplesteph.ksm.parser
+package com.github.conduktor.ksm.parser
 
 import java.io.Reader
 
-import com.github.simplesteph.ksm.source.SourceAclResult
+import com.github.conduktor.ksm.source.SourceAclResult
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType

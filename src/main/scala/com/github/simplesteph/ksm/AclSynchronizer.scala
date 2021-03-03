@@ -1,8 +1,8 @@
-package com.github.simplesteph.ksm
+package com.github.conduktor.ksm
 
-import com.github.simplesteph.ksm.notification.Notification
-import com.github.simplesteph.ksm.parser.AclParser
-import com.github.simplesteph.ksm.source.SourceAcl
+import com.github.conduktor.ksm.notification.Notification
+import com.github.conduktor.ksm.parser.AclParser
+import com.github.conduktor.ksm.source.SourceAcl
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
