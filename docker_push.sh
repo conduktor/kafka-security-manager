@@ -13,13 +13,9 @@ if [[ -z "$GITHUB_BASE_REF" ]]; then
         # Tagging should trigger a release in Docker Hub, that's immutable.
         echo "git tag action, push the tag"
         docker_push "$RELEASE_VERSION-release"
-    elif [[ "$RELEASE_VERSION" == "dev" ]]; then
+    elif [[ "$RELEASE_VERSION" == "master" ]]; then
         # we push to latest when master is built and that's not a pull request
         echo "master build, push to latest"
         docker_push "latest"
-    # elif [[ "$RELEASE_VERSION" == v* ]]; then
-    #     # this is a version branch and we push it.
-    #     echo "branch build, push to branch-latest"
-    #     docker_push "$RELEASE_VERSION-latest"
     fi;
 fi;

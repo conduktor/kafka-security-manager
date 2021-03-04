@@ -18,6 +18,9 @@ jobs:
       with:
         java-version: 8
 
+    - name: Run tests
+      run: bash test.sh
+      
     - name: create zip file
       run: sbt universal:packageBin
       if: startsWith(github.ref, 'refs/tags/v')
