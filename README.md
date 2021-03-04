@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/CI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
+[![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/ScalaCI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
 
 # An open-source project by   [![Conduktor.io](https://www.conduktor.io/uploads/conduktor.svg)](https://conduktor.io/)
 

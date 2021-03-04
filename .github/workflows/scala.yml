@@ -1,4 +1,4 @@
-name: Scala CI
+name: ScalaCI
 
 on:
   push:
