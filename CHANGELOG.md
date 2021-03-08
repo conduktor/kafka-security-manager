@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed (#87) by ensuring that content from S3 buckets is read from the stream completely before the bucket is closed
 - Fixed (#88) S3SourceAcl from BufferedReader bug
 - Migrated to GitHub Actions for CICD
+- Migrated from simplesteph to conduktor packages
 
 ## [0.9 - 08/07/2020]
 - Upgrade to Kafka 2.5.0
