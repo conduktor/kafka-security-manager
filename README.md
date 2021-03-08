@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.com/simplesteph/kafka-security-manager.svg?branch=master)](https://travis-ci.com/simplesteph/kafka-security-manager)
-
+[![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/ScalaCI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
 # Kafka Security Manager
 
 Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source.
@@ -185,7 +184,7 @@ docker-compose logs kafka-security-manager
 docker-compose down
 ```
 
-For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/simplesteph/kafka-stack-docker-compose)
+For full usage of the docker-compose file see [kafka-stack-docker-compose](https://github.com/conduktor/kafka-stack-docker-compose)
 
 ## Extracting ACLs
 
