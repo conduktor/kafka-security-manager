@@ -1,15 +1,30 @@
 package com.github.conduktor.ksm.source
 
-import com.github.conduktor.ksm.parser.CsvParserException
+import cats.kernel.Monoid
+import com.github.conduktor.ksm.parser.ParserException
 import com.github.conduktor.ksm.source.SourceAclResult.{
-  ksmAcls,
-  ParsingExceptions
+  ParsingExceptions,
+  ksmAcls
 }
 import kafka.security.auth.{Acl, Resource}
 
 object SourceAclResult {
   type ksmAcls = Set[(Resource, Acl)]
-  type ParsingExceptions = List[CsvParserException]
+  type ParsingExceptions = List[ParserException]
+
+  implicit val monoid: Monoid[SourceAclResult] = new Monoid[SourceAclResult] {
+    override def empty: SourceAclResult = SourceAclResult(Right(Set()))
+    override def combine(
+        x: SourceAclResult,
+        y: SourceAclResult
+    ): SourceAclResult = {
+      if (x.result.isLeft || y.result.isLeft) {
+        SourceAclResult(Left(x.result.left.get ++ y.result.left.get))
+      } else {
+        SourceAclResult(Right(x.result.right.get ++ y.result.right.get))
+      }
+    }
+  }
 }
 
 /**

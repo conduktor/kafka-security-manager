@@ -6,7 +6,7 @@ package com.github.conduktor.ksm.parser
   * @param t exception that has been thrown
   */
 class CsvParserException(row: Map[String, String], t: Throwable)
-    extends RuntimeException(t) {
+    extends ParserException(t) {
 
   def printRow(): String = {
     row.toString()

@@ -92,7 +92,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val res = csvAclParser.aclsFromReader(new StringReader(csv))
 
     res.result.left.get.size shouldBe 2
-    val csvParserException = res.result.left.get.head
+    val csvParserException = res.result.left.get.head.asInstanceOf[CsvParserException]
     csvParserException.printRow() should include("bob")
 
   }
