@@ -21,6 +21,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
 
   import CsvAclParser._
 
+  override val name: String = "csv"
+
   // we treat empty lines as Nil hence the format override
   implicit val csvFormat: CSVFormat = new CSVFormat {
     val delimiter: Char = delimiterInput
@@ -126,6 +128,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
     }
     sb.toString()
   }
+
+  override def matchesExtension(extension: String): Boolean = extension.equalsIgnoreCase("csv")
 }
 
 object CsvAclParser {

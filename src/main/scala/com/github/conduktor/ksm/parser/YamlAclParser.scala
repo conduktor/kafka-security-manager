@@ -21,7 +21,7 @@ import scala.util.Try
   */
 class YamlAclParser() extends AclParser {
 
-  val name: String = "Yaml"
+  override val name: String = "yaml"
 
   case class AclResources(
       groups: Option[Map[String, List[String]]],
@@ -71,7 +71,7 @@ class YamlAclParser() extends AclParser {
     }
   }
 
-  val clusterWildcard = Resource(Cluster, "*", PatternType.LITERAL)
+  val clusterWildcard: Resource = Resource(Cluster, "*", PatternType.LITERAL)
 
   def parseAcl(
       principal: KafkaPrincipal,
@@ -205,4 +205,5 @@ class YamlAclParser() extends AclParser {
     yaml.printer.print(yamlMap.asJson)
   }
 
+  override def matchesExtension(extension: String): Boolean = extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml")
 }

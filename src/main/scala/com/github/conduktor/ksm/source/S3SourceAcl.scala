@@ -2,14 +2,15 @@ package com.github.conduktor.ksm.source
 
 import java.io._
 import java.util.Date
-
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3._
 import com.amazonaws.services.s3.model._
+import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 
-class S3SourceAcl extends SourceAcl {
+class S3SourceAcl(parserRegistry: AclParserRegistry)
+    extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[S3SourceAcl])
 
@@ -56,7 +57,7 @@ class S3SourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(): Option[Reader] = {
+  override def refresh(): Option[(AclParser, Reader)] = {
     val s3 = s3Client()
     val s3object = Option(
       s3.getObject(
@@ -73,11 +74,20 @@ class S3SourceAcl extends SourceAcl {
         lastModified = bucket.getObjectMetadata.getLastModified
 
         val content =
-          Stream.continually(reader.readLine()).takeWhile(_ != null).map(_.concat("\n")).mkString
+          Stream
+            .continually(reader.readLine())
+            .takeWhile(_ != null)
+            .map(_.concat("\n"))
+            .mkString
 
         reader.close()
         bucket.close()
-        Some(new BufferedReader(new StringReader(content)))
+        Some(
+          (
+            parserRegistry.getParserByFilename(key),
+            new BufferedReader(new StringReader(content))
+          )
+        )
       case None => None
     }
   }

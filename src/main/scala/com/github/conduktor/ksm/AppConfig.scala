@@ -1,6 +1,7 @@
 package com.github.conduktor.ksm
 
 import com.github.conduktor.ksm.notification.Notification
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.github.conduktor.ksm.source.SourceAcl
 import com.typesafe.config.Config
 import kafka.security.auth.Authorizer
@@ -30,13 +31,16 @@ class AppConfig(config: Config) {
 
   object Source {
     private val sourceAclClass = config.getString("source.class")
-    val sourceAcl: SourceAcl = CoreUtils.createObject[SourceAcl](sourceAclClass)
+    def createSource(parserRegistry: AclParserRegistry):SourceAcl = {
+      val sourceAcl: SourceAcl = CoreUtils.createObject[SourceAcl](sourceAclClass, parserRegistry)
 
-    // here we get a dynamic config prefix given by the class.
-    // this will allow multiple classes to co-exist in the same config and avoid collisions
-    private val sourceAclConfig =
+      // here we get a dynamic config prefix given by the class.
+      // this will allow multiple classes to co-exist in the same config and avoid collisions
+      val sourceAclConfig =
       config.getConfig(s"source.${sourceAcl.CONFIG_PREFIX}")
-    sourceAcl.configure(sourceAclConfig)
+      sourceAcl.configure(sourceAclConfig)
+      sourceAcl
+    }
   }
 
   object Notification {

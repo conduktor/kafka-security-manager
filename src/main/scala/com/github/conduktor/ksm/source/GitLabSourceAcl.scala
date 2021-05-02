@@ -3,13 +3,14 @@ package com.github.conduktor.ksm.source
 import java.io.{Reader, StringReader}
 import java.nio.charset.Charset
 import java.util.Base64
-
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
-class GitLabSourceAcl extends SourceAcl {
+class GitLabSourceAcl(parserRegistry: AclParserRegistry)
+    extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[GitLabSourceAcl])
 
@@ -39,7 +40,7 @@ class GitLabSourceAcl extends SourceAcl {
     accessToken = config.getString(ACCESSTOKEN_CONFIG)
   }
 
-  override def refresh(): Option[Reader] = {
+  override def refresh(): Option[(AclParser, Reader)] = {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -73,7 +74,12 @@ class GitLabSourceAcl extends SourceAcl {
               Charset.forName("UTF-8")
             )
             // use the CSV Parser
-            Some(new StringReader(data))
+            Some(
+              (
+                parserRegistry.getParserByFilename(filepath),
+                new StringReader(data)
+              )
+            )
           case _ =>
             // we got an http error so we propagate it
             log.warn(response.asString)

@@ -1,6 +1,6 @@
 package com.github.conduktor.ksm
 
-import com.github.conduktor.ksm.parser.{AclParser, CsvAclParser, YamlAclParser}
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
@@ -16,22 +16,17 @@ object KafkaSecurityManager extends App {
 
   var isCancelled: AtomicBoolean = new AtomicBoolean(false)
   var aclSynchronizer: AclSynchronizer = _
-  val aclParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
-  val yamlParser = new YamlAclParser()
+  val parserRegistry: AclParserRegistry = new AclParserRegistry(appConfig)
   val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
   if (appConfig.KSM.extract) {
-    var parser: AclParser = aclParser
-    if (appConfig.KSM.extractFormat.equalsIgnoreCase("yaml")) {
-      parser = yamlParser
-    }
+    val parser = parserRegistry.getParser(appConfig.KSM.extractFormat)
     new ExtractAcl(appConfig.Authorizer.authorizer, parser).extract()
   } else {
     aclSynchronizer = new AclSynchronizer(
       appConfig.Authorizer.authorizer,
-      appConfig.Source.sourceAcl,
+      appConfig.Source.createSource(parserRegistry),
       appConfig.Notification.notification,
-      aclParser,
       appConfig.KSM.numFailedRefreshesBeforeNotification,
       appConfig.KSM.readOnly
     )

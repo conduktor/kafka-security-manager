@@ -113,7 +113,8 @@ Overall we use the [lightbend config](https://github.com/lightbend/config) libra
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
-- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
+- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV or YAML)
+- `KSM_EXTRACT_FORMAT=csv`: selects which format to extract the ACLs with (defaults to csv, supports also yaml)
 - `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `0` or negative value, for example `-1`, then KMS executes ACL synchronization just once and exits
 - `KSM_NUM_FAILED_REFRESHES_BEFORE_NOTIFICATION=1`: how many times that the refresh of a Source needs to fail (e.g. HTTP timeouts) before a notification is sent. Any value less than or equal to `1` here will notify on every failure to refresh.
 - `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
@@ -138,7 +139,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
     - `com.github.conduktor.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.conduktor.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
     - `com.github.conduktor.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
-    - `com.github.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using pesonal access tokens. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using personal access tokens. Great to get started quickly and store the ACL securely under version control.
       - `SOURCE_GITLAB_REPOID` GitLab project id
       - `SOURCE_GITLAB_FILEPATH` Path to the ACL file in GitLab project
       - `SOURCE_GITLAB_BRANCH` Git Branch name

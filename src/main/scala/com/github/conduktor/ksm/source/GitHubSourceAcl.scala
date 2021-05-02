@@ -3,15 +3,16 @@ package com.github.conduktor.ksm.source
 import java.io.{Reader, StringReader}
 import java.nio.charset.Charset
 import java.util.Base64
-
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
 import scala.util.Try
 
-class GitHubSourceAcl extends SourceAcl {
+class GitHubSourceAcl(parserRegistry: AclParserRegistry)
+    extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[GitHubSourceAcl])
 
@@ -47,7 +48,7 @@ class GitHubSourceAcl extends SourceAcl {
     tokenOpt = Try(config.getString(AUTH_TOKEN_CONFIG)).toOption
   }
 
-  override def refresh(): Option[Reader] = {
+  override def refresh(): Option[(AclParser, Reader)] = {
     val url =
       s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -78,7 +79,9 @@ class GitHubSourceAcl extends SourceAcl {
           Charset.forName("UTF-8")
         )
         // use the CSV Parser
-        Some(new StringReader(data))
+        Some(
+          (parserRegistry.getParserByFilename(filepath), new StringReader(data))
+        )
       case 304 =>
         None
       case _ =>
