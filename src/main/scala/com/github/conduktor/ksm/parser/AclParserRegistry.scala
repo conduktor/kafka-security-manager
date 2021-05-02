@@ -2,7 +2,7 @@ package com.github.conduktor.ksm.parser
 
 import com.github.conduktor.ksm.AppConfig
 
-class AclParserRegistry(appConfig: AppConfig) {
+class AclParserRegistry(val appConfig: AppConfig) {
 
   val csvParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
   val yamlParser = new YamlAclParser()

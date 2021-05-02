@@ -5,7 +5,7 @@ import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import java.io.Reader
 import com.typesafe.config.Config
 
-abstract class SourceAcl(parserRegistry: AclParserRegistry) {
+abstract class SourceAcl(val parserRegistry: AclParserRegistry) {
 
   /**
     * Config Prefix for configuring this module
