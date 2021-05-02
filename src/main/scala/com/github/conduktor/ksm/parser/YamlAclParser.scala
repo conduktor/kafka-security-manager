@@ -102,17 +102,6 @@ class YamlAclParser() extends AclParser {
           .toValidated
       case Array(abbrev) =>
         (resource.resourceType, abbrev.toLowerCase()) match {
-          case (Topic, "admin") =>
-            Valid(
-              List(
-                (resource, Acl(principal, Allow, "*", Describe)),
-                (resource, Acl(principal, Allow, "*", Create)),
-                (resource, Acl(principal, Allow, "*", Delete)),
-                (resource, Acl(principal, Allow, "*", Write)),
-                (resource, Acl(principal, Allow, "*", Read)),
-                (clusterWildcard, Acl(principal, Allow, "*", Create))
-              )
-            ).toEither.toValidated
           case (Topic, "consume") =>
             Valid(
               List(

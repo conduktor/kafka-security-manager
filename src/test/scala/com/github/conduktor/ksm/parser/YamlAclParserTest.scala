@@ -8,6 +8,7 @@ import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import java.io.StringReader
+import scala.util.matching.Regex
 
 class YamlAclParserTest extends FlatSpec with Matchers {
 
@@ -25,7 +26,7 @@ class YamlAclParserTest extends FlatSpec with Matchers {
   val acl: Acl =
     Acl(SecurityUtils.parseKafkaPrincipal("User:alice"), Allow, "*", Read)
   val yamlAclParser = new YamlAclParser()
-  val yaml =
+  val yaml: String =
     """#Ignore comments
       |users:
       |  alice: # Ignore comments
@@ -50,16 +51,16 @@ class YamlAclParserTest extends FlatSpec with Matchers {
       |  tom:
       |    topics:
       |      '*':
-      |        - Admin
+      |        - All
       |""".stripMargin
-  val res: SourceAclResult =
+  var res: SourceAclResult =
     yamlAclParser.aclsFromReader(new StringReader(yaml))
   val principalAlice = new KafkaPrincipal(KafkaPrincipal.USER_TYPE, "alice")
   val principalBob = new KafkaPrincipal(KafkaPrincipal.USER_TYPE, "bob")
   val principalPeter = new KafkaPrincipal(KafkaPrincipal.USER_TYPE, "peter")
   val principalTom = new KafkaPrincipal(KafkaPrincipal.USER_TYPE, "tom")
 
-  "aclsFromYaml" should "handle prefixed groups" in {
+  "aclsFromYaml" should "handle (action, permission, host) formats and prefixed groups" in {
 
     res.result.right.get.contains(
       (
@@ -69,33 +70,81 @@ class YamlAclParserTest extends FlatSpec with Matchers {
     ) shouldBe true
   }
 
-  "aclsFromYaml" should "correctly parse a valid YAML" in {
+  it should "handle the Consume helper" in {
 
-    /*
-    res.acls.map(_.toString()) shouldBe Set(
-      "(TransactionalId:PREFIXED:tr1,User:peter has Allow permission for operations: All from hosts: *)",
-      "(Cluster:LITERAL:*,User:peter has Allow permission for operations: Create from hosts: *)",
-      "(Cluster:LITERAL:*,User:alice has Allow permission for operations: Create from hosts: *)",
-      "(Topic:LITERAL:topic1,User:alice has Allow permission for operations: Read from hosts: *)",
-      "(Topic:LITERAL:topic1,User:alice has Allow permission for operations: Write from hosts: *)",
-      "(Topic:LITERAL:topic1,User:alice has Allow permission for operations: Describe from hosts: *)",
-      "(Topic:LITERAL:topic1,User:alice has Allow permission for operations: Create from hosts: *)",
-      "(Group:PREFIXED:mygroup-,User:alice has Deny permission for operations: Write from hosts: 12.34.56.78)",
-      "(Topic:LITERAL:*,User:tom has Allow permission for operations: Describe from hosts: *)",
-      "(Cluster:LITERAL:*,User:tom has Allow permission for operations: Create from hosts: *)",
-      "(Topic:LITERAL:*,User:tom has Allow permission for operations: Write from hosts: *)",
-      "(Topic:LITERAL:*,User:tom has Allow permission for operations: Delete from hosts: *)",
-      "(Topic:LITERAL:*,User:tom has Allow permission for operations: Read from hosts: *)",
-      "(Topic:LITERAL:*,User:tom has Allow permission for operations: Create from hosts: *)",
-      "(Group:LITERAL:group1,User:bob has Allow permission for operations: Write from hosts: *)",
-      "(Group:LITERAL:group1,User:bob has Allow permission for operations: Read from hosts: *)",
-      "(Group:LITERAL:group2,User:bob has Allow permission for operations: Read from hosts: *)",
-      "(Group:LITERAL:group2,User:bob has Allow permission for operations: Describe from hosts: *)")
-
-   */
+    res.result.right.get.contains(
+      (
+        Resource(Topic, "topic1", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Read)
+      )
+    ) shouldBe true
+    res.result.right.get.contains(
+      (
+        Resource(Topic, "topic1", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Describe)
+      )
+    ) shouldBe true
   }
 
-  "aclsFromYaml" should "catch all YAML errors" in {
+  it should "handle the Produce helper" in {
+
+    res.result.right.get.contains(
+      (
+        Resource(Topic, "topic1", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Write)
+      )
+    ) shouldBe true
+    res.result.right.get.contains(
+      (
+        Resource(Topic, "topic1", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Describe)
+      )
+    ) shouldBe true
+    res.result.right.get.contains(
+      (
+        Resource(Topic, "topic1", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Create)
+      )
+    ) shouldBe true
+    res.result.right.get.contains(
+      (
+        Resource(Cluster, "*", PatternType.LITERAL),
+        Acl(principalAlice, Allow, "*", Create)
+      )
+    ) shouldBe true
+  }
+
+  it should "handle normal groups" in {
+
+    res.result.right.get.contains(
+      (
+        Resource(Group, "group1", PatternType.LITERAL),
+        Acl(principalBob, Allow, "*", Read)
+      )
+    ) shouldBe true
+  }
+
+  it should "handle prefixed transactional ids" in {
+
+    res.result.right.get.contains(
+      (
+        Resource(TransactionalId, "tr1", PatternType.PREFIXED),
+        Acl(principalPeter, Allow, "*", All)
+      )
+    ) shouldBe true
+  }
+
+  it should "handle cluster permissions" in {
+
+    res.result.right.get.contains(
+      (
+        Resource(Cluster, "*", PatternType.LITERAL),
+        Acl(principalPeter, Allow, "*", Create)
+      )
+    ) shouldBe true
+  }
+
+  it should "catch all YAML errors" in {
 
     val yaml =
       """users:
@@ -117,41 +166,26 @@ class YamlAclParserTest extends FlatSpec with Matchers {
         |        - Create,Allow,*
         |  tom:
         |    topics:
-        |      '*':
-        |       - Admin
+        |      test:
+        |       - All,Wrong,*
         |""".stripMargin
+    res = yamlAclParser.aclsFromReader(new StringReader(yaml))
 
-    val res = yamlAclParser.aclsFromReader(new StringReader(yaml))
+    res.result.left.get.foreach(e => println(e.asInstanceOf[YamlParserException].print()))
 
-    res.result.left.get.map(_.toString()).foreach(str => println(str))
-
-    res.result.left.get.map(_.toString()) shouldBe List(
-      "Could not parse ACL 'BadOperation,Deny,12.34.56.78' for principal 'User:alice' and resource 'Group:PREFIXED:mygroup-'",
-      "Could not parse ACL 'BadOperation2' for principal 'User:bob' and resource 'Group:LITERAL:group1'"
-    )
-  }
-
-  "aclsFromYaml" should "catch YAML syntax errors" in {
-
-    val yaml =
-      """users:
-        |  alice:
-        |    topics:
-        |      topic1: [ Consume, Produce ]
-        |  peter:
-        |    cluster:
-        |      '*':
-        |        - Create,Allow,*
-        |  tom:
-        |    topics:
-        |      '*': Admin # <-- ERROR HERE
-        |""".stripMargin
-
-    val res = yamlAclParser.aclsFromReader(new StringReader(yaml))
-
-    res.result.left.get.map(_.toString()) shouldBe List(
-      "DecodingFailure at .users.tom.topics.*: C[A]"
-    )
+    res.result.left.get.exists(
+      _.asInstanceOf[YamlParserException].print().matches(".*BadOperation.*?alice.*?mygroup.*")
+    ) shouldBe true
+    res.result.left.get.exists(
+      _.asInstanceOf[YamlParserException]
+        .print()
+        .matches(".*BadOperation2.*?bob.*?group1.*")
+    ) shouldBe true
+    res.result.left.get.exists(
+      _.asInstanceOf[YamlParserException]
+        .print()
+        .matches(".*Wrong.*?tom.*?test.*")
+    ) shouldBe true
   }
 
   "asYaml" should "correctly format entire ACL" in {

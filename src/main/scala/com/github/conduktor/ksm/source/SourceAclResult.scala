@@ -19,9 +19,9 @@ object SourceAclResult {
         y: SourceAclResult
     ): SourceAclResult = {
       if (x.result.isLeft || y.result.isLeft) {
-        SourceAclResult(Left(x.result.left.get ++ y.result.left.get))
+        SourceAclResult(Left(x.result.left.getOrElse(List()) ++ y.result.left.getOrElse(List())))
       } else {
-        SourceAclResult(Right(x.result.right.get ++ y.result.right.get))
+        SourceAclResult(Right(x.result.right.getOrElse(Set()) ++ y.result.right.getOrElse(Set())))
       }
     }
   }

@@ -7,7 +7,6 @@ import kafka.security.auth.Authorizer
 import kafka.utils.CoreUtils
 
 import scala.collection.JavaConverters._
-import scala.util.Try
 
 class AppConfig(config: Config) {
 
@@ -57,6 +56,7 @@ class AppConfig(config: Config) {
     val refreshFrequencyMs: Int = ksmConfig.getInt("refresh.frequency.ms")
     val numFailedRefreshesBeforeNotification: Int = ksmConfig.getInt("num.failed.refreshes.before.notification")
     val extract: Boolean = ksmConfig.getBoolean("extract")
+    val extractFormat: String = ksmConfig.getString("extract.format")
     val readOnly: Boolean = ksmConfig.getBoolean("readonly")
   }
 

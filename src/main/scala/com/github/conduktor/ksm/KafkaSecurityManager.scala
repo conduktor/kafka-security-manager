@@ -1,18 +1,11 @@
 package com.github.conduktor.ksm
 
-import java.util.concurrent.atomic.AtomicBoolean
-
-import com.github.conduktor.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.parser.{AclParser, CsvAclParser, YamlAclParser}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import scala.util.{Failure, Success, Try}
-import java.util.concurrent.{
-  ExecutionException,
-  Executors,
-  ScheduledExecutorService,
-  TimeUnit
-}
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{ExecutionException, Executors, ScheduledExecutorService, TimeUnit}
 
 object KafkaSecurityManager extends App {
 
@@ -24,10 +17,15 @@ object KafkaSecurityManager extends App {
   var isCancelled: AtomicBoolean = new AtomicBoolean(false)
   var aclSynchronizer: AclSynchronizer = _
   val aclParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
+  val yamlParser = new YamlAclParser()
   val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
   if (appConfig.KSM.extract) {
-    new ExtractAcl(appConfig.Authorizer.authorizer, aclParser).extract()
+    var parser: AclParser = aclParser
+    if (appConfig.KSM.extractFormat.equalsIgnoreCase("yaml")) {
+      parser = yamlParser
+    }
+    new ExtractAcl(appConfig.Authorizer.authorizer, parser).extract()
   } else {
     aclSynchronizer = new AclSynchronizer(
       appConfig.Authorizer.authorizer,
