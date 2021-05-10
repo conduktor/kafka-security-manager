@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [??]
 - Removed gRPC
+- Implemented support for additional parsers
+- Implemented YAML parser
 
 ## [0.10 - 02/18/2021]
 - Added config to control how often notifications on ACL Source refreshes are sent
@@ -16,11 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade to Kafka 2.5.0
 - Added Bitbucket Cloud as an ACL source
 - Added Branch parameter for Bitbucket Server ACL Source
-- Added GitLab as an ACL souce
+- Added GitLab as an ACL source
 - Massive refactor to better handle refresh and parsing exceptions
 
 ## [0.8 - 10/01/2020]
-- Added possibility to run AclSyncornizer just once and then stop KSM (Issue #56)
+- Added possibility to run AclSynchronizer just once and then stop KSM (Issue #56)
 - Updated to Kafka 2.3.1
 
 ## [0.7 - 24/07/2019]
@@ -75,5 +77,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Extract ACLs from Kafka. 
 - Tests including with Kafka running 
 - GitHub Enterprise Support
-- GitHub authentication Support
+- GitHub Authentication Support
 - Slack Notification Support

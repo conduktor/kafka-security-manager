@@ -7,7 +7,8 @@ With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
 
 # Kafka Security Manager
 
-Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source.
+Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. 
+Zookeeper just contains a copy of the ACLs instead of being the source.
 
 ![Kafka Security Manager Diagram](https://i.imgur.com/BuikeuB.png)
 
@@ -19,15 +20,53 @@ There are several advantages to this:
 
 Your role is to ensure that Kafka Security Manager is never down, as it is now a custodian of your ACL.
 
-A sample CSV to manage ACL is:
+## Parsers
+
+### CSV
+The csv parser is the default parser and also the fallback one in case no other parser is matched.
+
+This is a sample CSV acl file:
 ```
 KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
 User:alice,Topic,LITERAL,foo,Read,Allow,*
 User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
 User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ```
-
 **Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
+
+### YAML
+The yaml parser will load ACLs from yaml instead, to activate the parser just provide files with `yml` or `yaml` extension.
+
+An example YAML permission file might be:
+```yaml
+users:
+  alice:
+    topics:
+      foo:
+        - Read
+      bar*:
+        - Produce
+  bob:
+    groups:
+      bar:
+        - Write,Deny,12.34.56.78
+      bob*:
+        - All
+    transactional_ids:
+      bar-*:
+        - All
+  peter:
+    clusters:
+      kafka-cluster:
+        - Create
+```
+The YAML parser will handle automatically prefix patterns byt simply appending a star to your resource name.
+
+It also supports some helpers to simplify setup:
+- Consume (Read, Describe)
+- Produce (Write, Describe, Create, Cluster Create)
+
+## Sources
 
 Current sources shipping with KSM include:
 - File
