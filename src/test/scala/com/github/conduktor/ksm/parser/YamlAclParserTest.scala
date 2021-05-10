@@ -1,5 +1,6 @@
 package com.github.conduktor.ksm.parser
 
+import com.github.conduktor.ksm.parser.yaml.{YamlAclParser, YamlParserException}
 import com.github.conduktor.ksm.source.SourceAclResult
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
@@ -8,7 +9,6 @@ import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import java.io.StringReader
-import scala.util.matching.Regex
 
 class YamlAclParserTest extends FlatSpec with Matchers {
 

@@ -28,6 +28,7 @@ libraryDependencies ++= Seq(
 
   // test
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  "org.scalamock" %% "scalamock" % "5.1.0" % Test,
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",

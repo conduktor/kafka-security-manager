@@ -1,6 +1,7 @@
 package com.github.conduktor.ksm.notification
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.conduktor.ksm.parser.CsvParserException
+import com.github.conduktor.ksm.parser.csv.CsvParserException
+import com.github.conduktor.ksm.parser.yaml.YamlParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.LoggerFactory
@@ -89,6 +90,8 @@ class SlackNotification extends Notification {
     val messages = errs.map {
       case Failure(cPE: CsvParserException) =>
         s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}"
+      case Failure(cPE: YamlParserException) =>
+        s"${cPE.getLocalizedMessage} | Detail: ${cPE.print()}"
       case Success(t) => s"refresh exception: ${t.getLocalizedMessage}"
       case Failure(t) => s"refresh exception: ${t.getLocalizedMessage}"
     }

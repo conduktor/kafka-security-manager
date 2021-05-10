@@ -1,7 +1,8 @@
 package com.github.conduktor.ksm.parser
 
-import java.io.StringReader
+import com.github.conduktor.ksm.parser.csv.{CsvAclParser, CsvParserException}
 
+import java.io.StringReader
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils

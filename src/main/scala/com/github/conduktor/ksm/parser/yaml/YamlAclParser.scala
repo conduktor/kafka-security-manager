@@ -1,8 +1,9 @@
-package com.github.conduktor.ksm.parser
+package com.github.conduktor.ksm.parser.yaml
 
 import cats.data.Validated
 import cats.data.Validated.Valid
 import cats.implicits._
+import com.github.conduktor.ksm.parser.AclParser
 import com.github.conduktor.ksm.source.SourceAclResult
 import io.circe.generic.auto._
 import io.circe.syntax._

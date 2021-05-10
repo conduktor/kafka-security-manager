@@ -1,10 +1,11 @@
 package com.github.conduktor.ksm.notification
-import com.github.conduktor.ksm.parser.CsvParserException
+import com.github.conduktor.ksm.parser.csv.CsvParserException
+import com.github.conduktor.ksm.parser.yaml.YamlParserException
 import com.typesafe.config.Config
 import kafka.security.auth.{Acl, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.{Failure, Try, Success}
+import scala.util.{Failure, Success, Try}
 
 case class ConsoleNotification() extends Notification {
 
@@ -25,6 +26,8 @@ case class ConsoleNotification() extends Notification {
     errs.foreach {
       case Failure(cPE: CsvParserException) =>
         log.error(s"${cPE.getLocalizedMessage} | Row: ${cPE.printRow()}")
+      case Failure(cPE: YamlParserException) =>
+        log.error(s"${cPE.getLocalizedMessage} | Detail: ${cPE.print()}")
       case Success(t) => log.error("refresh exception", t)
       case Failure(t) => log.error("refresh exception", t)
     }

@@ -1,10 +1,12 @@
 package com.github.conduktor.ksm.parser
 
 import com.github.conduktor.ksm.AppConfig
+import com.github.conduktor.ksm.parser.csv.CsvAclParser
+import com.github.conduktor.ksm.parser.yaml.YamlAclParser
 
 class AclParserRegistry(val appConfig: AppConfig) {
 
-  val csvParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
+  val csvParser = new CsvAclParser(Option(appConfig).map(_.Parser).map(_.csvDelimiter).getOrElse(','))
   val yamlParser = new YamlAclParser()
 
   val parserMap: Map[String, AclParser] = Map(
@@ -25,8 +27,6 @@ class AclParserRegistry(val appConfig: AppConfig) {
       .find(_.matchesExtension(ext))
       .getOrElse(
         csvParser
-        // I avoid throwing to stay backwards compatible, extension was not influencing parsing
-        //throw new RuntimeException(s"Parser not found for extension: $ext")
       )
   }
 }

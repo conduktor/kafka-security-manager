@@ -1,18 +1,24 @@
 package com.github.conduktor.ksm.source
 
+import com.github.conduktor.ksm.parser.AclParserRegistry
+import com.github.conduktor.ksm.parser.csv.CsvAclParser
+import org.scalamock.scalatest.MixedMockFactory
+import org.scalatest.{FlatSpec, Matchers}
+import skinny.http.{HTTP, Request, Response}
+
 import java.io.{BufferedReader, Reader}
 import java.util.Base64
 import java.util.stream.Collectors
 
-import org.scalatest.{FlatSpec, Matchers}
-import skinny.http.{HTTP, Request, Response}
 
+class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMockFactory {
 
-class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
-
+  val csvlAclParser = new CsvAclParser()
+  val aclParserRegistryMock: AclParserRegistry = stub[AclParserRegistry]
+  (aclParserRegistryMock.getParserByFilename _).when(*).returns(csvlAclParser)
 
   "Test" should "Successfully return body for specific branch" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl()
+    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
     val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     dummyHttp.commitMatcher = req => {
       req.url.endsWith("commits") && req.queryParams.exists(q => q.name == "until" && q.value == "ref/feature-F1") && req.queryParams.length == 2
@@ -25,13 +31,12 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
 
     val response = bitbucketServerSoureAcl.refresh()
 
-
     response.isEmpty shouldBe false
-    readAllLines(response.get) shouldBe DummyHttp.browseFile
+    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully return body for acl" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl()
+    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
     val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
@@ -39,11 +44,11 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
     val response = bitbucketServerSoureAcl.refresh()
     
     response.isEmpty shouldBe false
-    readAllLines(response.get) shouldBe DummyHttp.browseFile
+    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Pass base64 auth to bitbucket" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl()
+    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
     val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     val expected = "Basic " + Base64.getEncoder.encodeToString("test:pwd".getBytes)
     populateSourceAcl(bitbucketServerSoureAcl)
@@ -56,11 +61,11 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
 
 
     response.isEmpty shouldBe false
-    readAllLines(response.get) shouldBe DummyHttp.browseFile
+    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully not return body if acl do not changed since last call" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl()
+    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
     val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
@@ -77,7 +82,7 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
   }
 
   "Test" should "Successfully return body if acl changed since last call" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl()
+    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
     val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContentFirst.getBytes))
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
@@ -113,7 +118,6 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers {
     source.branch = Option(branch)
   }
 }
-
 
 class DummyHttp(var commitsResponse: Response, var browseResponse: Response = Response(200, body = DummyHttp.browseFile.getBytes)) extends HTTP {
 

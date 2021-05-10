@@ -1,23 +1,20 @@
 package com.github.conduktor.ksm
 
-import java.io.Reader
-
 import com.github.conduktor.ksm.notification.{
   ConsoleNotification,
   DummyNotification
 }
-import com.github.conduktor.ksm.parser.{AclParser, CsvAclParser}
-import com.github.conduktor.ksm.source.{
-  DummySourceAcl,
-  SourceAcl,
-  SourceAclResult
-}
+import com.github.conduktor.ksm.parser.csv.CsvAclParser
+import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import com.github.conduktor.ksm.source.{DummySourceAcl, SourceAcl}
 import com.typesafe.config.Config
 import kafka.security.auth._
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{FlatSpec, Matchers}
 
+import java.io.Reader
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
@@ -25,9 +22,14 @@ class AclSynchronizerTest
     extends FlatSpec
     with EmbeddedKafka
     with Matchers
-    with Eventually {
+    with Eventually
+    with MockFactory {
 
   import TestFixtures._
+
+  val csvlAclParser = new CsvAclParser()
+  val aclParserRegistryMock: AclParserRegistry = stub[AclParserRegistry]
+  (aclParserRegistryMock.getParserByFilename _).when(*).returns(csvlAclParser)
 
   val aclParser = new CsvAclParser()
 
@@ -68,15 +70,13 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val dummySourceAcl = new DummySourceAcl
+      val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
       val dummyNotification = new DummyNotification
-      val aclParser = new CsvAclParser()
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
         dummyNotification,
-        aclParser,
         1,
         false
       )
@@ -140,7 +140,7 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val dummySourceAcl = new DummySourceAcl
+      val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
 
       val aclParser = new CsvAclParser()
 
@@ -148,7 +148,6 @@ class AclSynchronizerTest
         simpleAclAuthorizer,
         dummySourceAcl,
         new ConsoleNotification,
-        aclParser,
         1
       )
 
@@ -191,14 +190,13 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val dummySourceAcl = new DummySourceAcl
+      val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
       val dummyNotification = new DummyNotification
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
         dummyNotification,
-        aclParser,
         1
       )
 
@@ -220,7 +218,6 @@ class AclSynchronizerTest
     }
   }
 
-
   "applySourcesAcls" should "do nothing as long as there are errors" in {
     withRunningKafka {
       val simpleAclAuthorizer = new SimpleAclAuthorizer()
@@ -230,14 +227,13 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val dummySourceAcl = new DummySourceAcl
+      val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
       val dummyNotification = new DummyNotification
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
         dummySourceAcl,
         dummyNotification,
-        aclParser,
         1
       )
 
@@ -289,7 +285,7 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val dummySourceAcl = new DummySourceAcl
+      val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
       val dummyNotification = new DummyNotification
       val numFailedRefreshesBeforeNotification = 2
 
@@ -297,7 +293,6 @@ class AclSynchronizerTest
         simpleAclAuthorizer,
         dummySourceAcl,
         dummyNotification,
-        aclParser,
         numFailedRefreshesBeforeNotification
       )
 
@@ -310,7 +305,6 @@ class AclSynchronizerTest
         simpleAclAuthorizer
           .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
       }
-
 
       // error iteration
       dummyNotification.reset()
@@ -363,24 +357,13 @@ class AclSynchronizerTest
       )
       simpleAclAuthorizer.configure(configs.asJava)
 
-      val controlSourceAcl = new SourceAcl {
-        var refreshCalled = false
-        override val CONFIG_PREFIX: String = ""
-        override def configure(config: Config): Unit = {}
-        override def refresh(): Option[Reader] = {
-          refreshCalled = true
-          None
-        }
-        override def close(): Unit = {}
-      }
-
+      val sourceAclMock = stub[SourceAcl]
       val dummyNotification = new DummyNotification
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,
-        controlSourceAcl,
+        sourceAclMock,
         dummyNotification,
-        aclParser,
         1,
         readOnly = true
       )
@@ -392,8 +375,9 @@ class AclSynchronizerTest
       }
 
       aclSynchronizer.run()
-      controlSourceAcl.refreshCalled shouldBe false
       aclSynchronizer.close()
+
+      (sourceAclMock.refresh _).verify().never()
     }
   }
 
