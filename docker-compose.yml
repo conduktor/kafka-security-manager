@@ -29,9 +29,6 @@ services:
 
   kafka-security-manager:
     image: conduktor/kafka-security-manager:latest
-    ports:
-      - "50051:50051"
-      - "50052:50052"
     environment:
       KSM_READONLY: "false"
       AUTHORIZER_ZOOKEEPER_CONNECT: "zoo1:2181"
@@ -52,7 +49,6 @@ services:
       # AUTHORIZER_CLASS: "com.github.conduktor.ksm.compat.AdminClientAuthorizer"
       # ADMIN_CLIENT_BOOTSTRAP_SERVERS: "kafka1:19092"
       # set ADMIN_CLIENT_SECURITY_PROTOCOL, ADMIN_CLIENT_SASL_JAAS_CONFIG, ADMIN_CLIENT_SASL_MECHANISM, ADMIN_CLIENT_SSL_KEY_PASSWORD, ADMIN_CLIENT_SSL_KEYSTORE_LOCATION, ADMIN_CLIENT_SSL_KEYSTORE_PASSWORD, ADMIN_CLIENT_SSL_TRUSTSTORE_LOCATION, ADMIN_CLIENT_SSL_TRUSTSTORE_PASSWORD for a secure Kafka setup
-      FEATURE_GRPC: "true"
     volumes:
       - ${PWD}/example:/opt/docker/example:ro
     depends_on:
