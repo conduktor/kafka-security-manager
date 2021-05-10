@@ -57,10 +57,6 @@ dockerRepository := Some("conduktor")
 dockerUpdateLatest := true
 dockerBaseImage := "openjdk:8-jre-slim"
 
-PB.targets in Compile := Seq(
-  scalapb.gen() -> (sourceManaged in Compile).value,
-)
-
 // Add the default sonatype repository setting
 publishTo := sonatypePublishTo.value
 
