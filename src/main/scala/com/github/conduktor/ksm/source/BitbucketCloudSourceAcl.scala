@@ -1,13 +1,13 @@
 package com.github.conduktor.ksm.source
 
-import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import com.github.conduktor.ksm.parser.AclParserRegistry
+import com.typesafe.config.Config
+import org.slf4j.LoggerFactory
+import skinny.http.{HTTP, HTTPException, Request, Response}
 
 import java.io._
 import java.nio.charset.Charset
 import java.util.Base64
-import com.typesafe.config.Config
-import org.slf4j.LoggerFactory
-import skinny.http.{HTTP, HTTPException, Request, Response}
 
 class BitbucketCloudSourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -44,7 +44,7 @@ class BitbucketCloudSourceAcl(parserRegistry: AclParserRegistry)
     password = config.getString(AUTH_PASSWORD_CONFIG)
   }
 
-  override def refresh(): Option[(AclParser, Reader)] = {
+  override def refresh(): Option[ParsingContext] = {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
@@ -62,7 +62,7 @@ class BitbucketCloudSourceAcl(parserRegistry: AclParserRegistry)
       case 200 =>
         // we receive a valid response
         val reader = new BufferedReader(new StringReader(response.textBody))
-        Some((parserRegistry.getParserByFilename(filePath), reader))
+        Some(ParsingContext(parserRegistry.getParserByFilename(filePath), reader))
       case _ =>
         // uncaught error
         log.warn(response.asString)

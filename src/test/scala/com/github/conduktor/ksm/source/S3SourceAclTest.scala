@@ -40,7 +40,7 @@ class S3SourceAclTest extends FlatSpec with Matchers with MockFactory {
 
     reader match {
       case None => fail() // didn't read
-      case Some((_: AclParser, x: BufferedReader)) =>
+      case Some(ParsingContext(_: AclParser, x: BufferedReader)) =>
         val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).map(_.concat("\n")).mkString
 
         content shouldBe read

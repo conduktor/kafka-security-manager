@@ -5,6 +5,8 @@ import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import java.io.Reader
 import com.typesafe.config.Config
 
+case class ParsingContext(aclParser: AclParser, reader: Reader)
+
 abstract class SourceAcl(val parserRegistry: AclParserRegistry) {
 
   /**
@@ -27,7 +29,7 @@ abstract class SourceAcl(val parserRegistry: AclParserRegistry) {
     * Kafka Security Manager will not update Acls in Kafka until there are no errors in the result
     * @return
     */
-  def refresh(): Option[(AclParser, Reader)]
+  def refresh(): Option[ParsingContext]
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance

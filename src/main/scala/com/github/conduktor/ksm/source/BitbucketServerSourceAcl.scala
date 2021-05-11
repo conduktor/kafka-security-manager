@@ -1,13 +1,14 @@
 package com.github.conduktor.ksm.source
 
-import java.io.{Reader, StringReader}
-import java.nio.charset.Charset
-import java.util.Base64
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
+
+import java.io.StringReader
+import java.nio.charset.Charset
+import java.util.Base64
 
 class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -61,7 +62,7 @@ class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
       })
   }
 
-  override def refresh(): Option[(AclParser, Reader)] = {
+  override def refresh(): Option[ParsingContext] = {
     // get changes since last commit
     val url =
       s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
@@ -102,7 +103,7 @@ class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
               lastCommit = Some(values.get(0).get("id").asText())
               val data = fileResponse.textBody
               Some(
-                (
+                ParsingContext(
                   parserRegistry.getParserByFilename(filePath),
                   new StringReader(data)
                 )

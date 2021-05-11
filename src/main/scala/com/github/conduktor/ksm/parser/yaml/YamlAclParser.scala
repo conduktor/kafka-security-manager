@@ -38,13 +38,15 @@ class YamlAclParser() extends AclParser {
       resourceType: ResourceType
   ): Resource = {
 
-    if (resourceName.trim.endsWith("*") && resourceName.trim != "*")
+    val trimmedResourceName = resourceName.trim
+
+    if (trimmedResourceName.endsWith("*") && trimmedResourceName != "*")
       new Resource(
         resourceType,
-        resourceName.trim.dropRight(1),
+        trimmedResourceName.dropRight(1),
         PatternType.PREFIXED
       )
-    else new Resource(resourceType, resourceName.trim, PatternType.LITERAL)
+    else new Resource(resourceType, trimmedResourceName, PatternType.LITERAL)
   }
 
   def parseResource(
@@ -54,10 +56,9 @@ class YamlAclParser() extends AclParser {
   ): SourceAclResult = {
 
     val parsed = resources.toList.flatMap({
-      case (resourceName, resourceAcls) => {
+      case (resourceName, resourceAcls) =>
         val resource = getResource(resourceName, resourceType)
         resourceAcls.map(acl => parseAcl(principal, resource, acl))
-      }
     })
 
     val errors: List[YamlParserException] =

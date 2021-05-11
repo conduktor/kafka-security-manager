@@ -1,10 +1,11 @@
 package com.github.conduktor.ksm.source
 
-import java.io.{Reader, StringReader}
 import com.github.conduktor.ksm.TestFixtures._
-import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.github.conduktor.ksm.parser.csv.CsvAclParser
 import com.typesafe.config.Config
+
+import java.io.StringReader
 
 class DummySourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -35,7 +36,7 @@ class DummySourceAcl(parserRegistry: AclParserRegistry)
   // a states iterator, shifting its position changes current state
   private val sarsIterator = sars.iterator
 
-  override def refresh(): Option[(AclParser, Reader)] = {
+  override def refresh(): Option[ParsingContext] = {
     if (noneNext) {
       noneNext = false
       None
@@ -44,8 +45,10 @@ class DummySourceAcl(parserRegistry: AclParserRegistry)
       throw new RuntimeException("triggered error")
     } else {
       Some(
-        csvAclParser,
-        new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList))
+        ParsingContext(
+          csvAclParser,
+          new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList))
+        )
       )
     }
   }

@@ -32,7 +32,7 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
     val response = bitbucketServerSoureAcl.refresh()
 
     response.isEmpty shouldBe false
-    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
+    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully return body for acl" in {
@@ -44,7 +44,7 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
     val response = bitbucketServerSoureAcl.refresh()
     
     response.isEmpty shouldBe false
-    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
+    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Pass base64 auth to bitbucket" in {
@@ -61,7 +61,7 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
 
 
     response.isEmpty shouldBe false
-    readAllLines(response.get._2) shouldBe DummyHttp.browseFile
+    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully not return body if acl do not changed since last call" in {

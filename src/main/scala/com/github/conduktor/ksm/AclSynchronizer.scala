@@ -1,8 +1,7 @@
 package com.github.conduktor.ksm
 
 import com.github.conduktor.ksm.notification.Notification
-import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
-import com.github.conduktor.ksm.source.SourceAcl
+import com.github.conduktor.ksm.source.{ParsingContext, SourceAcl}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -96,7 +95,7 @@ class AclSynchronizer(
                 authorizer
               )
             }
-          case Some((parser, reader)) =>
+          case Some(ParsingContext(parser, reader)) =>
             val sourceAclResult = parser.aclsFromReader(reader)
             reader.close()
             sourceAclResult.result match {

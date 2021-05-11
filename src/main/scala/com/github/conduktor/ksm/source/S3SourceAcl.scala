@@ -57,7 +57,7 @@ class S3SourceAcl(parserRegistry: AclParserRegistry)
     *
     * @return
     */
-  override def refresh(): Option[(AclParser, Reader)] = {
+  override def refresh(): Option[ParsingContext] = {
     val s3 = s3Client()
     val s3object = Option(
       s3.getObject(
@@ -83,7 +83,7 @@ class S3SourceAcl(parserRegistry: AclParserRegistry)
         reader.close()
         bucket.close()
         Some(
-          (
+          ParsingContext(
             parserRegistry.getParserByFilename(key),
             new BufferedReader(new StringReader(content))
           )

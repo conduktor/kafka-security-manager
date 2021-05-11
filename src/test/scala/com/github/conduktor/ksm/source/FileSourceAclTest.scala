@@ -52,8 +52,8 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val reader = fileSourceAcl.refresh().get
-    csvlAclParser.aclsFromReader(reader._2).result shouldBe Right(
+    val parsingContext = fileSourceAcl.refresh().get
+    csvlAclParser.aclsFromReader(parsingContext.reader).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
 
@@ -93,7 +93,7 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val reader1: Reader = fileSourceAcl.refresh().get._2
+    val reader1: Reader = fileSourceAcl.refresh().get.reader
     csvlAclParser.aclsFromReader(reader1).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
@@ -111,11 +111,11 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     // we force the modification of the time of the file so that the test passes
     file.setLastModified(System.currentTimeMillis() + 10000)
 
-    val reader2 = fileSourceAcl.refresh().get
-    csvlAclParser.aclsFromReader(reader2._2).result shouldBe Right(
+    val reader2 = fileSourceAcl.refresh().get.reader
+    csvlAclParser.aclsFromReader(reader2).result shouldBe Right(
       Set(res1 -> acl1)
     )
-    reader2._2.close()
+    reader2.close()
   }
 
 }

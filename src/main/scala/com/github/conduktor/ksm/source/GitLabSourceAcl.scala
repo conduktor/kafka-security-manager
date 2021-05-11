@@ -1,13 +1,14 @@
 package com.github.conduktor.ksm.source
 
-import java.io.{Reader, StringReader}
-import java.nio.charset.Charset
-import java.util.Base64
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
+
+import java.io.StringReader
+import java.nio.charset.Charset
+import java.util.Base64
 
 class GitLabSourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -40,7 +41,7 @@ class GitLabSourceAcl(parserRegistry: AclParserRegistry)
     accessToken = config.getString(ACCESSTOKEN_CONFIG)
   }
 
-  override def refresh(): Option[(AclParser, Reader)] = {
+  override def refresh(): Option[ParsingContext] = {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -75,7 +76,7 @@ class GitLabSourceAcl(parserRegistry: AclParserRegistry)
             )
             // use the CSV Parser
             Some(
-              (
+              ParsingContext(
                 parserRegistry.getParserByFilename(filepath),
                 new StringReader(data)
               )
