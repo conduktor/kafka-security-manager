@@ -60,7 +60,7 @@ users:
       kafka-cluster:
         - Create
 ```
-The YAML parser will handle automatically prefix patterns byt simply appending a star to your resource name.
+The YAML parser will handle automatically prefix patterns by simply appending a star to your resource name.
 
 It also supports some helpers to simplify setup:
 - Consume (Read, Describe)
