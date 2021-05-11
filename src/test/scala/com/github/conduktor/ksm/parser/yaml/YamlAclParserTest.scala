@@ -1,6 +1,5 @@
-package com.github.conduktor.ksm.parser
+package com.github.conduktor.ksm.parser.yaml
 
-import com.github.conduktor.ksm.parser.yaml.{YamlAclParser, YamlParserException}
 import com.github.conduktor.ksm.source.SourceAclResult
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
@@ -160,6 +159,8 @@ class YamlAclParserTest extends FlatSpec with Matchers {
         |      group2:
         |        - Describe,Allow,*
         |        - Read
+        |        - Write,Deny
+        |        - Write,Deny,*,wrong
         |  peter:
         |    cluster:
         |      '*':

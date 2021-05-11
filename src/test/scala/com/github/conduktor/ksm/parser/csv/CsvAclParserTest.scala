@@ -1,12 +1,11 @@
-package com.github.conduktor.ksm.parser
+package com.github.conduktor.ksm.parser.csv
 
-import com.github.conduktor.ksm.parser.csv.{CsvAclParser, CsvParserException}
-
-import java.io.StringReader
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
+
+import java.io.StringReader
 
 class CsvAclParserTest extends FlatSpec with Matchers {
 

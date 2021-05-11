@@ -109,7 +109,7 @@ class YamlAclParser() extends AclParser {
                 (resource, Acl(principal, Allow, "*", Describe)),
                 (resource, Acl(principal, Allow, "*", Read))
               )
-            ).toEither.toValidated
+            )
           case (Topic, "produce") =>
             Valid(
               List(
@@ -118,7 +118,7 @@ class YamlAclParser() extends AclParser {
                 (resource, Acl(principal, Allow, "*", Write)),
                 (clusterWildcard, Acl(principal, Allow, "*", Create))
               )
-            ).toEither.toValidated
+            )
           case (_, opStr) =>
             Try {
               Operation.fromString(opStr)
@@ -132,6 +132,7 @@ class YamlAclParser() extends AclParser {
               .toValidated
               .map(op => List((resource, Acl(principal, Allow, "*", op))))
         }
+      case _ => Left(new YamlParserException(s"Could not parse ACL '$acl' for principal '$principal' and resource '$resource', pattern not supported", null)).toValidated
     }
   }
 
