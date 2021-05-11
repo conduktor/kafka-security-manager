@@ -18,10 +18,11 @@ object SourceAclResult {
         x: SourceAclResult,
         y: SourceAclResult
     ): SourceAclResult = {
-      if (x.result.isLeft || y.result.isLeft) {
-        SourceAclResult(Left(x.result.left.getOrElse(List()) ++ y.result.left.getOrElse(List())))
-      } else {
-        SourceAclResult(Right(x.result.right.getOrElse(Set()) ++ y.result.right.getOrElse(Set())))
+      (x.result, y.result) match {
+        case (Left(errX), Left(errY)) => SourceAclResult(Left(errX ++ errY))
+        case (Right(resX), Right(resY)) => SourceAclResult(Right(resX ++ resY))
+        case (Left(errX), Right(_)) => SourceAclResult(Left(errX))
+        case (Right(_), Left(errY)) => SourceAclResult(Left(errY))
       }
     }
   }
