@@ -254,7 +254,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-0.10 | 2.5.x | Add configurable num failed refreshes before notification 
+0.10 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
 0.9 | 2.5.x | Upgrade to Kafka 2.5.x
 0.8 | 2.3.1 | Add a "run once" mode
 0.7 | 2.1.1 | Kafka Based ACL refresher available (no zookeeper dependency)

@@ -4,12 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [??]
+## [0.10 - 12/05/2021]
 - Removed gRPC
-- Implemented support for additional parsers
-- Implemented YAML parser
-
-## [0.10 - 02/18/2021]
+- Implemented support for additional parsers (#74)
+- Implemented YAML parser (#74)
 - Added config to control how often notifications on ACL Source refreshes are sent
 - Fixed (#87) by ensuring that content from S3 buckets is read from the stream completely before the bucket is closed
 - Fixed (#88) S3SourceAcl from BufferedReader bug
