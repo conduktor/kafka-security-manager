@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [0.10 - 12/05/2021]
+## [0.10.2] - 12/05/2021
 - Removed gRPC
 - Implemented support for additional parsers (#74)
 - Implemented YAML parser (#74)
@@ -12,18 +12,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed (#87) by ensuring that content from S3 buckets is read from the stream completely before the bucket is closed
 - Fixed (#88) S3SourceAcl from BufferedReader bug
 
-## [0.9 - 08/07/2020]
+## [0.9] - 08/07/2020
 - Upgrade to Kafka 2.5.0
 - Added Bitbucket Cloud as an ACL source
 - Added Branch parameter for Bitbucket Server ACL Source
 - Added GitLab as an ACL source
 - Massive refactor to better handle refresh and parsing exceptions
 
-## [0.8 - 10/01/2020]
+## [0.8] - 10/01/2020
 - Added possibility to run AclSynchronizer just once and then stop KSM (Issue #56)
 - Updated to Kafka 2.3.1
 
-## [0.7 - 24/07/2019]
+## [0.7] - 24/07/2019
 - Kafka 2.1.1
 - No-zookeeper ACL managing via admin client
 - Scala 2.12.8, sbt 1.2.8
