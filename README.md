@@ -275,3 +275,12 @@ PRs are welcome, especially with the following:
 - Notification Channels (Email, etc...)
 
 Please open an issue before opening a PR.
+
+# Release process
+
+- update version in [build.sbt]
+- update [README.md] and [CHANGELOG.md]
+- push the tag (eg: `v0.10.0`)
+- update version in [build.sbt] to the next snapshot version
+
+That's it !
