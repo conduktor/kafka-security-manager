@@ -1,10 +1,12 @@
 package com.github.conduktor.ksm.source
 
-import java.io.{File, FileReader, Reader}
-
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 
-class FileSourceAcl extends SourceAcl {
+import java.io.{File, FileReader}
+
+class FileSourceAcl(parserRegistry: AclParserRegistry)
+    extends SourceAcl(parserRegistry) {
 
   override val CONFIG_PREFIX: String = "file"
   final val FILENAME_CONFIG = "filename"
@@ -26,12 +28,12 @@ class FileSourceAcl extends SourceAcl {
     * Uses a CSV parser on the file afterwards
     * @return
     */
-  override def refresh(): Option[Reader] = {
+  override def refresh(): Option[ParsingContext] = {
     val file = new File(filename)
     if (file.lastModified() > lastModified) {
       val reader = new FileReader(file)
       lastModified = file.lastModified()
-      Some(reader)
+      Some(ParsingContext(parserRegistry.getParserByFilename(filename), reader))
     } else {
       None
     }

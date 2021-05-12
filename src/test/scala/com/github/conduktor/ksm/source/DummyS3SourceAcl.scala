@@ -2,9 +2,11 @@ package com.github.conduktor.ksm.source
 
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import io.findify.s3mock.S3Mock
 
-class DummyS3SourceAcl extends S3SourceAcl {
+class DummyS3SourceAcl(parserRegistry: AclParserRegistry)
+    extends S3SourceAcl(parserRegistry) {
 
   val api: S3Mock =
     new S3Mock.Builder().withPort(8001).withInMemoryBackend.build

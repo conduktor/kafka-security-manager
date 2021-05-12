@@ -1,10 +1,13 @@
 package com.github.conduktor.ksm.source
 
-import java.io.Reader
+import com.github.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 
+import java.io.Reader
 import com.typesafe.config.Config
 
-trait SourceAcl {
+case class ParsingContext(aclParser: AclParser, reader: Reader)
+
+abstract class SourceAcl(val parserRegistry: AclParserRegistry) {
 
   /**
     * Config Prefix for configuring this module
@@ -26,7 +29,7 @@ trait SourceAcl {
     * Kafka Security Manager will not update Acls in Kafka until there are no errors in the result
     * @return
     */
-  def refresh(): Option[Reader]
+  def refresh(): Option[ParsingContext]
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance

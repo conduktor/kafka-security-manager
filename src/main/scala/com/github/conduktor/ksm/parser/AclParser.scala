@@ -7,8 +7,12 @@ import kafka.security.auth.{Acl, Resource}
 
 trait AclParser {
 
+  val name: String
+
   def aclsFromReader(reader: Reader): SourceAclResult
 
   def formatAcls(acls: List[(Resource, Acl)]): String
+
+  def matchesExtension(extension: String): Boolean
 
 }

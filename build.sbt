@@ -28,6 +28,7 @@ libraryDependencies ++= Seq(
 
   // test
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  "org.scalamock" %% "scalamock" % "5.1.0" % Test,
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",
@@ -38,6 +39,8 @@ libraryDependencies ++= Seq(
 
   // parsers
   "com.github.tototoshi" %% "scala-csv" % "1.3.5",
+  "io.circe" %% "circe-yaml" % "0.12.0",
+  "io.circe" %% "circe-generic" % "0.12.0",
 
   // APIs
   "org.skinny-framework" %% "skinny-http-client" % "2.3.7",

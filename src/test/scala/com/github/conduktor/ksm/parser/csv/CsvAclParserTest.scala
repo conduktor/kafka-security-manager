@@ -1,11 +1,11 @@
-package com.github.conduktor.ksm.parser
-
-import java.io.StringReader
+package com.github.conduktor.ksm.parser.csv
 
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalatest.{FlatSpec, Matchers}
+
+import java.io.StringReader
 
 class CsvAclParserTest extends FlatSpec with Matchers {
 
@@ -92,7 +92,7 @@ class CsvAclParserTest extends FlatSpec with Matchers {
     val res = csvAclParser.aclsFromReader(new StringReader(csv))
 
     res.result.left.get.size shouldBe 2
-    val csvParserException = res.result.left.get.head
+    val csvParserException = res.result.left.get.head.asInstanceOf[CsvParserException]
     csvParserException.printRow() should include("bob")
 
   }

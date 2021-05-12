@@ -7,7 +7,8 @@ With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
 
 # Kafka Security Manager
 
-Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source.
+Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. 
+Zookeeper just contains a copy of the ACLs instead of being the source.
 
 ![Kafka Security Manager Diagram](https://i.imgur.com/BuikeuB.png)
 
@@ -19,15 +20,53 @@ There are several advantages to this:
 
 Your role is to ensure that Kafka Security Manager is never down, as it is now a custodian of your ACL.
 
-A sample CSV to manage ACL is:
+## Parsers
+
+### CSV
+The csv parser is the default parser and also the fallback one in case no other parser is matched.
+
+This is a sample CSV acl file:
 ```
 KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
 User:alice,Topic,LITERAL,foo,Read,Allow,*
 User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
 User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
 ```
-
 **Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
+
+### YAML
+The yaml parser will load ACLs from yaml instead, to activate the parser just provide files with `yml` or `yaml` extension.
+
+An example YAML permission file might be:
+```yaml
+users:
+  alice:
+    topics:
+      foo:
+        - Read
+      bar*:
+        - Produce
+  bob:
+    groups:
+      bar:
+        - Write,Deny,12.34.56.78
+      bob*:
+        - All
+    transactional_ids:
+      bar-*:
+        - All
+  peter:
+    clusters:
+      kafka-cluster:
+        - Create
+```
+The YAML parser will handle automatically prefix patterns by simply appending a star to your resource name.
+
+It also supports some helpers to simplify setup:
+- Consume (Read, Describe)
+- Produce (Write, Describe, Create, Cluster Create)
+
+## Sources
 
 Current sources shipping with KSM include:
 - File
@@ -113,7 +152,8 @@ Overall we use the [lightbend config](https://github.com/lightbend/config) libra
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
-- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV)
+- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV or YAML)
+- `KSM_EXTRACT_FORMAT=csv`: selects which format to extract the ACLs with (defaults to csv, supports also yaml)
 - `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `0` or negative value, for example `-1`, then KMS executes ACL synchronization just once and exits
 - `KSM_NUM_FAILED_REFRESHES_BEFORE_NOTIFICATION=1`: how many times that the refresh of a Source needs to fail (e.g. HTTP timeouts) before a notification is sent. Any value less than or equal to `1` here will notify on every failure to refresh.
 - `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
@@ -138,7 +178,7 @@ The [default configurations](src/main/resources/application.conf) can be overwri
     - `com.github.conduktor.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
     - `com.github.conduktor.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
     - `com.github.conduktor.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
-    - `com.github.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using pesonal access tokens. Great to get started quickly and store the ACL securely under version control.
+    - `com.github.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using personal access tokens. Great to get started quickly and store the ACL securely under version control.
       - `SOURCE_GITLAB_REPOID` GitLab project id
       - `SOURCE_GITLAB_FILEPATH` Path to the ACL file in GitLab project
       - `SOURCE_GITLAB_BRANCH` Git Branch name

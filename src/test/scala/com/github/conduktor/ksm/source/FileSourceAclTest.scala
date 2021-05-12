@@ -1,18 +1,22 @@
 package com.github.conduktor.ksm.source
 
+import com.github.conduktor.ksm.parser.AclParserRegistry
+import com.github.conduktor.ksm.parser.csv.CsvAclParser
+
 import java.io.{File, Reader}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
-import com.github.conduktor.ksm.parser.CsvAclParser
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 
-class FileSourceAclTest extends FlatSpec with Matchers {
+class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
 
   val csvlAclParser = new CsvAclParser()
+  val aclParserRegistryMock: AclParserRegistry = stub[AclParserRegistry]
+  (aclParserRegistryMock.getParserByFilename _).when(*).returns(csvlAclParser)
 
   "fileSourceAcl Refresh" should "correctly parse a file" in {
 
@@ -30,7 +34,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
       content1.getBytes(StandardCharsets.UTF_8)
     )
 
-    val fileSourceAcl = new FileSourceAcl
+    val fileSourceAcl = new FileSourceAcl(aclParserRegistryMock)
     fileSourceAcl.filename = file.getAbsolutePath
 
     val acl1 =
@@ -48,8 +52,8 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val reader = fileSourceAcl.refresh().get
-    csvlAclParser.aclsFromReader(reader).result shouldBe Right(
+    val parsingContext = fileSourceAcl.refresh().get
+    csvlAclParser.aclsFromReader(parsingContext.reader).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
 
@@ -71,7 +75,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
       content1.getBytes(StandardCharsets.UTF_8)
     )
 
-    val fileSourceAcl = new FileSourceAcl
+    val fileSourceAcl = new FileSourceAcl(aclParserRegistryMock)
     fileSourceAcl.filename = file.getAbsolutePath
 
     val acl1 =
@@ -89,7 +93,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val reader1: Reader = fileSourceAcl.refresh().get
+    val reader1: Reader = fileSourceAcl.refresh().get.reader
     csvlAclParser.aclsFromReader(reader1).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
@@ -107,7 +111,7 @@ class FileSourceAclTest extends FlatSpec with Matchers {
     // we force the modification of the time of the file so that the test passes
     file.setLastModified(System.currentTimeMillis() + 10000)
 
-    val reader2 = fileSourceAcl.refresh().get
+    val reader2 = fileSourceAcl.refresh().get.reader
     csvlAclParser.aclsFromReader(reader2).result shouldBe Right(
       Set(res1 -> acl1)
     )

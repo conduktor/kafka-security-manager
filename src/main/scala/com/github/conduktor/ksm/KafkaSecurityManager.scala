@@ -1,18 +1,11 @@
 package com.github.conduktor.ksm
 
-import java.util.concurrent.atomic.AtomicBoolean
-
-import com.github.conduktor.ksm.parser.CsvAclParser
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import scala.util.{Failure, Success, Try}
-import java.util.concurrent.{
-  ExecutionException,
-  Executors,
-  ScheduledExecutorService,
-  TimeUnit
-}
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{ExecutionException, Executors, ScheduledExecutorService, TimeUnit}
 
 object KafkaSecurityManager extends App {
 
@@ -23,17 +16,17 @@ object KafkaSecurityManager extends App {
 
   var isCancelled: AtomicBoolean = new AtomicBoolean(false)
   var aclSynchronizer: AclSynchronizer = _
-  val aclParser = new CsvAclParser(appConfig.Parser.csvDelimiter)
+  val parserRegistry: AclParserRegistry = new AclParserRegistry(appConfig)
   val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
   if (appConfig.KSM.extract) {
-    new ExtractAcl(appConfig.Authorizer.authorizer, aclParser).extract()
+    val parser = parserRegistry.getParser(appConfig.KSM.extractFormat)
+    new ExtractAcl(appConfig.Authorizer.authorizer, parser).extract()
   } else {
     aclSynchronizer = new AclSynchronizer(
       appConfig.Authorizer.authorizer,
-      appConfig.Source.sourceAcl,
+      appConfig.Source.createSource(parserRegistry),
       appConfig.Notification.notification,
-      aclParser,
       appConfig.KSM.numFailedRefreshesBeforeNotification,
       appConfig.KSM.readOnly
     )

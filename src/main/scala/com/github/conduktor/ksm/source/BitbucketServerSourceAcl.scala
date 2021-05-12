@@ -1,15 +1,17 @@
 package com.github.conduktor.ksm.source
 
-import java.io.{Reader, StringReader}
-import java.nio.charset.Charset
-import java.util.Base64
-
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
-class BitbucketServerSourceAcl extends SourceAcl {
+import java.io.StringReader
+import java.nio.charset.Charset
+import java.util.Base64
+
+class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
+    extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[BitbucketServerSourceAcl])
 
@@ -51,10 +53,16 @@ class BitbucketServerSourceAcl extends SourceAcl {
     filePath = config.getString(FILEPATH_CONFIG)
     username = config.getString(AUTH_USERNAME_CONFIG)
     password = config.getString(AUTH_PASSWORD_CONFIG)
-    branch = Option().filter({ _ => config.hasPath(BRANCH_CONFIG)}).map({_ => config.getString(BRANCH_CONFIG)})
+    branch = Option()
+      .filter({ _ =>
+        config.hasPath(BRANCH_CONFIG)
+      })
+      .map({ _ =>
+        config.getString(BRANCH_CONFIG)
+      })
   }
 
-  override def refresh(): Option[Reader] = {
+  override def refresh(): Option[ParsingContext] = {
     // get changes since last commit
     val url =
       s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
@@ -94,7 +102,12 @@ class BitbucketServerSourceAcl extends SourceAcl {
               // update the last commit id
               lastCommit = Some(values.get(0).get("id").asText())
               val data = fileResponse.textBody
-              Some(new StringReader(data))
+              Some(
+                ParsingContext(
+                  parserRegistry.getParserByFilename(filePath),
+                  new StringReader(data)
+                )
+              )
             case _ =>
               // throw error as you can't retrieve the file
               log.warn(response.asString)

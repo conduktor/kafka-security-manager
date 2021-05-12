@@ -1,10 +1,9 @@
 package com.github.conduktor.ksm.source
-import java.io.Reader
 
-import com.github.conduktor.ksm.parser.AclParser
+import com.github.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 
-class NoSourceAcl extends SourceAcl {
+class NoSourceAcl(parserRegistry: AclParserRegistry) extends SourceAcl(parserRegistry) {
 
   /**
     * Config Prefix for configuring this module
@@ -27,7 +26,7 @@ class NoSourceAcl extends SourceAcl {
     *
     * @return
     */
-  override def refresh(): Option[Reader] = None
+  override def refresh(): Option[ParsingContext] = None
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance

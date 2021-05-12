@@ -1,7 +1,6 @@
-package com.github.conduktor.ksm.parser
+package com.github.conduktor.ksm.parser.csv
 
-import java.io.Reader
-
+import com.github.conduktor.ksm.parser.AclParser
 import com.github.conduktor.ksm.source.SourceAclResult
 import com.github.tototoshi.csv.{CSVFormat, CSVReader, QUOTE_MINIMAL, Quoting}
 import kafka.security.auth._
@@ -9,6 +8,7 @@ import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.slf4j.LoggerFactory
 
+import java.io.Reader
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -20,6 +20,8 @@ import scala.util.{Failure, Success, Try}
 class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
 
   import CsvAclParser._
+
+  override val name: String = "csv"
 
   // we treat empty lines as Nil hence the format override
   implicit val csvFormat: CSVFormat = new CSVFormat {
@@ -126,6 +128,8 @@ class CsvAclParser(delimiterInput: Char = ',') extends AclParser {
     }
     sb.toString()
   }
+
+  override def matchesExtension(extension: String): Boolean = extension.equalsIgnoreCase("csv")
 }
 
 object CsvAclParser {
