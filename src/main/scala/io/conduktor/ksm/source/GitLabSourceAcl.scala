@@ -3,7 +3,6 @@ package io.conduktor.ksm.source
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.source
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
@@ -42,7 +41,7 @@ class GitLabSourceAcl(parserRegistry: AclParserRegistry)
     accessToken = config.getString(ACCESSTOKEN_CONFIG)
   }
 
-  override def refresh(): Option[ParsingContext] = {
+  override def refresh(): List[ParsingContext] = {
     val url =
       s"https://$hostname/api/v4/projects/$repoid/repository/files/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -62,7 +61,7 @@ class GitLabSourceAcl(parserRegistry: AclParserRegistry)
         log.info(
           s"No changes were detected in the ACL file ${filepath}. Skipping .... "
         )
-        None
+        List()
       case _ =>
         val response: Response = HTTP.get(request)
         response.status match {
@@ -76,8 +75,9 @@ class GitLabSourceAcl(parserRegistry: AclParserRegistry)
               Charset.forName("UTF-8")
             )
             // use the CSV Parser
-            Some(
-              source.ParsingContext(
+            List(
+              ParsingContext(
+                filepath,
                 parserRegistry.getParserByFilename(filepath),
                 new StringReader(data)
               )

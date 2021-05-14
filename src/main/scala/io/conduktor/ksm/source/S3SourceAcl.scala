@@ -1,15 +1,14 @@
 package io.conduktor.ksm.source
 
-import java.io._
-import java.util.Date
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3._
 import com.amazonaws.services.s3.model._
-import io.conduktor.ksm.parser.AclParserRegistry
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.source
 import org.slf4j.LoggerFactory
+
+import java.io._
+import java.util.Date
 
 class S3SourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -59,7 +58,7 @@ class S3SourceAcl(parserRegistry: AclParserRegistry)
     *
     * @return
     */
-  override def refresh(): Option[ParsingContext] = {
+  override def refresh(): List[ParsingContext] = {
     val s3 = s3Client()
     val s3object = Option(
       s3.getObject(
@@ -84,13 +83,14 @@ class S3SourceAcl(parserRegistry: AclParserRegistry)
 
         reader.close()
         bucket.close()
-        Some(
-          source.ParsingContext(
+        List(
+          ParsingContext(
+            key,
             parserRegistry.getParserByFilename(key),
             new BufferedReader(new StringReader(content))
           )
         )
-      case None => None
+      case None => List()
     }
   }
 

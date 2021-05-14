@@ -26,7 +26,7 @@ class NoSourceAcl(parserRegistry: AclParserRegistry) extends SourceAcl(parserReg
     *
     * @return
     */
-  override def refresh(): Option[ParsingContext] = None
+  override def refresh(): List[ParsingContext] = List()
 
   /**
     * Close all the necessary underlying objects or connections belonging to this instance

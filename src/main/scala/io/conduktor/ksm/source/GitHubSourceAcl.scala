@@ -3,7 +3,6 @@ package io.conduktor.ksm.source
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.source
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
@@ -49,7 +48,7 @@ class GitHubSourceAcl(parserRegistry: AclParserRegistry)
     tokenOpt = Try(config.getString(AUTH_TOKEN_CONFIG)).toOption
   }
 
-  override def refresh(): Option[ParsingContext] = {
+  override def refresh(): List[ParsingContext] = {
     val url =
       s"https://$hostname/repos/$user/$repo/contents/$filepath?ref=$branch"
     val request: Request = new Request(url)
@@ -80,11 +79,15 @@ class GitHubSourceAcl(parserRegistry: AclParserRegistry)
           Charset.forName("UTF-8")
         )
         // use the CSV Parser
-        Some(
-          source.ParsingContext(parserRegistry.getParserByFilename(filepath), new StringReader(data))
+        List(
+          ParsingContext(
+            filepath,
+            parserRegistry.getParserByFilename(filepath),
+            new StringReader(data)
+          )
         )
       case 304 =>
-        None
+        List()
       case _ =>
         // we got an http error so we propagate it
         log.warn(response.asString)
