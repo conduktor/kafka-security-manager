@@ -2,3 +2,4 @@
 set -ex
 
 sbt clean test
+
