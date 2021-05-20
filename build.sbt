@@ -1,6 +1,6 @@
 name := "kafka-security-manager"
 
-organization := "com.github.conduktor.ksm"
+organization := "io.github.conduktor"
 
 version := "0.11.0-SNAPSHOT"
 

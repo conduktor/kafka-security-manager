@@ -1,5 +1,5 @@
 // Your profile name of the sonatype account. The default is the same with the organization value
-sonatypeProfileName := "com.github.conduktor"
+sonatypeProfileName := "io.github.conduktor"
 
 // To sync with Maven central, you need to supply the following information:
 publishMavenStyle := true
@@ -16,7 +16,7 @@ developers := List(Developer(id="conduktor",name="Stephane Maarek",email="conduk
 credentials ++= (for {
   username <- sys.env.get("SONATYPE_USERNAME")
   password <- sys.env.get("SONATYPE_PASSWORD")
-} yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+} yield Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", username, password)).toSeq
 
 
 pgpPublicRing := file("./travis/local.pubring.asc")
