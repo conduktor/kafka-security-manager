@@ -61,7 +61,12 @@ dockerUpdateLatest := true
 dockerBaseImage := "openjdk:8-jre-slim"
 
 // Add the default sonatype repository setting
-publishTo := sonatypePublishTo.value
+// publishTo := sonatypePublishTo.value
+publishTo := sonatypePublishToBundle.value
+// ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", _ @ _*) => MergeStrategy.discard
