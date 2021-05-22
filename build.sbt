@@ -1,8 +1,23 @@
+inThisBuild(List(
+  organization := "io.github.conduktor",
+  homepage := Some(url("https://github.com/olafurpg/sbt-ci-release")),
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "conduktor",
+      "Stephane Maarek",
+      "conduktor@users.noreply.github.com",
+      url("https://github.com/conduktor")
+    )
+  )
+))
+
+
 name := "kafka-security-manager"
 
-organization := "io.github.conduktor"
+// organization := "io.github.conduktor"
 
-version := "0.11.0-SNAPSHOT"
+// version := "0.11.0-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
@@ -62,7 +77,7 @@ dockerBaseImage := "openjdk:8-jre-slim"
 
 // Add the default sonatype repository setting
 // publishTo := sonatypePublishTo.value
-publishTo := sonatypePublishToBundle.value
+// publishTo := sonatypePublishToBundle.value
 // ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"

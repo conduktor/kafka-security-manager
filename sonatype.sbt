@@ -21,6 +21,6 @@ credentials ++= (for {
 } yield Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", username, password)).toSeq
 
 
-pgpPublicRing := file("./travis/pubring.asc")
-pgpSecretRing := file("./travis/secring.asc")
-pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray)
+// pgpPublicRing := file("./travis/pubring.asc")
+// pgpSecretRing := file("./travis/secring.asc")
+// pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray)
