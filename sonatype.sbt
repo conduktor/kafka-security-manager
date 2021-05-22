@@ -13,12 +13,12 @@ sonatypeProjectHosting := Some(GitHubHosting("conduktor", "kafka-security-manage
 
 developers := List(Developer(id="conduktor",name="Stephane Maarek",email="conduktor@users.noreply.github.com",url=  url("https://github.com/conduktor")))
 sonatypeCredentialHost := "s01.oss.sonatype.org"
-credentials += Credentials(Path.userHome / ".sbt/" / "sonatype_credentials")
+//credentials += Credentials(Path.userHome / ".sbt/" / "sonatype_credentials")
 
-//credentials ++= (for {
-//  username <- sys.env.get("SONATYPE_USERNAME")
-//  password <- sys.env.get("SONATYPE_PASSWORD")
-//} yield Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", username, password)).toSeq
+credentials ++= (for {
+  username <- sys.env.get("SONATYPE_USERNAME")
+  password <- sys.env.get("SONATYPE_PASSWORD")
+} yield Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", username, password)).toSeq
 
 
 pgpPublicRing := file("./travis/pubring.asc")
