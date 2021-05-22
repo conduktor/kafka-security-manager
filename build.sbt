@@ -13,7 +13,7 @@ lazy val root = (project in file("."))
 
 
 resolvers ++= Seq(
-  "Artima Maven Repository" at "http://repo.artima.com/releases",
+  "Artima Maven Repository" at "https://repo.artima.com/releases",
   Resolver.bintrayRepo("beyondthelines", "maven")
 )
 
