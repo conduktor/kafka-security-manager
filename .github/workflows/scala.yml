@@ -25,8 +25,8 @@ jobs:
       run: sbt universal:packageBin
       if: startsWith(github.ref, 'refs/tags/v')
 
-    - name: publish
-      run: sbt publishSigned
+    # - name: publish
+    #   run: sbt publishSigned
 
     - uses: olafurpg/setup-scala@v10
     - run: sbt ci-release
