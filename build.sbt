@@ -15,7 +15,6 @@ inThisBuild(List(
 
 name := "kafka-security-manager"
 
-// organization := "io.github.conduktor"
 
 version := "0.11.0-SNAPSHOT"
 
@@ -75,12 +74,6 @@ dockerRepository := Some("conduktor")
 dockerUpdateLatest := true
 dockerBaseImage := "openjdk:8-jre-slim"
 
-// Add the default sonatype repository setting
-// publishTo := sonatypePublishTo.value
-// publishTo := sonatypePublishToBundle.value
-// ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
-// sonatypeCredentialHost := "s01.oss.sonatype.org"
-// sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 
 assemblyMergeStrategy in assembly := {
