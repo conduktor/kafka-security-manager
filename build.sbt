@@ -1,6 +1,20 @@
+inThisBuild(List(
+  organization := "io.conduktor",
+  homepage := Some(url("https://github.com/conduktor/kafka-security-manager")),
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "conduktor",
+      "Stephane Maarek",
+      "conduktor@users.noreply.github.com",
+      url("https://github.com/conduktor")
+    )
+  )
+))
+
+
 name := "kafka-security-manager"
 
-organization := "com.github.conduktor.ksm"
 
 version := "0.11.0-SNAPSHOT"
 
@@ -13,7 +27,7 @@ lazy val root = (project in file("."))
 
 
 resolvers ++= Seq(
-  "Artima Maven Repository" at "http://repo.artima.com/releases",
+  "Artima Maven Repository" at "https://repo.artima.com/releases",
   Resolver.bintrayRepo("beyondthelines", "maven")
 )
 
@@ -60,8 +74,7 @@ dockerRepository := Some("conduktor")
 dockerUpdateLatest := true
 dockerBaseImage := "openjdk:8-jre-slim"
 
-// Add the default sonatype repository setting
-publishTo := sonatypePublishTo.value
+
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", _ @ _*) => MergeStrategy.discard
