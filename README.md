@@ -254,7 +254,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-1.0.0 | 2.5.x | renamed packages to `io.conduktor` 
+0.11.0 | 2.5.x | renamed packages to `io.conduktor` 
 0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
 0.9 | 2.5.x | Upgrade to Kafka 2.5.x
 0.8 | 2.3.1 | Add a "run once" mode
