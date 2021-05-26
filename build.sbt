@@ -1,5 +1,5 @@
 inThisBuild(List(
-  organization := "io.github.conduktor",
+  organization := "io.conduktor",
   homepage := Some(url("https://github.com/conduktor/kafka-security-manager")),
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
   developers := List(

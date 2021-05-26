@@ -1,4 +1,4 @@
-ThisBuild / organization := "io.github.conduktor"
+ThisBuild / organization := "io.conduktor"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
