@@ -16,7 +16,7 @@ inThisBuild(List(
 name := "kafka-security-manager"
 
 
-version := "0.11.0-SNAPSHOT"
+version := "1.0-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
@@ -65,7 +65,7 @@ libraryDependencies ++= Seq(
 
 )
 
-mainClass in Compile := Some("com.github.conduktor.ksm.KafkaSecurityManager")
+mainClass in Compile := Some("io.conduktor.ksm.KafkaSecurityManager")
 
 parallelExecution in Test := false
 
