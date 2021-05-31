@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.11] - SNAPSHOT
 - Renamed packages to `io.conduktor`
 - Prepared release to sonatype and Maven
+- Renamed `ksm.extract` config to `ksm.extract.enable` (breaking change)
 
 ## [0.10.2] - 12/05/2021
 - Removed gRPC
