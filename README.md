@@ -92,8 +92,6 @@ This is a Scala app and therefore should run on the JVM like any other applicati
 
 By using the JAR dependency, you can create your own `SourceAcl`.
 
-SNAPSHOTS artifacts are deployed to [Sonatype](https://oss.sonatype.org/content/repositories/snapshots/io/conduktor/)
-
 RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cio.conduktor):
 
 `build.sbt` (see [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cio.conduktor) for the latest `version`)
@@ -254,6 +252,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
+1.0.0-SNAPSHOT | 2.5.x | 
 0.11.0 | 2.5.x | renamed packages to `io.conduktor`. Breaking change on extract config name
 0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
 0.9 | 2.5.x | Upgrade to Kafka 2.5.x
@@ -279,7 +278,7 @@ Please open an issue before opening a PR.
 
 # Release process
 
-- update version in [build.sbt]
+- update version in [build.sbt] (make sure to use format vX.Y.Z)
 - update [README.md] and [CHANGELOG.md]
 - push the tag (eg: `v0.10.0`)
 - update version in [build.sbt] to the next snapshot version

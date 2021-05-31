@@ -16,7 +16,7 @@ inThisBuild(List(
 name := "kafka-security-manager"
 
 
-version := "0.11"
+version := "1.0.0-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
