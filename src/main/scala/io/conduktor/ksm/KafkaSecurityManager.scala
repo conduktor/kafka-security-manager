@@ -19,6 +19,13 @@ object KafkaSecurityManager extends App {
   val parserRegistry: AclParserRegistry = new AclParserRegistry(appConfig)
   val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
+  // For backward compatibility, see https://github.com/conduktor/kafka-security-manager/issues/103
+  val oldExtractConfig = sys.env.get("KSM_EXTRACT")
+  if (oldExtractConfig.isDefined) {
+    log.error("The KSM_EXTRACT environment variable has been renamed to KSM_EXTRACT_ENABLE. Please fix your scripts")
+    sys.exit(1)
+  }
+
   if (appConfig.KSM.extract) {
     val parser = parserRegistry.getParser(appConfig.KSM.extractFormat)
     new ExtractAcl(appConfig.Authorizer.authorizer, parser).extract()

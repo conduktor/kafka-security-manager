@@ -152,7 +152,7 @@ Overall we use the [lightbend config](https://github.com/lightbend/config) libra
 The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
 
 - `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
-- `KSM_EXTRACT=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV or YAML)
+- `KSM_EXTRACT_ENABLE=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV or YAML)
 - `KSM_EXTRACT_FORMAT=csv`: selects which format to extract the ACLs with (defaults to csv, supports also yaml)
 - `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `0` or negative value, for example `-1`, then KMS executes ACL synchronization just once and exits
 - `KSM_NUM_FAILED_REFRESHES_BEFORE_NOTIFICATION=1`: how many times that the refresh of a Source needs to fail (e.g. HTTP timeouts) before a notification is sent. Any value less than or equal to `1` here will notify on every failure to refresh.
@@ -215,7 +215,7 @@ Alternatively, you can get the automatically built Docker images on [Docker Hub]
 Then apply to the docker run using for example (in EXTRACT mode):
 
 ```
-docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRACT=true \
+docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRACT_ENABLE=true \
             conduktor/kafka-security-manager:latest
 ```
 
@@ -234,7 +234,7 @@ For full usage of the docker-compose file see [kafka-security-manager](https://g
 
 ## Extracting ACLs
 
-You can initially extract all your existing ACL in Kafka by running the program with the config `extract=true` or `export KSM_EXTRACT=true`
+You can initially extract all your existing ACL in Kafka by running the program with the config `ksm.extract.enable=true` or `export KSM_EXTRACT_ENABLE=true`
 
 Output should look like:
 ```
@@ -254,7 +254,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-0.11.0 | 2.5.x | renamed packages to `io.conduktor` 
+0.11.0 | 2.5.x | renamed packages to `io.conduktor`. Breaking change on extract config name
 0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
 0.9 | 2.5.x | Upgrade to Kafka 2.5.x
 0.8 | 2.3.1 | Add a "run once" mode
