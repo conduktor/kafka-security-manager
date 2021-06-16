@@ -189,6 +189,14 @@ The [default configurations](src/main/resources/application.conf) can be overwri
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
     - `io.conduktor.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
     - `io.conduktor.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
+    - `io.conduktor.ksm.source.HttpSourceAcl`: get the ACL from an HTTP endpoint. You can enable [Google OAuth OIDC Token Authentication](https://cloud.google.com/docs/authentication/production).
+        - `SOURCE_HTTP_URL` HTTP endpoint to retrieve ACL data.
+        - `SOURCE_HTTP_METHOD` HTTP Method. Default is `GET`.
+        - `SOURCE_HTTP_ENABLE_AUTH` If enable Google OICD Authentication. Default is `false`.
+        - `SOURCE_HTTP_SERVICE_ACCOUNT` Google Service Account name.
+        - `SOURCE_HTTP_SERVICE_ACCOUNT_KEY` Google Service Account Key in JSON string encoded. If not the key isn't configured, it'll try to get the token from environment.
+        - `SOURCE_HTTP_TARGET_AUDIENCE` Google Target Audience for token authentication.
+
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
     - `io.conduktor.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `io.conduktor.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)

@@ -45,6 +45,7 @@ class SlackNotification extends Notification {
       val messages = acls.map {
         case (resource, acl) =>
           val message = Notification.printAcl(acl, resource)
+          log.info(s"$action $message")
           s"$action $message"
       }.toList
 
