@@ -2,6 +2,7 @@ package io.conduktor.ksm
 
 import com.typesafe.config.ConfigFactory
 import io.conduktor.ksm.parser.AclParserRegistry
+import io.conduktor.ksm.web.Server
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.atomic.AtomicBoolean
@@ -18,6 +19,7 @@ object KafkaSecurityManager extends App {
   var aclSynchronizer: AclSynchronizer = _
   val parserRegistry: AclParserRegistry = new AclParserRegistry(appConfig)
   val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+  var server: Server = _
 
   // For backward compatibility, see https://github.com/conduktor/kafka-security-manager/issues/103
   val oldExtractConfig = sys.env.get("KSM_EXTRACT")
@@ -37,6 +39,7 @@ object KafkaSecurityManager extends App {
       appConfig.KSM.numFailedRefreshesBeforeNotification,
       appConfig.KSM.readOnly
     )
+    server = new Server(appConfig.Server.port, List(aclSynchronizer))
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
@@ -54,6 +57,7 @@ object KafkaSecurityManager extends App {
         log.info(
           "Continuous mode: ACL will be synchronized every " + appConfig.KSM.refreshFrequencyMs + " ms."
         )
+        server.start()
         val handle = scheduler.scheduleAtFixedRate(
           aclSynchronizer,
           0,
@@ -68,13 +72,14 @@ object KafkaSecurityManager extends App {
     } finally {
       shutdown()
     }
-
   }
 
   def shutdown(): Unit = {
     log.info("Kafka Security Manager is shutting down...")
     isCancelled = new AtomicBoolean(true)
     aclSynchronizer.close()
+    if (server != null)
+      server.stop()
     scheduler.shutdownNow()
   }
 }
