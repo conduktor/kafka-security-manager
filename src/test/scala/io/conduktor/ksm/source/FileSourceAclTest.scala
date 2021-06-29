@@ -2,15 +2,15 @@ package io.conduktor.ksm.source
 
 import io.conduktor.ksm.parser.AclParserRegistry
 import io.conduktor.ksm.parser.csv.CsvAclParser
-
-import java.io.{File, Reader}
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 import kafka.security.auth._
 import org.apache.kafka.common.resource.PatternType
 import org.apache.kafka.common.utils.SecurityUtils
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
+
+import java.io.{File, Reader}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
 
@@ -52,7 +52,7 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val parsingContext = fileSourceAcl.refresh().get
+    val parsingContext = fileSourceAcl.refresh().head
     csvlAclParser.aclsFromReader(parsingContext.reader).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
@@ -93,7 +93,7 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     val res2 = Resource(Group, "bar", PatternType.PREFIXED)
     val res3 = Resource(Cluster, "kafka-cluster", PatternType.LITERAL)
 
-    val reader1: Reader = fileSourceAcl.refresh().get.reader
+    val reader1: Reader = fileSourceAcl.refresh().head.reader
     csvlAclParser.aclsFromReader(reader1).result shouldBe Right(
       Set(res1 -> acl1, res2 -> acl2, res3 -> acl3)
     )
@@ -111,7 +111,7 @@ class FileSourceAclTest extends FlatSpec with Matchers with MockFactory {
     // we force the modification of the time of the file so that the test passes
     file.setLastModified(System.currentTimeMillis() + 10000)
 
-    val reader2 = fileSourceAcl.refresh().get.reader
+    val reader2 = fileSourceAcl.refresh().head.reader
     csvlAclParser.aclsFromReader(reader2).result shouldBe Right(
       Set(res1 -> acl1)
     )

@@ -1,7 +1,8 @@
 package io.conduktor.ksm
 
+import cats.implicits._
 import io.conduktor.ksm.notification.Notification
-import io.conduktor.ksm.source.{ParsingContext, SourceAcl}
+import io.conduktor.ksm.source.{ParsingContext, SourceAcl, SourceAclResult}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -83,42 +84,56 @@ class AclSynchronizer(
     Try(sourceAcl.refresh()) match {
       case Success(result) =>
         failedRefreshes = 0
-        result.foreach { context: ParsingContext =>
-          context match {
-            case ParsingContext(resourceKey, aclParser, reader, true) =>
-              val sourceAclResult = aclParser.aclsFromReader(reader)
-              reader.close()
-              sourceAclResult.result match {
-                // the source has changed
-                case Right(ksmAcls) =>
-                  // we have a new result, so we cache it
-                  sourceAclsCache += (resourceKey -> ksmAcls)
-                  applySourceAcls(
-                    sourceAclsCache(resourceKey),
-                    getKafkaAcls,
-                    notification,
-                    authorizer
+        result
+          .map { context: ParsingContext =>
+            context match {
+              // in case there is an update
+              case ParsingContext(resourceKey, aclParser, reader, true) =>
+                val sourceAclResult = aclParser.aclsFromReader(reader)
+                reader.close()
+                // add to the cache if successful
+                sourceAclResult.result match {
+                  case Right(kafkaAcls) =>
+                    sourceAclsCache += (resourceKey -> kafkaAcls)
+                }
+                sourceAclResult
+              case ParsingContext(resourceKey, _, _, false) =>
+                // no update necessary, fetch from cache
+                SourceAclResult(
+                  Right(
+                    sourceAclsCache
+                      .getOrElse(
+                        resourceKey,
+                        // this should never happen, sources should set shouldUpdate to true the first time
+                        throw new RuntimeException(
+                          s"The resource '$resourceKey' does not exist in the cache."
+                        )
+                      )
                   )
-                case Left(parsingExceptions: List[Exception]) =>
-                  // parsing exceptions we want to notify
-                  log.error(
-                    "Exceptions while refreshing ACL source:",
-                    parsingExceptions.map(e => e.toString).mkString("\n")
-                  )
-                  // ugly but for now this will do
-                  notification.notifyErrors(
-                    parsingExceptions.map(e => Failure(e))
-                  )
-              }
-            case ParsingContext(resourceKey, _, _, false) =>
-              // the source does not need updating, reapply the permission
-              applySourceAcls(
-                sourceAclsCache.getOrElse(resourceKey, Set()),
-                getKafkaAcls,
-                notification,
-                authorizer
-              )
+                )
+            }
           }
+          .combineAll
+          .result match {
+          // the source has changed
+          case Right(ksmAcls) =>
+            // we have a new result, so we cache it
+            applySourceAcls(
+              ksmAcls,
+              getKafkaAcls,
+              notification,
+              authorizer
+            )
+          case Left(parsingExceptions: List[Exception]) =>
+            // parsing exceptions we want to notify
+            log.error(
+              "Exceptions while refreshing ACL source:",
+              parsingExceptions.map(e => e.toString).mkString("\n")
+            )
+            // ugly but for now this will do
+            notification.notifyErrors(
+              parsingExceptions.map(e => Failure(e))
+            )
         }
       case Failure(e) =>
         // errors such as HTTP exceptions when refreshing
