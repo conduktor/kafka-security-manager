@@ -1,12 +1,10 @@
 package io.conduktor.ksm
 
-import io.conduktor.ksm.source.SourceAcl
 import io.conduktor.ksm.notification.Notification
 import io.conduktor.ksm.source.{ParsingContext, SourceAcl}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 object AclSynchronizer {
@@ -67,8 +65,7 @@ class AclSynchronizer(
 
   import AclSynchronizer._
 
-  private val sourceAclsCache: mutable.Map[String, Set[(Resource, Acl)]] =
-    mutable.Map()
+  private var sourceAclsCache: Map[String, Set[(Resource, Acl)]] = Map()
   private var failedRefreshes: Int = 0
 
   if (readOnly) {
@@ -95,7 +92,7 @@ class AclSynchronizer(
                 // the source has changed
                 case Right(ksmAcls) =>
                   // we have a new result, so we cache it
-                  sourceAclsCache + (resourceKey -> ksmAcls)
+                  sourceAclsCache += (resourceKey -> ksmAcls)
                   applySourceAcls(
                     sourceAclsCache(resourceKey),
                     getKafkaAcls,
@@ -110,7 +107,7 @@ class AclSynchronizer(
                   )
                   // ugly but for now this will do
                   notification.notifyErrors(
-                    parsingExceptions.map(e => Try(throw e))
+                    parsingExceptions.map(e => Failure(e))
                   )
               }
             case ParsingContext(resourceKey, _, _, false) =>

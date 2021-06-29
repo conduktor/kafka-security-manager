@@ -2,17 +2,19 @@ package io.conduktor.ksm.source
 
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{File, FileReader}
-import scala.util.Try
 
 class FileSourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
 
+  private val log: Logger =
+    LoggerFactory.getLogger(classOf[FileSourceAcl].getSimpleName)
+
   override val CONFIG_PREFIX: String = "file"
   final val FILENAME_CONFIG = "filename"
 
-  var lastModified: Long = -1
   var filename: String = _
   val modifiedMap: Map[String, Long] = Map[String, Long]()
 
@@ -54,6 +56,7 @@ class FileSourceAcl(parserRegistry: AclParserRegistry)
         )
       )
     } else {
+      log.error(s"The provided path does not exist: $path")
       List()
     }
   }
