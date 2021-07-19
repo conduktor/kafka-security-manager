@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.auth.oauth2.{GoogleCredentials, IdTokenCredentials, IdTokenProvider, ServiceAccountCredentials}
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
-import org.apache.http.HttpHeaders
+import org.apache.http.HttpHeaders.CONTENT_LENGTH
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
@@ -22,7 +22,6 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   private val expirationMap = collection.mutable.Map[String, Instant]()
 
   private final val IAM_SCOPE = "https://www.googleapis.com/auth/iam"
-  private final val CONTENT_LENGTH = HttpHeaders.CONTENT_LENGTH.toLowerCase
 
   /**
     * Config Prefix for configuring this module
@@ -142,10 +141,12 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   }
 
   private def validateBodyLength(response: Response): Unit = {
-    val optContentLengthHeader = response.header(CONTENT_LENGTH)
-      .map(h => h.toInt)
+    val optContentLengthHeader = response.headers
+      .find(h => CONTENT_LENGTH.equalsIgnoreCase(h._1))
+      .map(h => h._2)
+      .map(l => l.toInt)
     if (optContentLengthHeader.isEmpty) {
-      log.warn(s"Response doesn't contain $CONTENT_LENGTH header, only contained the following headers: ${response.headers.keySet}")
+      log.warn(s"Response doesn't contain ${CONTENT_LENGTH} header, only contained the following headers: ${response.headers.keySet}")
       return
     }
 
