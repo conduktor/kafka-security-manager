@@ -1,11 +1,12 @@
 [![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/ScalaCI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
 
-![Kafka Security Manager Diagram](https://i.imgur.com/DdVhUYQ.png)
-
 # An open-source project by   [![Conduktor.io](https://www.conduktor.io/uploads/conduktor.svg)](https://conduktor.io/)
 
 This project is sponsored by [Conduktor.io](https://www.conduktor.io/), a graphical desktop user interface for Apache Kafka.
 With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
+
+![Kafka Security Manager Diagram](https://i.imgur.com/DdVhUYQ.png)
+
 
 # Kafka Security Manager
 
