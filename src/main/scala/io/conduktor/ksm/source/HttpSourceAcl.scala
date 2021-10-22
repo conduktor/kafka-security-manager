@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.auth.oauth2.{GoogleCredentials, IdTokenCredentials, IdTokenProvider, ServiceAccountCredentials}
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
+import org.apache.http.HttpHeaders.CONTENT_LENGTH
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
@@ -122,6 +123,8 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       case 200 =>
         lastModified = response.header("Last-Modified")
 
+        validateBodyLength(response)
+
         Some(
           ParsingContext(
             parserRegistry.getParser(this.parser),
@@ -137,15 +140,42 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     }
   }
 
+  private def validateBodyLength(response: Response): Unit = {
+    val optContentLengthHeader = response.headers
+      .find(h => CONTENT_LENGTH.equalsIgnoreCase(h._1))
+      .map(h => h._2)
+      .map(l => l.toInt)
+    if (optContentLengthHeader.isEmpty) {
+      log.warn(s"Response doesn't contain ${CONTENT_LENGTH} header, only contained the following headers: ${response.headers.keySet}")
+      return
+    }
+
+    val contentLengthHeader = optContentLengthHeader.get
+    val bodyLength = response.asBytes.length
+    log.info(s"Validating body length ($bodyLength bytes) received from $uri against Content-Length header ($contentLengthHeader bytes) claimed in response")
+    try {
+      val reader = new BufferedReader(new StringReader(response.textBody))
+      val aclLineCount = reader.lines.count
+      log.info("There were {} lines in the response received from {}", aclLineCount, uri)
+      reader.close()
+    }
+    catch {
+      case e: Exception => log.warn(s"Failed to compute number of lines in the response received from $uri", e)
+    }
+    if (contentLengthHeader != bodyLength) {
+      val errorMessage = s"Body length ($bodyLength bytes) inconsistent with Content-Length header ($contentLengthHeader bytes)"
+      log.error(errorMessage)
+      throw HTTPException(Some(errorMessage), response)
+    }
+  }
+
   private def getIdToken(): String = {
     val audience = this.targetAudience
 
     if (jwtMap.get(audience) != null
       && expirationMap.get(audience) != null
-      && Instant
-      .now()
-      .isBefore(expirationMap.get(audience).getOrElse(Instant.MIN)))
-      return jwtMap.get(audience).get
+      && Instant.now().isBefore(expirationMap.getOrElse(audience, Instant.MIN)))
+      return jwtMap(audience)
 
     log.info("Getting IdToken from Google Cloud")
 
