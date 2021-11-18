@@ -8,18 +8,16 @@ import org.apache.http.HttpHeaders.CONTENT_LENGTH
 import org.slf4j.LoggerFactory
 import skinny.http.{HTTP, HTTPException, Request, Response}
 
-import java.io.{StringReader, _}
+import java.io._
 import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.Collections
+import java.util.{Collections, Date}
 
 class HttpSourceAcl(parserRegistry: AclParserRegistry)
   extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[HttpSourceAcl])
 
-  private val jwtMap = collection.mutable.Map[String, String]()
-  private val expirationMap = collection.mutable.Map[String, Instant]()
+  private var tokenCache: IdTokenCredentials = _
 
   private final val IAM_SCOPE = "https://www.googleapis.com/auth/iam"
 
@@ -93,11 +91,11 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   /**
     * Refresh the current view on the external source of truth for Acl
     * Ideally this function is smart and does not pull the entire external Acl at every iteration
-    * Return `None` if the Source Acls have not changed (usually using metadata).
-    * Return `Some(x)` if the Acls have changed. `x` represents the parsing and parsing errors if any
+    * Return `None` if the Source ACLs have not changed (usually using metadata).
+    * Return `Some(x)` if the ACLs have changed. `x` represents the parsing and parsing errors if any
     * Note: the first call to this function should never return `None`.
     *
-    * Kafka Security Manager will not update Acls in Kafka until there are no errors in the result
+    * Kafka Security Manager will not update ACLs in Kafka until there are no errors in the result
     *
     * @return
     */
@@ -117,6 +115,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
 
     // we use this header for the 304
     lastModified.foreach(header => request.header("If-Modified-Since", header))
+    request.header("Content-Type", "text/plain") // only type supported for now
     val response: Response = HTTP.get(request)
 
     response.status match {
@@ -146,7 +145,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       .map(h => h._2)
       .map(l => l.toInt)
     if (optContentLengthHeader.isEmpty) {
-      log.warn(s"Response doesn't contain ${CONTENT_LENGTH} header, only contained the following headers: ${response.headers.keySet}")
+      log.warn(s"Response doesn't contain $CONTENT_LENGTH header, only contained the following headers: ${response.headers.keySet}. Skipping validation...")
       return
     }
 
@@ -170,32 +169,23 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   }
 
   private def getIdToken(): String = {
-    val audience = this.targetAudience
-
-    if (jwtMap.get(audience) != null
-      && expirationMap.get(audience) != null
-      && Instant.now().isBefore(expirationMap.getOrElse(audience, Instant.MIN)))
-      return jwtMap(audience)
-
-    log.info("Getting IdToken from Google Cloud")
-
-    try {
-      val jwt = this.getJwtFromGoogleIam
-      // Add cache for 30 minutes
-      log.info("Adding Token to cache for 30 minutes")
-      jwtMap.put(audience, jwt)
-      expirationMap.put(audience, Instant.now().plus(30, ChronoUnit.MINUTES))
-      jwt
-    } catch {
-      case e: IOException =>
-        throw new RuntimeException("Couldn't get IdToken", e)
+    if (tokenCache == null
+      || Date.from(Instant.now()).after(tokenCache.getIdToken.getExpirationTime)) {
+      try {
+        log.info("Getting IdToken from Google Cloud")
+        tokenCache = this.getJwtFromGoogleIam
+      } catch {
+        case e: Exception =>
+          throw new RuntimeException("Couldn't get IdToken", e)
+      }
     }
+    tokenCache.getRequestMetadata().get("Authorization").get(0) // Bearer Token
   }
 
   import java.io.IOException
 
   @throws[IOException]
-  private def getJwtFromGoogleIam: String = {
+  private def getJwtFromGoogleIam: IdTokenCredentials = {
     val credentials = if (serviceAccountKey == null || serviceAccountKey.isEmpty) {
       log.info("Getting Google Default Application Credentials...")
       GoogleCredentials.getApplicationDefault
@@ -206,17 +196,17 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
         .createScoped(Collections.singleton(IAM_SCOPE))
     }
 
-    if (!credentials.isInstanceOf[IdTokenProvider])
-      throw new RuntimeException(
+    credentials match {
+      case credentials: IdTokenProvider =>
+        IdTokenCredentials.newBuilder
+          .setIdTokenProvider(credentials.asInstanceOf[ServiceAccountCredentials])
+          .setTargetAudience(this.targetAudience)
+          .build
+      case credentials: Any =>  throw new RuntimeException(
         s"Google Credentials: wrong type of token provider. Expected: IdTokenProvider, got: $credentials"
       )
+    }
 
-    val idTokenCredentials = IdTokenCredentials.newBuilder
-      .setIdTokenProvider(credentials.asInstanceOf[ServiceAccountCredentials])
-      .setTargetAudience(this.targetAudience)
-      .build
-
-    idTokenCredentials.getRequestMetadata().get("Authorization").get(0)
   }
 
   /**
