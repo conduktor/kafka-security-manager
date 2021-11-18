@@ -29,7 +29,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   final val URL = "url"
   final val PARSER = "parser"
   final val METHOD = "method"
-  final val ENABLE_AUTH = "enable_auth"
+  final val AUTHENTICATION_TYPE = "authentication_type"
   final val SERVICE_ACCOUNT = "service_account"
   final val SERVICE_ACCOUNT_KEY = "service_account_key"
   final val TARGET_AUDIENCE = "target_audience"
@@ -40,24 +40,16 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   var uri: String = _
   var parser: String = "csv"
   var httpMethod: Method = _
-  var enableAuth: Boolean = false
+  var authenticationType: AuthenticationType = AuthenticationType.NONE
   var serviceAccountName: String = _
   var targetAudience: String = _
   var serviceAccountKey: String = _
 
-  def configure(
-                 url: String,
-                 parser: String,
-                 method: String,
-                 enableAuth: Boolean,
-                 serviceAccount: String,
-                 targetAudience: String,
-                 serviceAccountKey: String
-               ): Unit = {
+  def configure(url: String, parser: String, method: String, authenticationType: String, serviceAccount: String, targetAudience: String, serviceAccountKey: String): Unit = {
     this.uri = url
     this.parser = parser
     this.httpMethod = new Method(method)
-    this.enableAuth = enableAuth
+    this.authenticationType = new AuthenticationType(authenticationType)
     this.serviceAccountName = serviceAccount
     this.targetAudience = targetAudience
     this.serviceAccountKey = serviceAccountKey
@@ -76,8 +68,8 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     this.httpMethod = new Method(config.getString(METHOD))
     log.info("HTTP Method: {}", this.httpMethod)
 
-    this.enableAuth = config.getBoolean(ENABLE_AUTH)
-    log.info("Enable Auth: {}", this.enableAuth)
+    this.authenticationType = new AuthenticationType(config.getString(AUTHENTICATION_TYPE))
+    log.info("HTTP Authentication Type: {}", this.authenticationType)
 
     this.serviceAccountName = config.getString(SERVICE_ACCOUNT)
     log.info("Service Account: {}", this.serviceAccountName)
@@ -108,7 +100,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     request.connectTimeoutMillis(Int.MaxValue)
     request.readTimeoutMillis(Int.MaxValue)
 
-    if (enableAuth) {
+    if (authenticationType == AuthenticationType.GOOGLE_IAM) {
       request.header("Authorization", getIdToken())
     }
 
@@ -213,5 +205,12 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     */
   override def close(): Unit = {
 
+  }
+
+  case class AuthenticationType(name: String)
+
+  object AuthenticationType {
+    val GOOGLE_IAM: AuthenticationType = AuthenticationType("GOOGLE_IAM")
+    val NONE: AuthenticationType = AuthenticationType("NONE")
   }
 }
