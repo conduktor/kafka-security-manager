@@ -6,7 +6,7 @@ import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
 import org.apache.http.HttpHeaders.CONTENT_LENGTH
 import org.slf4j.LoggerFactory
-import skinny.http.{HTTP, HTTPException, Request, Response}
+import skinny.http._
 
 import java.io._
 import java.time.Instant
@@ -39,7 +39,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
 
   var uri: String = _
   var parser: String = "csv"
-  var httpMethod: String = _
+  var httpMethod: Method = _
   var enableAuth: Boolean = false
   var serviceAccountName: String = _
   var targetAudience: String = _
@@ -56,7 +56,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
                ): Unit = {
     this.uri = url
     this.parser = parser
-    this.httpMethod = method
+    this.httpMethod = new Method(method)
     this.enableAuth = enableAuth
     this.serviceAccountName = serviceAccount
     this.targetAudience = targetAudience
@@ -73,7 +73,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     this.parser = config.getString(PARSER)
     log.info("PARSER: {}", this.parser)
 
-    this.httpMethod = config.getString(METHOD)
+    this.httpMethod = new Method(config.getString(METHOD))
     log.info("HTTP Method: {}", this.httpMethod)
 
     this.enableAuth = config.getBoolean(ENABLE_AUTH)
@@ -109,14 +109,13 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     request.readTimeoutMillis(Int.MaxValue)
 
     if (enableAuth) {
-      val authorization = getIdToken()
-      request.header("Authorization", authorization)
+      request.header("Authorization", getIdToken())
     }
 
     // we use this header for the 304
     lastModified.foreach(header => request.header("If-Modified-Since", header))
     request.header("Content-Type", "text/plain") // only type supported for now
-    val response: Response = HTTP.get(request)
+    val response: Response = HTTP.request(httpMethod, request)
 
     response.status match {
       case 200 =>
@@ -173,7 +172,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       || Date.from(Instant.now()).after(tokenCache.getIdToken.getExpirationTime)) {
       try {
         log.info("Getting IdToken from Google Cloud")
-        tokenCache = this.getJwtFromGoogleIam
+        tokenCache = getJwtFromGoogleIam
       } catch {
         case e: Exception =>
           throw new RuntimeException("Couldn't get IdToken", e)
