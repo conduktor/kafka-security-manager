@@ -5,6 +5,9 @@
 This project is sponsored by [Conduktor.io](https://www.conduktor.io/), a graphical desktop user interface for Apache Kafka.
 With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
 
+![Kafka Security Manager Diagram](https://i.imgur.com/DdVhUYQ.png)
+
+
 # Kafka Security Manager
 
 Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. 
