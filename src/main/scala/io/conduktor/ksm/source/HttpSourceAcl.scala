@@ -1,25 +1,19 @@
 package io.conduktor.ksm.source
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.auth.oauth2.{GoogleCredentials, IdTokenCredentials, IdTokenProvider, ServiceAccountCredentials}
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
+import io.conduktor.ksm.source.security.{GoogleIAM, HttpAuthentication}
 import org.apache.http.HttpHeaders.CONTENT_LENGTH
 import org.slf4j.LoggerFactory
 import skinny.http._
 
 import java.io._
-import java.time.Instant
-import java.util.{Collections, Date}
 
 class HttpSourceAcl(parserRegistry: AclParserRegistry)
   extends SourceAcl(parserRegistry) {
 
   private val log = LoggerFactory.getLogger(classOf[HttpSourceAcl])
-
-  private var tokenCache: IdTokenCredentials = _
-
-  private final val IAM_SCOPE = "https://www.googleapis.com/auth/iam"
 
   /**
     * Config Prefix for configuring this module
@@ -29,10 +23,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   final val URL = "url"
   final val PARSER = "parser"
   final val METHOD = "method"
-  final val AUTHENTICATION_TYPE = "authentication_type"
-  final val SERVICE_ACCOUNT = "service_account"
-  final val SERVICE_ACCOUNT_KEY = "service_account_key"
-  final val TARGET_AUDIENCE = "target_audience"
+  final val AUTHENTICATION_TYPE = "auth.type"
 
   var lastModified: Option[String] = None
   val objectMapper = new ObjectMapper()
@@ -40,22 +31,22 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   var uri: String = _
   var parser: String = "csv"
   var httpMethod: Method = _
-  var authenticationType: AuthenticationType = AuthenticationType.NONE
-  var serviceAccountName: String = _
-  var targetAudience: String = _
-  var serviceAccountKey: String = _
+  var authentication: Option[HttpAuthentication] = _
 
-  def configure(url: String, parser: String, method: String, authenticationType: String, serviceAccount: String, targetAudience: String, serviceAccountKey: String): Unit = {
+  def configure(url: String, parser: String, method: String, authentication: Option[HttpAuthentication]): Unit = {
     this.uri = url
     this.parser = parser
     this.httpMethod = new Method(method)
-    this.authenticationType = new AuthenticationType(authenticationType)
-    this.serviceAccountName = serviceAccount
-    this.targetAudience = targetAudience
-    this.serviceAccountKey = serviceAccountKey
+    this.authentication = authentication
+  }
+  def configure(url: String, parser: String, method: String): Unit = {
+    this.uri = url
+    this.parser = parser
+    this.httpMethod = new Method(method)
+    this.authentication = None
   }
 
-  /**
+    /**
     * internal config definition for the module
     */
   override def configure(config: Config): Unit = {
@@ -68,16 +59,11 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     this.httpMethod = new Method(config.getString(METHOD))
     log.info("HTTP Method: {}", this.httpMethod)
 
-    this.authenticationType = new AuthenticationType(config.getString(AUTHENTICATION_TYPE))
-    log.info("HTTP Authentication Type: {}", this.authenticationType)
-
-    this.serviceAccountName = config.getString(SERVICE_ACCOUNT)
-    log.info("Service Account: {}", this.serviceAccountName)
-
-    this.targetAudience = config.getString(TARGET_AUDIENCE)
-    log.info("Target Audience: {}", this.targetAudience)
-
-    this.serviceAccountKey = config.getString(SERVICE_ACCOUNT_KEY)
+    this.authentication = config.getString(AUTHENTICATION_TYPE) match {
+      case "googleiam" => Some(new GoogleIAM(config.getConfig("auth.googleiam")))
+      case _ => None
+    }
+    log.info("HTTP Authentication: {}", this.authentication)
   }
 
   /**
@@ -100,9 +86,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     request.connectTimeoutMillis(Int.MaxValue)
     request.readTimeoutMillis(Int.MaxValue)
 
-    if (authenticationType == AuthenticationType.GOOGLE_IAM) {
-      request.header("Authorization", getIdToken())
-    }
+    authentication.map(authentication => request.header(authentication.authHeaderKey, authentication.authHeaderValue))
 
     // we use this header for the 304
     lastModified.foreach(header => request.header("If-Modified-Since", header))
@@ -159,58 +143,10 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     }
   }
 
-  private def getIdToken(): String = {
-    if (tokenCache == null
-      || Date.from(Instant.now()).after(tokenCache.getIdToken.getExpirationTime)) {
-      try {
-        log.info("Getting IdToken from Google Cloud")
-        tokenCache = getJwtFromGoogleIam
-      } catch {
-        case e: Exception =>
-          throw new RuntimeException("Couldn't get IdToken", e)
-      }
-    }
-    tokenCache.getRequestMetadata().get("Authorization").get(0) // Bearer Token
-  }
-
-  import java.io.IOException
-
-  @throws[IOException]
-  private def getJwtFromGoogleIam: IdTokenCredentials = {
-    val credentials = if (serviceAccountKey == null || serviceAccountKey.isEmpty) {
-      log.info("Getting Google Default Application Credentials...")
-      GoogleCredentials.getApplicationDefault
-    } else {
-      log.info("Getting Google Credentials from Key File...")
-      GoogleCredentials
-        .fromStream(new ByteArrayInputStream(this.serviceAccountKey.getBytes))
-        .createScoped(Collections.singleton(IAM_SCOPE))
-    }
-
-    credentials match {
-      case credentials: IdTokenProvider =>
-        IdTokenCredentials.newBuilder
-          .setIdTokenProvider(credentials.asInstanceOf[ServiceAccountCredentials])
-          .setTargetAudience(this.targetAudience)
-          .build
-      case credentials: Any =>  throw new RuntimeException(
-        s"Google Credentials: wrong type of token provider. Expected: IdTokenProvider, got: $credentials"
-      )
-    }
-
-  }
-
   /**
     * Close all the necessary underlying objects or connections belonging to this instance
     */
   override def close(): Unit = {
 
-  }
-
-  case class AuthenticationType(name: String)
-
-  object AuthenticationType {
-    val GOOGLE_IAM: AuthenticationType = AuthenticationType("GOOGLE_IAM")
-    val NONE: AuthenticationType = AuthenticationType("NONE")
   }
 }
