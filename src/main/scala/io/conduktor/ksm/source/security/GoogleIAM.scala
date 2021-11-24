@@ -74,9 +74,9 @@ class GoogleIAM extends HttpAuthentication {
 
 
     credentials match {
-      case credentials: IdTokenProvider =>
+      case credentials: ServiceAccountCredentials =>
       IdTokenCredentials.newBuilder
-        .setIdTokenProvider(credentials.asInstanceOf[ServiceAccountCredentials])
+        .setIdTokenProvider(credentials)
         .setTargetAudience(this.targetAudience)
         .build
       case credentials: Any => throw new RuntimeException(

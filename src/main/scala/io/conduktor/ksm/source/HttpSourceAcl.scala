@@ -97,6 +97,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       case 200 =>
         lastModified = response.header("Last-Modified")
 
+        // as skinny HTTP doesn't validate HTTP Header Content-Length
         validateBodyLength(response)
 
         Some(
@@ -114,6 +115,11 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     }
   }
 
+  /**
+    * Validate HTTP Header Content-Length against response payload length.
+    *
+    * @param response HTTP response
+    */
   private def validateBodyLength(response: Response): Unit = {
     val optContentLengthHeader = response.headers
       .find(h => CONTENT_LENGTH.equalsIgnoreCase(h._1))
@@ -128,10 +134,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     val bodyLength = response.asBytes.length
     log.info(s"Validating body length ($bodyLength bytes) received from $uri against Content-Length header ($contentLengthHeader bytes) claimed in response")
     try {
-      val reader = new BufferedReader(new StringReader(response.textBody))
-      val aclLineCount = reader.lines.count
-      log.info("There were {} lines in the response received from {}", aclLineCount, uri)
-      reader.close()
+      log.debug("There were {} lines in the response received from {}", response.textBody.lines().count(), uri)
     }
     catch {
       case e: Exception => log.warn(s"Failed to compute number of lines in the response received from $uri", e)
