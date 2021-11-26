@@ -43,6 +43,7 @@ libraryDependencies ++= Seq(
   // test
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalamock" %% "scalamock" % "5.1.0" % Test,
+  "com.github.tomakehurst" % "wiremock" % "2.27.2" % Test,
 
   // logging
   "org.slf4j" % "slf4j-api" % "1.7.25",
@@ -61,7 +62,10 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.9.4",
 
   // AWS SDK to access S3
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.385"
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.385",
+
+  // Google Auth
+  "com.google.auth" % "google-auth-library-oauth2-http" % "0.25.5"
 
 )
 
