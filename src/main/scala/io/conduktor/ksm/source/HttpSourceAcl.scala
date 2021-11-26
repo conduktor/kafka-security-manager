@@ -134,7 +134,7 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
     val bodyLength = response.asBytes.length
     log.info(s"Validating body length ($bodyLength bytes) received from $uri against Content-Length header ($contentLengthHeader bytes) claimed in response")
     try {
-      log.debug("There were {} lines in the response received from {}", response.textBody.lines().count(), uri)
+      log.debug("There were {} lines in the response received from {}", response.textBody.linesIterator.length, uri)
     }
     catch {
       case e: Exception => log.warn(s"Failed to compute number of lines in the response received from $uri", e)
