@@ -12,7 +12,7 @@ ThisBuild /developers := List(
 
 name := "kafka-security-manager"
 
-version := "1.0.1"
+version := "1.1.0-SNAPSHOT"
 
 scalaVersion := "2.12.15"
 

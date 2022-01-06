@@ -263,6 +263,7 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
+1.1.0-SNAPSHOT | 2.8.x | updated log4j dependency
 1.0.1 | 2.8.x | updated log4j dependency
 0.11.0 | 2.5.x | renamed packages to `io.conduktor`. Breaking change on extract config name
 0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
