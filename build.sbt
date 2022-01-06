@@ -77,7 +77,7 @@ Test / parallelExecution := false
 // Docker stuff
 dockerRepository := Some("conduktor")
 dockerUpdateLatest := true
-dockerBaseImage := "openjdk:18-jdk-alpine"
+dockerBaseImage := "openjdk:11-jre-slim"
 
 
 assembly / assemblyMergeStrategy := {
