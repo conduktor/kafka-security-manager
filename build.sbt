@@ -31,7 +31,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   // kafka
   "org.apache.kafka" %% "kafka" % "2.8.1",
-  "io.github.embeddedkafka" %% "embedded-kafka" % "2.5.0" % "test",
+  "io.github.embeddedkafka" %% "embedded-kafka" % "2.8.1" % "test",
   "io.findify" %% "s3mock" % "0.2.6" % "test",
 
   //netty
