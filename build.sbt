@@ -46,9 +46,9 @@ libraryDependencies ++= Seq(
   "com.github.tomakehurst" % "wiremock" % "2.27.2" % Test,
 
   // logging
-  "org.slf4j" % "slf4j-api" % "1.7.32",
-  "org.slf4j" % "slf4j-log4j12" % "1.7.32",
-  "org.apache.logging.log4j" % "log4j" % "2.17.1",
+  "org.slf4j" % "slf4j-api" % "1.7.36",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.2",
+  "org.apache.logging.log4j" % "log4j" % "2.17.2",
 
   // config
   "com.typesafe" % "config" % "1.3.3",
