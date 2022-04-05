@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: kafka-security-manager-location
+  description: kafka-security-manager catalog files
+spec:
+  targets:
+    - ./component-info.yaml

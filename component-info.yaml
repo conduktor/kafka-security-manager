@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "kafka-security-manager"
+  description: "Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. Zookeeper just contains a copy of the ACLs instead of being the source."
+  links: # add any links that would be useful here. Dashboards, site urls etc
+    - title: Source
+      url: https://github.com/cultureamp/kafka-security-manager
+  tags:
+    - tier-1
+    - camp-platform
+  annotations:
+    github.com/project-slug: cultureamp/kafka-security-manager
+    github.com/team-slug: cultureamp/data-services
+spec:
+  type: service
+  lifecycle: production
+  owner: data-services
