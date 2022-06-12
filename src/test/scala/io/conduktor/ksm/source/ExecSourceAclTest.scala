@@ -2,16 +2,12 @@ package io.conduktor.ksm.source
 
 import io.conduktor.ksm.parser.AclParserRegistry
 import io.conduktor.ksm.parser.yaml.YamlAclParser
-import io.conduktor.ksm.parser.csv.CsvAclParser
-import io.conduktor.ksm.parser.{AclParser, AclParserRegistry}
+import io.conduktor.ksm.parser.{AclParserRegistry}
 
-import java.io.BufferedReader
-import java.io.{File, Reader}
+import java.io.{File}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import kafka.security.auth._
-import org.apache.kafka.common.resource.PatternType
-import org.apache.kafka.common.utils.SecurityUtils
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 
