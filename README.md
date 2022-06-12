@@ -202,8 +202,8 @@ The [default configurations](src/main/resources/application.conf) can be overwri
         - `SOURCE_HTTP_AUTH_GOOGLEIAM_TARGET_AUDIENCE` Google Target Audience for token authentication.
     - `io.conduktor.ksm.source.ExecSourceAcl`: Get the ACL from the stdout of some executable. Allows the user to write their own executable (written in any language of their choosing) that generates the yaml or csv output defining the ACL.
         - `SOURCE_EXEC_CMD`: Full path to the executable
-        - `SOURCE_EXEC_ARGS`: Arguments passed to the executable, they will be split by the below seperator value. Defaults to ''
-        - `SOURCE_EXEC_ARGS_SEP`: String seperator to split the argument value. Defaults to ','. For example, setting the args to 'a,b,c,d' and the seperator to ',' will pass in the args [a, b, c, d] to the executable
+        - `SOURCE_EXEC_ARGS`: Arguments passed to the executable, they will be split by the below separator value. Defaults to ''
+        - `SOURCE_EXEC_ARGS_SEP`: String separator to split the argument value. Defaults to ','. For example, setting the args to 'a,b,c,d' and the separator to ',' will pass in the args [a, b, c, d] to the executable
         - `SOURCE_EXEC_PARSER`: 'yaml' or 'csv', defaults to 'yaml'
 
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
