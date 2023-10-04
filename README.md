@@ -1,9 +1,12 @@
 [![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/ScalaCI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
 
-# An open-source project by   [![Conduktor.io](https://www.conduktor.io/uploads/conduktor.svg)](https://conduktor.io/)
+# An open-source project by   [![Conduktor.io](https://www.conduktor.io/images/logo.svg)](https://conduktor.io/)
 
 This project is sponsored by [Conduktor.io](https://www.conduktor.io/), a graphical desktop user interface for Apache Kafka.
 With Conduktor you can visualize your ACLs in your Apache Kafka cluster!
+
+![Kafka Security Manager Diagram](https://i.imgur.com/DdVhUYQ.png)
+
 
 # Kafka Security Manager
 
@@ -189,6 +192,14 @@ The [default configurations](src/main/resources/application.conf) can be overwri
       - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
     - `io.conduktor.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
     - `io.conduktor.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
+    - `io.conduktor.ksm.source.HttpSourceAcl`: get the ACL from an HTTP endpoint. You can enable [Google OAuth OIDC Token Authentication](https://cloud.google.com/docs/authentication/production).
+        - `SOURCE_HTTP_URL` HTTP endpoint to retrieve ACL data.
+        - `SOURCE_HTTP_METHOD` HTTP Method. Default is `GET`.
+        - `SOURCE_HTTP_AUTH_TYPE` To enable Http Authentication. `googleiam` for Google IAM. Default is `NONE`.
+        - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT` Google Service Account name.
+        - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT_KEY` Google Service Account Key in JSON string encoded. If not the key isn't configured, it'll try to get the token from environment.
+        - `SOURCE_HTTP_AUTH_GOOGLEIAM_TARGET_AUDIENCE` Google Target Audience for token authentication.
+
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
     - `io.conduktor.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
     - `io.conduktor.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
@@ -252,7 +263,8 @@ You can then use place this CSV anywhere and use it as your source of truth.
 
 KSM Version | Kafka Version | Notes
 --- | --- | ---
-1.0.0-SNAPSHOT | 2.5.x | 
+1.1.0-SNAPSHOT | 2.8.x | updated log4j dependency
+1.0.1 | 2.8.x | updated log4j dependency
 0.11.0 | 2.5.x | renamed packages to `io.conduktor`. Breaking change on extract config name
 0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
 0.9 | 2.5.x | Upgrade to Kafka 2.5.x
