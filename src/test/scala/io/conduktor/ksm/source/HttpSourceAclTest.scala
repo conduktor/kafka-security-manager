@@ -5,14 +5,16 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, getRequestedFor, urlPathEqualTo}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import com.typesafe.config.ConfigFactory
 import io.conduktor.ksm.parser.AclParserRegistry
 import io.conduktor.ksm.parser.csv.CsvAclParser
 import io.conduktor.ksm.source.security.GoogleIAM
-import org.apache.http.HttpHeaders.{CONTENT_LENGTH, CONTENT_TYPE}
+import org.apache.http.HttpHeaders.{ACCEPT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
 import java.io.BufferedReader
+import scala.jdk.CollectionConverters
 
 class HttpSourceAclTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach {
 
@@ -38,6 +40,47 @@ class HttpSourceAclTest extends FlatSpec with Matchers with MockFactory with Bef
     wireMockServer.stop()
   }
 
+  it should "not require Content-Length header from empty configuration" in {
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    val isContentLengthHeaderRequired = httpSourceAcl.getContentLengthHeaderRequiredConfiguration(ConfigFactory.empty())
+    isContentLengthHeaderRequired shouldBe false
+  }
+
+  it should "require Content-Length header from configuration" in {
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    val config = ConfigFactory.parseMap(CollectionConverters.mapAsJavaMap(Map(
+      "contentlength.required" -> "true"
+    )), "testConfig")
+
+    val isContentLengthHeaderRequired = httpSourceAcl.getContentLengthHeaderRequiredConfiguration(config)
+    isContentLengthHeaderRequired shouldBe true
+  }
+
+  it should "extract no headers from empty configuration" in {
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    val headersFromConfig = httpSourceAcl.getHeaderConfiguration(ConfigFactory.empty())
+    headersFromConfig shouldBe empty
+  }
+
+  it should "extract headers from configuration" in {
+    val config = ConfigFactory.parseMap(CollectionConverters.mapAsJavaMap(Map(
+      "headers" -> "Accept-Encoding:text/plain,Content-Type:text/plain"
+    )), "testConfig")
+
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    val headersFromConfig = httpSourceAcl.getHeaderConfiguration(config)
+
+    val headers = Map[String, String](
+      CONTENT_TYPE -> "text/plain",
+      ACCEPT_ENCODING -> "text/plain"
+    )
+    headersFromConfig shouldBe headers
+  }
+
   it should "be able to read contents of a HTTP Endpoint" in {
     wireMockServer.stubFor(
       WireMock.get(urlPathEqualTo(path))
@@ -56,6 +99,45 @@ class HttpSourceAclTest extends FlatSpec with Matchers with MockFactory with Bef
     wireMockServer.verify(
       getRequestedFor(urlPathEqualTo(path))
         .withHeader(CONTENT_TYPE, new EqualToPattern("text/plain"))
+    )
+
+    reader match {
+      case Some(ParsingContext(_, x: BufferedReader)) =>
+        val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).map(_.concat("\n")).mkString
+
+        content shouldBe read
+      case _ => fail() // didn't read
+    }
+  }
+
+  it should "add configured HTTP headers to request" in {
+    wireMockServer.stubFor(
+      WireMock.get(urlPathEqualTo(path))
+        .willReturn(aResponse()
+          .withHeader(CONTENT_TYPE, "text/plain")
+          .withHeader(CONTENT_LENGTH, content.length.toString )
+          .withBody(content)
+          .withStatus(200)))
+
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    val url = wireMockServer.baseUrl() + path
+    val config = ConfigFactory.parseMap(CollectionConverters.mapAsJavaMap(Map(
+      "url" -> url,
+      "parser" -> csvAclParser.name,
+      "method" -> "GET",
+      "auth.type" -> "none",
+      "headers" -> "Accept-Encoding:text/plain"
+    )), "testConfig")
+
+    httpSourceAcl.configure(config)
+
+    val reader = httpSourceAcl.refresh()
+
+    wireMockServer.verify(
+      getRequestedFor(urlPathEqualTo(path))
+        .withHeader(CONTENT_TYPE, new EqualToPattern("text/plain"))
+        .withHeader(ACCEPT_ENCODING, new EqualToPattern("text/plain"))
     )
 
     reader match {
