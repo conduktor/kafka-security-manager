@@ -55,7 +55,7 @@ class HttpSourceAclTest extends FlatSpec with Matchers with MockFactory with Bef
 
     wireMockServer.verify(
       getRequestedFor(urlPathEqualTo(path))
-        .withHeader("Content-Type", new EqualToPattern("text/plain"))
+        .withHeader(CONTENT_TYPE, new EqualToPattern("text/plain"))
     )
 
     reader match {
@@ -67,7 +67,52 @@ class HttpSourceAclTest extends FlatSpec with Matchers with MockFactory with Bef
     }
   }
 
-  it should "throw Exception in mismatch Content-Length " in {
+  it should "throw Exception when missing required Content-Length header" in {
+    wireMockServer.stubFor(
+      WireMock.get(urlPathEqualTo(path))
+        .willReturn(aResponse()
+          .withHeader(CONTENT_TYPE, "text/plain")
+          .withBody(content)
+          .withStatus(200)))
+
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    httpSourceAcl.configure(wireMockServer.baseUrl() + path, csvAclParser.name, "GET", None, requireContentLengthHeader = true)
+
+    assertThrows[Exception] {
+      httpSourceAcl.refresh()
+    }
+  }
+
+  it should "skip body length validation when missing optional Content-Length header" in {
+    wireMockServer.stubFor(
+      WireMock.get(urlPathEqualTo(path))
+        .willReturn(aResponse()
+          .withHeader(CONTENT_TYPE, "text/plain")
+          .withBody(content)
+          .withStatus(200)))
+
+    val httpSourceAcl = new HttpSourceAcl(aclParserRegistryMock)
+
+    httpSourceAcl.configure(wireMockServer.baseUrl() + path, csvAclParser.name, "GET")
+
+    val reader = httpSourceAcl.refresh()
+
+    wireMockServer.verify(
+      getRequestedFor(urlPathEqualTo(path))
+        .withoutHeader(CONTENT_LENGTH)
+    )
+
+    reader match {
+      case Some(ParsingContext(_, x: BufferedReader)) =>
+        val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).map(_.concat("\n")).mkString
+
+        content shouldBe read
+      case _ => fail() // didn't read
+    }
+  }
+
+  it should "throw Exception in mismatch Content-Length" in {
 
     wireMockServer.stubFor(
       WireMock.get(urlPathEqualTo(path))

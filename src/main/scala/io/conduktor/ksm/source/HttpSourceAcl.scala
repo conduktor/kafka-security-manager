@@ -24,26 +24,30 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
   final val PARSER = "parser"
   final val METHOD = "method"
   final val AUTHENTICATION_TYPE = "auth.type"
+  final val REQUIRE_CONTENT_LENGTH_HEADER = "contentlength.required"
 
   var lastModified: Option[String] = None
-  val objectMapper = new ObjectMapper()
 
   var uri: String = _
   var parser: String = "csv"
   var httpMethod: Method = _
   var authentication: Option[HttpAuthentication] = _
+  var requireContentLengthHeader: Boolean = _
+
+  def configure(url: String, parser: String, method: String): Unit = {
+    configure(url, parser, method, None)
+  }
 
   def configure(url: String, parser: String, method: String, authentication: Option[HttpAuthentication]): Unit = {
+    configure(url, parser, method, authentication, requireContentLengthHeader = false)
+  }
+
+  def configure(url: String, parser: String, method: String, authentication: Option[HttpAuthentication], requireContentLengthHeader: Boolean): Unit = {
     this.uri = url
     this.parser = parser
     this.httpMethod = new Method(method)
     this.authentication = authentication
-  }
-  def configure(url: String, parser: String, method: String): Unit = {
-    this.uri = url
-    this.parser = parser
-    this.httpMethod = new Method(method)
-    this.authentication = None
+    this.requireContentLengthHeader = requireContentLengthHeader
   }
 
     /**
@@ -64,6 +68,11 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       case _ => None
     }
     log.info("HTTP Authentication: {}", this.authentication)
+
+    if (config.hasPath(REQUIRE_CONTENT_LENGTH_HEADER)) {
+      this.requireContentLengthHeader = config.getBoolean(REQUIRE_CONTENT_LENGTH_HEADER)
+    }
+    log.info("HTTP Content-Length Header required: {}", this.requireContentLengthHeader)
   }
 
   /**
@@ -126,6 +135,11 @@ class HttpSourceAcl(parserRegistry: AclParserRegistry)
       .map(h => h._2)
       .map(l => l.toInt)
     if (optContentLengthHeader.isEmpty) {
+      if (requireContentLengthHeader) {
+        val errorMessage = s"Response doesn't contain required $CONTENT_LENGTH header, only contained the following headers: ${response.headers.keySet}. Discarding response..."
+        log.error(errorMessage)
+        throw HTTPException(Some(errorMessage), response)
+      }
       log.warn(s"Response doesn't contain $CONTENT_LENGTH header, only contained the following headers: ${response.headers.keySet}. Skipping validation...")
       return
     }
