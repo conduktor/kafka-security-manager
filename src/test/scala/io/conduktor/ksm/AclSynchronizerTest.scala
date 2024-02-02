@@ -2,10 +2,6 @@ package io.conduktor.ksm
 
 import io.conduktor.ksm.notification.{ConsoleNotification, DummyNotification}
 import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.source.SourceAcl
-import com.typesafe.config.Config
-import io.conduktor.ksm.notification.{ConsoleNotification, DummyNotification}
-import io.conduktor.ksm.parser.AclParserRegistry
 import io.conduktor.ksm.parser.csv.CsvAclParser
 import io.conduktor.ksm.source.{DummySourceAcl, SourceAcl}
 import kafka.security.auth._
@@ -14,7 +10,6 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.io.Reader
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
@@ -141,8 +136,6 @@ class AclSynchronizerTest
       simpleAclAuthorizer.configure(configs.asJava)
 
       val dummySourceAcl = new DummySourceAcl(aclParserRegistryMock)
-
-      val aclParser = new CsvAclParser()
 
       val aclSynchronizer: AclSynchronizer = new AclSynchronizer(
         simpleAclAuthorizer,

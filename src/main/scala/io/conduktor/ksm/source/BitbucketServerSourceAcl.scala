@@ -63,7 +63,7 @@ class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
       })
   }
 
-  override def refresh(): Option[ParsingContext] = {
+  override def refresh(): List[ParsingContext] = {
     // get changes since last commit
     val url =
       s"$protocol://$hostname:$port/rest/api/1.0/projects/$project/repos/$repo/commits"
@@ -103,8 +103,9 @@ class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
               // update the last commit id
               lastCommit = Some(values.get(0).get("id").asText())
               val data = fileResponse.textBody
-              Some(
-                source.ParsingContext(
+              List(
+                ParsingContext(
+                  filePath,
                   parserRegistry.getParserByFilename(filePath),
                   new StringReader(data)
                 )
@@ -115,7 +116,7 @@ class BitbucketServerSourceAcl(parserRegistry: AclParserRegistry)
               throw HTTPException(Some(response.asString), response)
           }
         } else {
-          None
+          List()
         }
       case _ =>
         // uncaught error

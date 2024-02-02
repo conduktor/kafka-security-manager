@@ -1,13 +1,12 @@
 package io.conduktor.ksm.source
 
-import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import io.conduktor.ksm.parser.csv.CsvAclParser
+import io.conduktor.ksm.parser.{AclParser, AclParserRegistry}
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.{FlatSpec, Matchers}
 
 import java.io.BufferedReader
 import java.util.UUID
-import org.scalatest.{FlatSpec, Matchers}
 
 class S3SourceAclTest extends FlatSpec with Matchers with MockFactory {
 
@@ -37,14 +36,17 @@ class S3SourceAclTest extends FlatSpec with Matchers with MockFactory {
 
     s3SourceAcl.configure(bucket, key, region)
 
-    val reader = s3SourceAcl.refresh()
+    val res = s3SourceAcl.refresh()
 
-    reader match {
-      case None => fail() // didn't read
-      case Some(ParsingContext(_: AclParser, x: BufferedReader)) =>
-        val read = Stream.continually(x.readLine()).takeWhile(Option(_).nonEmpty).map(_.concat("\n")).mkString
-
+    res.head match {
+      case ParsingContext(_, _: AclParser, x: BufferedReader, _) =>
+        val read = Stream
+          .continually(x.readLine())
+          .takeWhile(Option(_).nonEmpty)
+          .map(_.concat("\n"))
+          .mkString
         content shouldBe read
+      case _ => fail()
     }
 
     s3SourceAcl.api.shutdown // kills the underlying actor system. Use api.stop() to just unbind the port.

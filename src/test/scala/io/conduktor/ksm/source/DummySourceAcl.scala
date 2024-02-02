@@ -1,9 +1,11 @@
 package io.conduktor.ksm.source
 
-import io.conduktor.ksm.TestFixtures._
 import com.typesafe.config.Config
+import io.conduktor.ksm.TestFixtures._
 import io.conduktor.ksm.parser.AclParserRegistry
 import io.conduktor.ksm.parser.csv.CsvAclParser
+import kafka.security.auth
+import kafka.security.auth.Acl
 
 import java.io.StringReader
 
@@ -36,21 +38,29 @@ class DummySourceAcl(parserRegistry: AclParserRegistry)
   // a states iterator, shifting its position changes current state
   private val sarsIterator = sars.iterator
 
-  override def refresh(): Option[ParsingContext] = {
-    if (noneNext) {
-      noneNext = false
-      None
-    } else if (errorNext) {
+  var current: List[_ <: (auth.Resource, Acl)] = List()
+
+  override def refresh(): List[ParsingContext] = {
+    if (errorNext) {
       errorNext = false
       throw new RuntimeException("triggered error")
-    } else {
-      Some(
-        ParsingContext(
-          csvAclParser,
-          new StringReader(csvAclParser.formatAcls(sarsIterator.next().toList))
-        )
-      )
     }
+
+    if (!noneNext) {
+      current = sarsIterator.next().toList
+    }
+
+    val res = List(
+      ParsingContext(
+        "fileName",
+        csvAclParser,
+        new StringReader(csvAclParser.formatAcls(current)),
+        !noneNext
+      )
+    )
+
+    noneNext = false
+    res
   }
 
   def setNoneNext(): Unit = {

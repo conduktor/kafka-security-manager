@@ -10,21 +10,30 @@ import java.io.{BufferedReader, Reader}
 import java.util.Base64
 import java.util.stream.Collectors
 
-
-class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMockFactory {
+class BitbucketServerSourceAclTest
+    extends FlatSpec
+    with Matchers
+    with MixedMockFactory {
 
   val csvlAclParser = new CsvAclParser()
   val aclParserRegistryMock: AclParserRegistry = stub[AclParserRegistry]
   (aclParserRegistryMock.getParserByFilename _).when(*).returns(csvlAclParser)
 
   "Test" should "Successfully return body for specific branch" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
-    val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
+    val bitbucketServerSoureAcl =
+      new BitbucketServerSourceAcl(aclParserRegistryMock)
+    val dummyHttp =
+      new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     dummyHttp.commitMatcher = req => {
-      req.url.endsWith("commits") && req.queryParams.exists(q => q.name == "until" && q.value == "ref/feature-F1") && req.queryParams.length == 2
+      req.url.endsWith("commits") && req.queryParams.exists(q =>
+        q.name == "until" && q.value == "ref/feature-F1"
+      ) && req.queryParams.length == 2
     }
-    
-    dummyHttp.browseMatcher = req => req.url.endsWith("browse/testFile?raw") && req.queryParams.exists(q => q.name == "at" && q.value == "ref/feature-F1") && req.queryParams.length == 1
+
+    dummyHttp.browseMatcher = req =>
+      req.url.endsWith("browse/testFile?raw") && req.queryParams.exists(q =>
+        q.name == "at" && q.value == "ref/feature-F1"
+      ) && req.queryParams.length == 1
 
     populateSourceAcl(bitbucketServerSoureAcl, branch = "ref/feature-F1")
     bitbucketServerSoureAcl.http = dummyHttp
@@ -32,68 +41,84 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
     val response = bitbucketServerSoureAcl.refresh()
 
     response.isEmpty shouldBe false
-    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
+    readAllLines(response.head.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully return body for acl" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
-    val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
+    val bitbucketServerSoureAcl =
+      new BitbucketServerSourceAcl(aclParserRegistryMock)
+    val dummyHttp =
+      new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
-    
+
     val response = bitbucketServerSoureAcl.refresh()
-    
+
     response.isEmpty shouldBe false
-    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
+    readAllLines(response.head.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Pass base64 auth to bitbucket" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
-    val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
-    val expected = "Basic " + Base64.getEncoder.encodeToString("test:pwd".getBytes)
+    val bitbucketServerSoureAcl =
+      new BitbucketServerSourceAcl(aclParserRegistryMock)
+    val dummyHttp =
+      new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
+    val expected = "Basic " + Base64.getEncoder.encodeToString(
+      "test:pwd".getBytes
+    )
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
-    dummyHttp.commitMatcher = req => req.header("Authorization").get == expected && req.url.endsWith("commits")
-    dummyHttp.browseMatcher = req => req.header("Authorization").get == expected && req.url.endsWith("browse/testFile?raw")
-
+    dummyHttp.commitMatcher = req =>
+      req.header("Authorization").get == expected && req.url.endsWith("commits")
+    dummyHttp.browseMatcher = req =>
+      req.header("Authorization").get == expected && req.url.endsWith(
+        "browse/testFile?raw"
+      )
 
     val response = bitbucketServerSoureAcl.refresh()
 
-
     response.isEmpty shouldBe false
-    readAllLines(response.get.reader) shouldBe DummyHttp.browseFile
+    readAllLines(response.head.reader) shouldBe DummyHttp.browseFile
   }
 
   "Test" should "Successfully not return body if acl do not changed since last call" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
-    val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
+    val bitbucketServerSoureAcl =
+      new BitbucketServerSourceAcl(aclParserRegistryMock)
+    val dummyHttp =
+      new DummyHttp(Response(200, body = DummyHttp.commitsContent.getBytes))
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
 
     val firstResponse = bitbucketServerSoureAcl.refresh()
-    dummyHttp.commitMatcher = req => req.queryParams.exists(q => q.value == "c22287a15f6bada0b3b121b838a13dc3fad613cc")
-    dummyHttp.commitsResponse = Response(200, body = DummyHttp.commitsEmptyResponse.getBytes)
+    dummyHttp.commitMatcher = req =>
+      req.queryParams.exists(q =>
+        q.value == "c22287a15f6bada0b3b121b838a13dc3fad613cc"
+      )
+    dummyHttp.commitsResponse =
+      Response(200, body = DummyHttp.commitsEmptyResponse.getBytes)
     dummyHttp.browseResponse = Response(500)
     val response = bitbucketServerSoureAcl.refresh()
-
 
     firstResponse.isEmpty shouldBe false
     response.isEmpty shouldBe true
   }
 
   "Test" should "Successfully return body if acl changed since last call" in {
-    val bitbucketServerSoureAcl = new BitbucketServerSourceAcl(aclParserRegistryMock)
-    val dummyHttp = new DummyHttp(Response(200, body = DummyHttp.commitsContentFirst.getBytes))
+    val bitbucketServerSoureAcl =
+      new BitbucketServerSourceAcl(aclParserRegistryMock)
+    val dummyHttp = new DummyHttp(
+      Response(200, body = DummyHttp.commitsContentFirst.getBytes)
+    )
     populateSourceAcl(bitbucketServerSoureAcl)
     bitbucketServerSoureAcl.http = dummyHttp
     val firstResponse = bitbucketServerSoureAcl.refresh()
     val firstCommit = bitbucketServerSoureAcl.lastCommit.get
-    dummyHttp.commitMatcher = req => req.queryParams.exists(q => q.value == "somefirsthash")
-    dummyHttp.commitsResponse = Response(200, body = DummyHttp.commitsContent.getBytes)
-
+    dummyHttp.commitMatcher =
+      req => req.queryParams.exists(q => q.value == "somefirsthash")
+    dummyHttp.commitsResponse =
+      Response(200, body = DummyHttp.commitsContent.getBytes)
 
     val response = bitbucketServerSoureAcl.refresh()
-
 
     firstResponse.isEmpty shouldBe false
     response.isEmpty shouldBe false
@@ -106,7 +131,11 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
     buffReader.lines().collect(Collectors.joining("\n"))
   }
 
-  def populateSourceAcl(source: BitbucketServerSourceAcl, filePath: String = "testFile", branch: String = null): Unit = {
+  def populateSourceAcl(
+      source: BitbucketServerSourceAcl,
+      filePath: String = "testFile",
+      branch: String = null
+  ): Unit = {
     source.hostname = "example"
     source.port = "8888"
     source.protocol = "http"
@@ -119,15 +148,23 @@ class BitbucketServerSourceAclTest extends FlatSpec with Matchers with MixedMock
   }
 }
 
-class DummyHttp(var commitsResponse: Response, var browseResponse: Response = Response(200, body = DummyHttp.browseFile.getBytes)) extends HTTP {
+class DummyHttp(
+    var commitsResponse: Response,
+    var browseResponse: Response =
+      Response(200, body = DummyHttp.browseFile.getBytes)
+) extends HTTP {
 
   var commitMatcher: Request => Boolean = req => {
-    req.url.endsWith("commits") && req.queryParams.exists(q => q.name == "path"
-      && q.value == "testFile") && !req.queryParams.exists(q => q.name == "until")
+    req.url.endsWith("commits") && req.queryParams.exists(q =>
+      q.name == "path"
+        && q.value == "testFile"
+    ) && !req.queryParams.exists(q => q.name == "until")
   }
 
   var browseMatcher: Request => Boolean = req => {
-    req.url.endsWith("browse/testFile?raw") && !req.queryParams.exists(q => q.name == "at")
+    req.url.endsWith("browse/testFile?raw") && !req.queryParams.exists(q =>
+      q.name == "at"
+    )
   }
 
   override def get(req: Request): Response = {

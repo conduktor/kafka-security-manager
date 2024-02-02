@@ -45,7 +45,7 @@ class BitbucketCloudSourceAcl(parserRegistry: AclParserRegistry)
     password = config.getString(AUTH_PASSWORD_CONFIG)
   }
 
-  override def refresh(): Option[ParsingContext] = {
+  override def refresh(): List[ParsingContext] = {
     // get the latest file
     val url = s"$apiurl/repositories/$organization/$repo/src/master/$filePath"
     val request: Request = new Request(url)
@@ -63,7 +63,13 @@ class BitbucketCloudSourceAcl(parserRegistry: AclParserRegistry)
       case 200 =>
         // we receive a valid response
         val reader = new BufferedReader(new StringReader(response.textBody))
-        Some(source.ParsingContext(parserRegistry.getParserByFilename(filePath), reader))
+        List(
+          ParsingContext(
+            filePath,
+            parserRegistry.getParserByFilename(filePath),
+            reader
+          )
+        )
       case _ =>
         // uncaught error
         log.warn(response.asString)

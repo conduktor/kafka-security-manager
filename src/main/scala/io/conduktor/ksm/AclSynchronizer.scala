@@ -1,8 +1,8 @@
 package io.conduktor.ksm
 
-import io.conduktor.ksm.source.SourceAcl
+import cats.implicits._
 import io.conduktor.ksm.notification.Notification
-import io.conduktor.ksm.source.{ParsingContext, SourceAcl}
+import io.conduktor.ksm.source.{ParsingContext, SourceAcl, SourceAclResult}
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -66,7 +66,7 @@ class AclSynchronizer(
 
   import AclSynchronizer._
 
-  private var sourceAclsCache: Set[(Resource, Acl)] = _
+  private var sourceAclsCache: Map[String, Set[(Resource, Acl)]] = Map()
   private var failedRefreshes: Int = 0
 
   if (readOnly) {
@@ -84,50 +84,63 @@ class AclSynchronizer(
     Try(sourceAcl.refresh()) match {
       case Success(result) =>
         failedRefreshes = 0
-        result match {
-          // the source has not changed
-          case None =>
-            if (sourceAclsCache != null) {
-              // the Kafka Acls may have changed so we check against the last known correct SourceAcl that we cached
-              applySourceAcls(
-                sourceAclsCache,
-                getKafkaAcls,
-                notification,
-                authorizer
-              )
-            }
-          case Some(ParsingContext(parser, reader)) =>
-            val sourceAclResult = parser.aclsFromReader(reader)
-            reader.close()
-            sourceAclResult.result match {
-              // the source has changed
-              case Right(ksmAcls) =>
-                // we have a new result, so we cache it
-                sourceAclsCache = ksmAcls
-                applySourceAcls(
-                  sourceAclsCache,
-                  getKafkaAcls,
-                  notification,
-                  authorizer
-                )
-              case Left(parsingExceptions: List[Exception]) =>
-                // parsing exceptions we want to notify
-                log.error(
-                  "Exceptions while refreshing ACL source:",
-                  parsingExceptions.map(e => e.toString).mkString("\n")
-                )
-                // ugly but for now this will do
-                notification.notifyErrors(
-                  parsingExceptions.map(e => Try(throw e))
+        result
+          .map { context: ParsingContext =>
+            context match {
+              // in case there is an update
+              case ParsingContext(resourceKey, aclParser, reader, true) =>
+                val sourceAclResult = aclParser.aclsFromReader(reader)
+                reader.close()
+                // add to the cache if successful
+                sourceAclResult.result match {
+                  case Right(kafkaAcls) =>
+                    sourceAclsCache += (resourceKey -> kafkaAcls)
+                }
+                sourceAclResult
+              case ParsingContext(resourceKey, _, _, false) =>
+                // no update necessary, fetch from cache
+                SourceAclResult(
+                  Right(
+                    sourceAclsCache
+                      .getOrElse(
+                        resourceKey,
+                        // this should never happen, sources should set shouldUpdate to true the first time
+                        throw new RuntimeException(
+                          s"The resource '$resourceKey' does not exist in the cache."
+                        )
+                      )
+                  )
                 )
             }
+          }
+          .combineAll
+          .result match {
+          // the source has changed
+          case Right(ksmAcls) =>
+            // we have a new result, so we cache it
+            applySourceAcls(
+              ksmAcls,
+              getKafkaAcls,
+              notification,
+              authorizer
+            )
+          case Left(parsingExceptions: List[Exception]) =>
+            // parsing exceptions we want to notify
+            log.error(
+              "Exceptions while refreshing ACL source:",
+              parsingExceptions.map(e => e.toString).mkString("\n")
+            )
+            // ugly but for now this will do
+            notification.notifyErrors(
+              parsingExceptions.map(e => Failure(e))
+            )
         }
       case Failure(e) =>
         // errors such as HTTP exceptions when refreshing
         failedRefreshes += 1
         try {
           log.error("Exceptions while refreshing ACL source:", e)
-          if(failedRefreshes >= numFailedRefreshesBeforeNotification){
+          if (failedRefreshes >= numFailedRefreshesBeforeNotification) {
             notification.notifyErrors(List(Try(e)))
             failedRefreshes = 0
           }

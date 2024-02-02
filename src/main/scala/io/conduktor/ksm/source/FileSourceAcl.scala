@@ -2,9 +2,8 @@ package io.conduktor.ksm.source
 
 import com.typesafe.config.Config
 import io.conduktor.ksm.parser.AclParserRegistry
-import io.conduktor.ksm.source
 
-import java.io.{File, FileReader}
+import java.io.{File, FileNotFoundException, FileReader}
 
 class FileSourceAcl(parserRegistry: AclParserRegistry)
     extends SourceAcl(parserRegistry) {
@@ -12,8 +11,8 @@ class FileSourceAcl(parserRegistry: AclParserRegistry)
   override val CONFIG_PREFIX: String = "file"
   final val FILENAME_CONFIG = "filename"
 
-  var lastModified: Long = -1
   var filename: String = _
+  val modifiedMap: Map[String, Long] = Map[String, Long]()
 
   /**
     * internal config definition for the module
@@ -29,14 +28,33 @@ class FileSourceAcl(parserRegistry: AclParserRegistry)
     * Uses a CSV parser on the file afterwards
     * @return
     */
-  override def refresh(): Option[ParsingContext] = {
-    val file = new File(filename)
-    if (file.lastModified() > lastModified) {
-      val reader = new FileReader(file)
-      lastModified = file.lastModified()
-      Some(source.ParsingContext(parserRegistry.getParserByFilename(filename), reader))
+  override def refresh(): List[ParsingContext] = {
+
+    val path = new File(filename)
+    if (path.exists()) {
+      val files =
+        if (path.isFile)
+          List(path)
+        else
+          path.listFiles.filter(_.isFile).toList
+
+      files.map(file =>
+        ParsingContext(
+          file.getName,
+          parserRegistry.getParserByFilename(file.getName),
+          new FileReader(file),
+          file.lastModified >= (modifiedMap.get(file.getName) match {
+            case None =>
+              modifiedMap + (file.getName -> file.lastModified)
+              0L
+            case Some(value) => value
+          })
+        )
+      )
     } else {
-      None
+      throw new FileNotFoundException(
+        s"The provided file does not exist: $filename"
+      )
     }
   }
 
