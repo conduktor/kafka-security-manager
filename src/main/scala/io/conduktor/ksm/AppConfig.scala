@@ -64,6 +64,11 @@ class AppConfig(config: Config) {
     val readOnly: Boolean = ksmConfig.getBoolean("readonly")
   }
 
+  object Server {
+    private val serverConfig = config.getConfig("server")
+    val port: Int = serverConfig.getInt("port")
+  }
+
   object Parser {
     private val aclParserConfig = config.getConfig("parser")
     val csvDelimiter: Char =

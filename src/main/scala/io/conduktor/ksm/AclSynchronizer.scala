@@ -1,8 +1,8 @@
 package io.conduktor.ksm
 
-import io.conduktor.ksm.source.SourceAcl
 import io.conduktor.ksm.notification.Notification
 import io.conduktor.ksm.source.{ParsingContext, SourceAcl}
+import io.conduktor.ksm.web.Probe
 import kafka.security.auth.{Acl, Authorizer, Resource}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -62,12 +62,13 @@ class AclSynchronizer(
     notification: Notification,
     numFailedRefreshesBeforeNotification: Int,
     readOnly: Boolean = false
-) extends Runnable {
+) extends Runnable with Probe {
 
   import AclSynchronizer._
 
   private var sourceAclsCache: Set[(Resource, Acl)] = _
   private var failedRefreshes: Int = 0
+  private var isRefreshFailing = false
 
   if (readOnly) {
     log.warn("""
@@ -84,6 +85,7 @@ class AclSynchronizer(
     Try(sourceAcl.refresh()) match {
       case Success(result) =>
         failedRefreshes = 0
+        isRefreshFailing = false
         result match {
           // the source has not changed
           case None =>
@@ -125,6 +127,7 @@ class AclSynchronizer(
       case Failure(e) =>
         // errors such as HTTP exceptions when refreshing
         failedRefreshes += 1
+        isRefreshFailing = true
         try {
           log.error("Exceptions while refreshing ACL source:", e)
           if(failedRefreshes >= numFailedRefreshesBeforeNotification){
@@ -146,5 +149,9 @@ class AclSynchronizer(
     authorizer.close()
     sourceAcl.close()
     notification.close()
+  }
+
+  override def isSuccessful: Boolean = {
+    !isRefreshFailing
   }
 }

@@ -242,6 +242,7 @@ class AclSynchronizerTest
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 3
       dummyNotification.removedAcls.size shouldBe 0
+      aclSynchronizer.isSuccessful shouldBe true
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer
           .getAcls() shouldBe Map(res1 -> Set(acl1, acl2), res2 -> Set(acl3))
@@ -251,6 +252,7 @@ class AclSynchronizerTest
       dummyNotification.reset()
       dummySourceAcl.setErrorNext()
       aclSynchronizer.run()
+      aclSynchronizer.isSuccessful shouldBe false
       dummyNotification.addedAcls.size shouldBe 0
       dummyNotification.removedAcls.size shouldBe 0
       dummyNotification.errorCounter shouldBe 1
@@ -264,6 +266,7 @@ class AclSynchronizerTest
       aclSynchronizer.run()
       dummyNotification.addedAcls.size shouldBe 1
       dummyNotification.removedAcls.size shouldBe 1
+      aclSynchronizer.isSuccessful shouldBe true
       eventually(timeout(3000 milliseconds), interval(200 milliseconds)) {
         simpleAclAuthorizer.getAcls() shouldBe Map(
           res1 -> Set(acl1),
