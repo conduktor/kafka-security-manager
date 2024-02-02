@@ -198,6 +198,8 @@ The [default configurations](src/main/resources/application.conf) can be overwri
         - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT` Google Service Account name.
         - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT_KEY` Google Service Account Key in JSON string encoded. If not the key isn't configured, it'll try to get the token from environment.
         - `SOURCE_HTTP_AUTH_GOOGLEIAM_TARGET_AUDIENCE` Google Target Audience for token authentication.
+        - `SOURCE_HTTP_CONTENT_LENGTH_HEADER_REQUIRED` Whether the `Content-Length` header is required in the HTTP response. Default is `false`.
+        - `SOURCE_HTTP_HEADER_OVERRIDES` Extra HTTP headers to include in the HTTP requests, overrides potential headers added from the authentication configuration. Default is "". The expected format is CSV such as `"Accept-Encoding:text/plain,Content-Type:text/plain"`.
 
 - `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
     - `io.conduktor.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
