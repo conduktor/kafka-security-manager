@@ -1,0 +1,159 @@
+name: Java CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    outputs:
+      broker-matrix: ${{ steps.matrix.outputs.cells }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - run: ./mvnw -B -ntp verify
+      - id: matrix
+        name: Read the qualified broker manifest
+        shell: python
+        run: |
+          import json, os
+          with open("scripts/broker-matrix.json") as source:
+              cells = [c["version"] + "-" + c["fixture"] for c in json.load(source)]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("cells=" + json.dumps(cells) + "\n")
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: java-contracts
+          path: |
+            target/surefire-reports/
+            target/kafka-security-manager-*.jar
+            target/kafka-security-manager-*-bin.zip
+            target/kafka-security-manager-*-bin.tar.gz
+
+  brokers:
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cell: ${{ fromJSON(needs.contracts.outputs.broker-matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Preserve broker Java 17 path
+        run: echo "JAVA17_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - run: ./mvnw -B -ntp verify
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ksm-kafka/*.tgz
+          key: kafka-archives-${{ runner.os }}-${{ matrix.cell }}-${{ hashFiles('scripts/broker-matrix.json') }}
+      - name: Real Kafka ACL and security tests
+        env:
+          MATRIX_CELL: ${{ matrix.cell }}
+        run: >-
+          python3 scripts/broker-tests.py
+          --java25 "$JAVA_HOME" --java17 "$JAVA17_HOME"
+          --cases "$MATRIX_CELL"
+          --profiles sasl-plain plaintext mtls sasl-tls scram-tls
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: kafka-${{ matrix.cell }}
+          path: |
+            target/broker-it/
+            target/failsafe-reports/
+          retention-days: 14
+
+  resilience:
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - run: ./mvnw -B -ntp verify
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ksm-kafka/*.tgz
+          key: kafka-archives-${{ runner.os }}-4.3.1-kraft-${{ hashFiles('scripts/broker-matrix.json') }}
+      - run: python3 scripts/resilience-tests.py --java25 "$JAVA_HOME"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: separate-controllers-resilience
+          path: target/resilience-it/
+          retention-days: 14
+
+  distributions:
+    needs: contracts
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - run: ./mvnw -B -ntp verify
+      - name: Exercise archives and native Docker image
+        env:
+          TEST_PLATFORM: ${{ matrix.platform }}
+        run: python3 scripts/verify-distribution.py --platforms "$TEST_PLATFORM"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: distributions-${{ matrix.arch }}
+          path: target/distribution-it/
+          retention-days: 14

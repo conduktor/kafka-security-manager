@@ -1,297 +1,152 @@
-[![Actions Status](https://github.com/conduktor/kafka-security-manager/workflows/ScalaCI/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions)
-
-# An open-source project by [![Conduktor.io](https://docs.conduktor.io/assets/svgs/logo.svg)](https://conduktor.io/)
-
-This project is sponsored by [conduktor.io](https://www.conduktor.io/). Conduktor provides a platform to help central teams defining global security and governance controls and developers have access to a central Kafka console and get a self-serve experience.
-It also helps visualize your ACLs (attached to Service Accounts) in your Apache Kafka cluster!
-
-![Kafka Security Manager Diagram](https://github.com/conduktor/kafka-security-manager/assets/3936459/55fd98c6-63e1-4f77-a093-53ab9208ea16)
-
 # Kafka Security Manager
 
-Kafka Security Manager (KSM) allows you to manage your Kafka ACLs at scale by leveraging an external source as the source of truth. 
-Zookeeper just contains a copy of the ACLs instead of being the source.
+[![Java CI](https://github.com/conduktor/kafka-security-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/conduktor/kafka-security-manager/actions/workflows/ci.yml)
 
-![Kafka Security Manager Diagram](https://i.imgur.com/BuikeuB.png)
+Kafka Security Manager (KSM) synchronizes Kafka ACLs from an external source of truth through the **Kafka Admin API**. Keep a reviewed CSV or YAML policy in a file, Git repository, HTTP endpoint or S3 bucket; KSM creates missing ACLs and removes ACLs absent from that policy.
 
-There are several advantages to this:
-- **Kafka administration is done outside of Kafka:** anyone with access to the external ACL source can manage Kafka Security
-- **Prevents intruders:** if someone were to add ACLs to Kafka using the CLI, they would be reverted by KSM within 10 seconds.
-- **Full auditability:** KSM provides the guarantee that ACLs in Kafka are those in the external source. Additionally, if for example your external source is GitHub, then PRs, PR approvals and commit history will provide Audit the full log of who did what to the ACLs and when
-- **Notifications**: KSM can notify external channels (such as Slack) in order to give feedback to admins when ACLs are changed. This is particularly useful to ensure that 1) ACL changes are correctly applied 2) ACL are not changed in Kafka directly.
+KSM is an open-source project by [Conduktor](https://www.conduktor.io/).
 
-Your role is to ensure that Kafka Security Manager is never down, as it is now a custodian of your ACL.
+## If you need KSM, you probably need Conduktor
 
-## Parsers
+An ACL file solves one part of Kafka access management. When teams need ownership, delegated administration, access requests and governance across clusters, [Conduktor](https://www.conduktor.io/) goes further:
 
-### CSV
-The csv parser is the default parser and also the fallback one in case no other parser is matched.
+- **RBAC** controls what users and groups can see and do in Console, with permissions scoped to resources.
+- **Self-service** lets teams own applications and resources, manage service-account access and request access to another team's data within platform policies.
+- **Kafka operations** gives teams a shared place to inspect topics, messages, consumer groups and access, with the visibility needed to troubleshoot.
 
-This is a sample CSV acl file:
+Console RBAC governs access to Console and its API. Service-account permissions govern applications' access to Kafka; these are distinct layers. Read about [RBAC](https://docs.conduktor.io/guide/conduktor-in-production/admin/set-up-rbac) and [self-service](https://docs.conduktor.io/guide/conduktor-concepts/self-service).
+
+KSM stays focused on reconciling Kafka ACLs. Its scope does not include a team portal, approval workflows or a governance platform.
+
+## Compatibility
+
+**KSM 2.0.0** is the Java rewrite. Download the executable JAR or ZIP/tar.gz distribution from the [release](https://github.com/conduktor/kafka-security-manager/releases/tag/v2.0.0).
+
+Docker images are published to [`conduktor/kafka-security-manager`](https://hub.docker.com/r/conduktor/kafka-security-manager) for **linux/amd64 and linux/arm64**. Pin `conduktor/kafka-security-manager:v2.0.0` for this release; `latest` now follows KSM 2. The historical `v1.x-release` tags remain Scala builds. Read the [migration guide](docs/migration.md) before upgrading.
+
+- **KSM runtime: Java 25 LTS.** The broker's Java runtime is independent.
+- **Minimum qualified Kafka release: 2.8.2.** The exact broker releases in the test matrix are **2.8.2, 3.9.2, 4.0.2, 4.1.2, 4.2.2 and 4.3.1**. This is not a claim that every intervening or future release is tested.
+- Kafka 4.1, 4.2 and 4.3 are the currently maintained lines on the [Apache downloads page](https://kafka.apache.org/community/downloads/), checked 2026-10-12. Older matrix entries provide migration compatibility; they do not extend Apache's maintenance.
+- KSM uses public `describeAcls`, `createAcls` and `deleteAcls` calls against broker listeners. **There is no metadata-backend setting in KSM.**
+- Tests cover PLAINTEXT, SASL/PLAIN, mTLS, SASL/PLAIN over TLS and SCRAM-SHA-512 over TLS, with an enabled authorizer and a non-super-user KSM principal.
+
+See [testing and qualification](docs/testing.md) for exact fixtures, commands and limits. Hosted Kafka providers, custom authorizers, Kerberos and OAuth handlers require their own qualification. See the [migration guide](docs/migration.md) before upgrading from Scala KSM or the direct ZooKeeper backend.
+
+## How reconciliation works
+
+1. Fetch and validate a complete source document.
+2. Read the current ACLs through Kafka's Admin API.
+3. Add missing ACLs, then remove ACLs absent from the source.
+4. Report changes and repeat.
+
+**The source is authoritative for every ACL visible to KSM.** There is no ownership filter. Include existing permissions that must survive, including KSM's own management ACLs, and run only one writer for that scope. KSM needs Cluster Describe and Alter on the literal `kafka-cluster` resource.
+
+Invalid documents, authentication failures and unavailable sources abort the attempt. They never mean "delete all ACLs". An intentionally empty policy is a CSV header with no rows or YAML `users: {}`.
+
+Kafka ACL batches are not transactional. A failed batch can have partially applied; the next attempt reads Kafka again and recomputes the delta. KSM repairs drift while it is running and able to reach both systems. It is not an intrusion-prevention boundary or an audit-log guarantee.
+
+## Try it locally
+
+Requires Java 25, Docker and Docker Compose. The example starts a disposable Kafka broker with authentication and authorization enabled.
+
+```sh
+./mvnw verify
+docker compose up --build -d
+docker compose logs -f ksm
 ```
+
+The demo grants the `app` principal access to the `orders` topic and `orders-reader` group. Its policy is [example/demo-acls.csv](example/demo-acls.csv). Exercise those credentials:
+
+```sh
+printf 'hello from KSM\n' | docker compose exec -T kafka \
+  /opt/kafka/bin/kafka-console-producer.sh \
+  --bootstrap-server kafka:9092 --topic orders \
+  --producer.config /demo/demo-app.properties
+
+docker compose exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server kafka:9092 --topic orders --group orders-reader \
+  --consumer.config /demo/demo-app.properties --from-beginning \
+  --max-messages 1 --timeout-ms 15000
+
+docker compose down -v
+```
+
+The broker's host listener binds to `127.0.0.1:19092`; change `KSM_DEMO_PORT` if needed. The checked-in credentials are only for this local demo.
+
+## Connect to your cluster
+
+Download a [release](https://github.com/conduktor/kafka-security-manager/releases/tag/v2.0.0), or build with `./mvnw verify` to create the executable JAR and ZIP/tar.gz in `target/`. The examples below use the locally built JAR; adjust its path for a downloaded release. The ZIP launcher accepts `-Dconfig.file=/path/ksm.conf`; `JAVA_TOOL_OPTIONS` works with the JAR, launcher and container.
+
+```sh
+export ADMIN_CLIENT_BOOTSTRAP_SERVERS=localhost:9092
+export SOURCE_CLASS=io.conduktor.ksm.source.FileSourceAcl
+export SOURCE_FILE_FILENAME=/path/to/reviewed-acls.csv
+
+# Validate the source and preview additions/removals. No writes.
+java -jar target/kafka-security-manager-2.0.0.jar --dry-run
+
+# Apply once, after reviewing the preview.
+KSM_READONLY=false KSM_REFRESH_FREQUENCY_MS=0 \
+  java -jar target/kafka-security-manager-2.0.0.jar
+```
+
+Supply your cluster's Kafka authentication properties as described in [configuration](docs/configuration.md). For continuous synchronization, set `KSM_READONLY=false` and a positive `KSM_REFRESH_FREQUENCY_MS` (default 10000).
+
+**The default `KSM_READONLY=true` disables synchronization entirely.** Use `--dry-run` to actually read and preview. Once-mode failures exit nonzero. Continuous source/Kafka errors retry; a cycle exceeding its total deadline exits nonzero for a supervisor to restart.
+
+Export current ACLs, including before migration:
+
+```sh
+KSM_EXTRACT_ENABLE=true KSM_EXTRACT_FORMAT=csv \
+  java -jar target/kafka-security-manager-2.0.0.jar > current-acls.csv
+```
+
+Diagnostics go to stderr. CSV represents all supported resource and principal types. YAML export rejects ACL sets it cannot represent without loss.
+
+For a local file source, write the complete new policy to a temporary file in the same directory, then atomically rename it over the configured file. An in-place write can expose a valid but incomplete policy and revoke permissions.
+
+## Policy formats
+
+CSV uses Kafka ACL fields. `PatternType` is optional for legacy documents and defaults to LITERAL. Quote values containing commas, such as certificate distinguished names.
+
+CSV also supports `DelegationToken` and `User` resource ACLs. `User` resources require broker support (qualified on 3.9.2 and the listed 4.x releases, unavailable on 2.8.2); YAML has no representation for these two resource types.
+
+```csv
 KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
-User:alice,Topic,LITERAL,foo,Read,Allow,*
-User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
-User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
+User:manager,Cluster,LITERAL,kafka-cluster,Describe,Allow,*
+User:manager,Cluster,LITERAL,kafka-cluster,Alter,Allow,*
+User:app,Topic,PREFIXED,orders-,Write,Allow,*
+User:app,Group,LITERAL,orders-reader,Read,Allow,*
 ```
-**Important Note**: As of KSM 0.4, a new column `PatternType` has been added to match the changes that happened in Kafka 2.0. This enables KSM to manage `LITERAL` and `PREFIXED` ACLs. See #28
 
-### YAML
-The yaml parser will load ACLs from yaml instead, to activate the parser just provide files with `yml` or `yaml` extension.
+YAML uses `User:` principals. A trailing `*` means PREFIXED; a single `*` means the literal wildcard.
 
-An example YAML permission file might be:
 ```yaml
 users:
-  alice:
-    topics:
-      foo:
-        - Read
-      bar*:
-        - Produce
-  bob:
-    groups:
-      bar:
-        - Write,Deny,12.34.56.78
-      bob*:
-        - All
-    transactional_ids:
-      bar-*:
-        - All
-  peter:
+  manager:
     clusters:
-      kafka-cluster:
-        - Create
-```
-The YAML parser will handle automatically prefix patterns by simply appending a star to your resource name.
-
-It also supports some helpers to simplify setup:
-- Consume (Read, Describe)
-- Produce (Write, Describe, Create, Cluster Create)
-
-## Sources
-
-Current sources shipping with KSM include:
-- File
-- GitHub
-- GitLab (using Personal Auth Tokens)
-- BitBucket
-- Amazon S3
-- Build your own (and contribute back!)
-
-# Building
-
-```
-sbt clean test
-sbt universal:stage
-```
-Fat JAR:
-```
-sbt clean assembly
-```
-This is a Scala app and therefore should run on the JVM like any other application
-
-# Artifacts
-
-By using the JAR dependency, you can create your own `SourceAcl`.
-
-RELEASES artifacts are deployed to [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cio.conduktor):
-
-`build.sbt` (see [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cio.conduktor) for the latest `version`)
-```
-libraryDependencies += "io.conduktor" %% "kafka-security-manager" % "version"
+      kafka-cluster: [Describe, Alter]
+  app:
+    topics:
+      orders-*: [Produce, Consume]
+    groups:
+      orders-reader: [Read]
+    transactional_ids:
+      orders-writer-*: [Write, Describe]
 ```
 
-# Configuration
+`Consume` expands to topic Describe/Read. `Produce` expands to topic Describe/Create/Write; it does not grant cluster-wide Create, IdempotentWrite or transactional permissions. Declare these explicitly when needed. The [migration guide](docs/migration.md) explains the correction to the old Produce helper.
 
-## Security configuration - Zookeeper client
+Built-in sources: local file, HTTP (including Google IAM), GitHub, GitLab, Bitbucket Server, Bitbucket Cloud and S3. Notifications: console and Slack. Configuration names and Java extension interfaces are described in [configuration](docs/configuration.md) and [migration](docs/migration.md).
 
-Make sure the app is using a property file and launch options similar to your broker so that it can
-1. Authenticate to Zookeeper using secure credentials (usually done with JAAS)
-2. Apply Zookeeper ACL if enabled
+## Development
 
-*Kafka Security Manager does not connect to Kafka.*
-
-Sample run for a typical SASL Setup:
-```
-target/universal/stage/bin/kafka-security-manager -Djava.security.auth.login.config=conf/jaas.conf
+```sh
+./mvnw verify                    # Java contracts, formatting, JAR and distributions
+./mvnw spotless:apply            # Format Java
+python3 scripts/broker-tests.py  # Real Kafka tests; Java 17 also needed for old brokers
 ```
 
-Where `conf/jaas.conf` contains something like:
-```
-Client {
-    com.sun.security.auth.module.Krb5LoginModule required
-    useKeyTab=true
-    storeKey=true
-    keyTab="/etc/kafka/secrets/zkclient1.keytab"
-    principal="zkclient/example.com@EXAMPLE.COM";
-};
-```
+The broker test runner downloads checksum-pinned Apache distributions, starts isolated local processes and exercises the packaged KSM JAR. [Testing](docs/testing.md) documents the full security, resilience and distribution checks. [Contributing](CONTRIBUTING.md) describes project scope and review expectations.
 
-## Security configuration - Admin client
-When configured authorizer class is `io.conduktor.ksm.compat.AdminClientAuthorizer`,
-`kafka-security-manager` will use kafka admin client instead of direct zookeeper connection.
-Configuration example would be
-```
-KafkaClient {
-  org.apache.kafka.common.security.plain.PlainLoginModule required
-  username="admin"
-  password="admin-secret";
-};
-```
-
-## Configuration file
-
-For a list of configuration see [application.conf](src/main/resources/application.conf). You can customise them using environment variables or create your own `application.conf` file and pass it at runtime doing:
-```
-target/universal/stage/bin/kafka-security-manager -Dconfig.file=path/to/config-file.conf
-```
-
-Overall we use the [lightbend config](https://github.com/lightbend/config) library to configure this project.
-
-## Environment variables
-The [default configurations](src/main/resources/application.conf) can be overwritten using the following environment variables:
-
-- `KSM_READONLY=false`: enables KSM to synchronize from an External ACL source. The default value is `true`, which prevents KSM from altering ACLs in Zookeeper
-- `KSM_EXTRACT_ENABLE=true`: enable extract mode (get all the ACLs from Kafka formatted as a CSV or YAML)
-- `KSM_EXTRACT_FORMAT=csv`: selects which format to extract the ACLs with (defaults to csv, supports also yaml)
-- `KSM_REFRESH_FREQUENCY_MS=10000`: how often to check for changes in ACLs in Kafka and in the Source. 10000 ms by default. If it's set to `0` or negative value, for example `-1`, then KMS executes ACL synchronization just once and exits
-- `KSM_NUM_FAILED_REFRESHES_BEFORE_NOTIFICATION=1`: how many times that the refresh of a Source needs to fail (e.g. HTTP timeouts) before a notification is sent. Any value less than or equal to `1` here will notify on every failure to refresh.
-- `AUTHORIZER_CLASS`: authorizer class for ACL operations. Default is `SimpleAclAuthorizer`, configured with
-  - `AUTHORIZER_ZOOKEEPER_CONNECT`: zookeeper connection string
-  - `AUTHORIZER_ZOOKEEPER_SET_ACL=true` (default `false`): set to true if you want your ACLs in Zookeeper to be secure (you probably do want them to be secure) - when in doubt set as the same as your Kafka brokers.
-
-  No-zookeeper authorizer class on top of Kafka Admin Client is bundled with KSM as `io.conduktor.ksm.compat.AdminClientAuthorizer`,
-  configured with options for `org.apache.kafka.clients.admin.AdminClientConfig`:
-  - `ADMIN_CLIENT_ID` - `client.id`, an id to pass to the server when making requests, for tracing/audit purposes, default `kafka-security-manager`
-  Properties below are not provided to client unless environment variable is set:
-  - `ADMIN_CLIENT_BOOTSTRAP_SERVERS` - `bootstrap.servers`
-  - `ADMIN_CLIENT_SECURITY_PROTOCOL` - `security.protocol`
-  - `ADMIN_CLIENT_SASL_JAAS_CONFIG` -`sasl.jaas.config` - alternative to system jaas configuration
-  - `ADMIN_CLIENT_SASL_MECHANISM` - `sasl.mechanism`
-  - `ADMIN_CLIENT_SSL_KEY_PASSWORD` - `ssl.key.password`
-  - `ADMIN_CLIENT_SSL_KEYSTORE_LOCATION` - `ssl.keystore.location`
-  - `ADMIN_CLIENT_SSL_KEYSTORE_PASSWORD` - `ssl.keystore.password`
-  - `ADMIN_CLIENT_SSL_TRUSTSTORE_LOCATION` - `ssl.truststore.location`
-  - `ADMIN_CLIENT_SSL_TRUSTSTORE_PASSWORD` - `ssl.truststore.password`
-
-- `SOURCE_CLASS`: Source class. Valid values include
-    - `io.conduktor.ksm.source.NoSourceAcl` (default): No source for the ACLs. Only use with `KSM_READONLY=true`
-    - `io.conduktor.ksm.source.FileSourceAcl`: get the ACL source from a file on disk. Good for POC
-    - `io.conduktor.ksm.source.GitHubSourceAcl`: get the ACL from GitHub. Great to get started quickly and store the ACL securely under version control.
-    - `io.conduktor.ksm.source.GitLabSourceAcl`: get the ACL from GitLab using personal access tokens. Great to get started quickly and store the ACL securely under version control.
-      - `SOURCE_GITLAB_REPOID` GitLab project id
-      - `SOURCE_GITLAB_FILEPATH` Path to the ACL file in GitLab project
-      - `SOURCE_GITLAB_BRANCH` Git Branch name
-      - `SOURCE_GITLAB_HOSTNAME` GitLab Hostname
-      - `SOURCE_GITLAB_ACCESSTOKEN` GitLab Personal Access Token. See [Personal access tokens
-](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) to authenticate with the GitLab API.
-    - `io.conduktor.ksm.source.S3SourceAcl`: get the ACL from S3. Good for when you have a S3 bucket managed by Terraform or Cloudformation. This requires `region`, `bucketname` and `objectkey`. See [Access credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for credentials management.
-      - `SOURCE_S3_REGION` AWS S3 Region
-      - `SOURCE_S3_BUCKETNAME` AWS S3 Bucket name
-      - `SOURCE_S3_OBJECTKEY` The Object containing the ACL CSV in S3
-    - `io.conduktor.ksm.source.BitbucketServerSourceAcl`: get the ACL from Bitbucket Server using the v1 REST API. Great if you have private repos in Bitbucket.
-    - `io.conduktor.ksm.source.BitbucketCloudSourceAcl`: get the ACL from Bitbucket Cloud using the Bitbucket Cloud REST API v2.
-    - `io.conduktor.ksm.source.HttpSourceAcl`: get the ACL from an HTTP endpoint. You can enable [Google OAuth OIDC Token Authentication](https://cloud.google.com/docs/authentication/production).
-        - `SOURCE_HTTP_URL` HTTP endpoint to retrieve ACL data.
-        - `SOURCE_HTTP_METHOD` HTTP Method. Default is `GET`.
-        - `SOURCE_HTTP_AUTH_TYPE` To enable Http Authentication. `googleiam` for Google IAM. Default is `NONE`.
-        - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT` Google Service Account name.
-        - `SOURCE_HTTP_AUTH_GOOGLEIAM_SERVICE_ACCOUNT_KEY` Google Service Account Key in JSON string encoded. If not the key isn't configured, it'll try to get the token from environment.
-        - `SOURCE_HTTP_AUTH_GOOGLEIAM_TARGET_AUDIENCE` Google Target Audience for token authentication.
-
-- `NOTIFICATION_CLASS`: Class for notification in case of ACL changes in Kafka.
-    - `io.conduktor.ksm.notification.ConsoleNotification` (default): Print changes to the console. Useful for logging
-    - `io.conduktor.ksm.notification.SlackNotification`: Send notifications to a Slack channel (useful for devops / admin team)
-- `ACL_PARSER_CSV_DELIMITER`: Change the delimiter character for the CSV Parser (useful when you have SSL)
-
-# Running on Docker
-
-## Building the image
-
-```
-./build-docker.sh
-```
-
-## Docker Hub
-
-Alternatively, you can get the automatically built Docker images on [Docker Hub](https://hub.docker.com/r/conduktor/kafka-security-manager)  
-
-## Running
-
-(read above for configuration details)
-
-Then apply to the docker run using for example (in EXTRACT mode):
-
-```
-docker run -it -e AUTHORIZER_ZOOKEEPER_CONNECT="zookeeper-url:2181" -e KSM_EXTRACT_ENABLE=true \
-            conduktor/kafka-security-manager:latest
-```
-
-Any of the environment variables described above can be used by the docker run command with the `-e ` options.
-
-## Example
-
-```
-docker-compose up -d
-docker-compose logs kafka-security-manager
-# view the logs, have fun changing example/acls.csv
-docker-compose down
-```
-
-For full usage of the docker-compose file see [kafka-security-manager](https://github.com/conduktor/kafka-security-manager)
-
-## Extracting ACLs
-
-You can initially extract all your existing ACL in Kafka by running the program with the config `ksm.extract.enable=true` or `export KSM_EXTRACT_ENABLE=true`
-
-Output should look like:
-```
-[2018-03-06 21:49:44,704] INFO Running ACL Extraction mode (ExtractAcl)
-[2018-03-06 21:49:44,704] INFO Getting ACLs from Kafka (ExtractAcl)
-[2018-03-06 21:49:44,704] INFO Closing Authorizer (ExtractAcl)
-
-KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
-User:bob,Group,PREFIXED,bar,Write,Deny,12.34.56.78
-User:alice,Topic,LITERAL,foo,Read,Allow,*
-User:peter,Cluster,LITERAL,kafka-cluster,Create,Allow,*
-```
-
-You can then use place this CSV anywhere and use it as your source of truth.
-
-# Compatibility
-
-KSM Version | Kafka Version | Notes
---- | --- | ---
-1.1.0-SNAPSHOT | 2.8.x | updated log4j dependency
-1.0.1 | 2.8.x | updated log4j dependency
-0.11.0 | 2.5.x | renamed packages to `io.conduktor`. Breaking change on extract config name
-0.10.0 | 2.5.x | YAML support<br>Add configurable num failed refreshes before notification 
-0.9 | 2.5.x | Upgrade to Kafka 2.5.x
-0.8 | 2.3.1 | Add a "run once" mode
-0.7 | 2.1.1 | Kafka Based ACL refresher available (no zookeeper dependency)
-0.6 | 2.0.0 | important stability fixes - please update
-0.5 | 2.0.0 |
-0.4 | 2.0.0 | important change: added column 'PatternType' in CSV
-0.3 | 1.1.x |
-0.2 | 1.1.x | upgrade to 0.3 recommended
-0.1 | 1.0.x | might work for earlier versions
-
-# Contributing
-
-You can break the API / configs as long as we haven't reached 1.0. Each API break would introduce a new version number.
-
-PRs are welcome, especially with the following:
-- Code refactoring  / cleanup / renaming
-- External Sources for ACLs (JDBC, Microsoft AD, etc...)
-- Notification Channels (Email, etc...)
-
-Please open an issue before opening a PR.
-
-# Release process
-
-- update version in [build.sbt] (make sure to use format vX.Y.Z)
-- update [README.md] and [CHANGELOG.md]
-- push the tag (eg: `v0.10.0`)
-- update version in [build.sbt] to the next snapshot version
-
-That's it !
+Licensed under [MIT](LICENSE.txt).

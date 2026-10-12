@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -ex
-
-sbt clean test
+set -euo pipefail
+cd -- "$(dirname -- "$0")"
+exec ./mvnw -B -ntp verify "$@"

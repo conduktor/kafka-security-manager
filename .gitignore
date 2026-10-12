@@ -6,3 +6,4 @@ src/main/resources/specs/KsmService.yml
 .metals/
 .bloop/
 data/
+__pycache__/

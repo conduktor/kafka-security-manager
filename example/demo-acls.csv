@@ -1,0 +1,7 @@
+KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host
+User:manager,Cluster,LITERAL,kafka-cluster,Alter,Allow,*
+User:manager,Cluster,LITERAL,kafka-cluster,Describe,Allow,*
+User:app,Topic,LITERAL,orders,Write,Allow,*
+User:app,Topic,LITERAL,orders,Read,Allow,*
+User:app,Topic,LITERAL,orders,Describe,Allow,*
+User:app,Group,LITERAL,orders-reader,Read,Allow,*
