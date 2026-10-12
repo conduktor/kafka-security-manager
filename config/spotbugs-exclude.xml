@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- These SPI boundaries propagate checked provider/client failures. Narrowing
+       the shared contract would constrain custom sources and notifications. -->
+  <Match>
+    <Or>
+      <Class name="io.conduktor.ksm.AppConfig"/>
+      <Class name="io.conduktor.ksm.backend.AclBackend"/>
+      <Class name="io.conduktor.ksm.backend.KafkaAclBackend"/>
+      <Class name="io.conduktor.ksm.notification.Notification"/>
+      <Class name="io.conduktor.ksm.source.SourceAcl"/>
+      <Class name="io.conduktor.ksm.source.FileSourceAcl"/>
+      <Class name="io.conduktor.ksm.source.HttpSourceAcl"/>
+      <Class name="io.conduktor.ksm.source.HttpTransport"/>
+      <Class name="io.conduktor.ksm.source.RemoteSourceAcl"/>
+      <Class name="io.conduktor.ksm.source.S3SourceAcl"/>
+    </Or>
+    <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+  </Match>
+  <!-- The injected backend is a shared live client, not a value to clone. -->
+  <Match>
+    <Class name="io.conduktor.ksm.AclSynchronizer"/>
+    <Method name="&lt;init&gt;"/>
+    <Field name="backend"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Backend/source/notification implementations may throw checked failures.
+       Contract tests exercise them; the analyzer cannot infer external plugins. -->
+  <Match>
+    <Class name="io.conduktor.ksm.AclSynchronizer"/>
+    <Method name="cycle"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <!-- AppConfig calls configure before use; the public extension SPI requires
+       construction first. Match only the fields initialized by that lifecycle. -->
+  <Match>
+    <Class name="io.conduktor.ksm.notification.SlackNotification"/>
+    <Field name="~(config|http)"/>
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+  </Match>
+  <Match>
+    <Class name="io.conduktor.ksm.source.FileSourceAcl"/>
+    <Field name="file"/>
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+  </Match>
+  <Match>
+    <Class name="io.conduktor.ksm.source.S3SourceAcl"/>
+    <Field name="client"/>
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+  </Match>
+  <!-- HttpClient obeys Flow: onSubscribe runs before onNext. -->
+  <Match>
+    <Class name="io.conduktor.ksm.source.HttpTransport$LimitedBody"/>
+    <Field name="subscription"/>
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+  </Match>
+</FindBugsFilter>

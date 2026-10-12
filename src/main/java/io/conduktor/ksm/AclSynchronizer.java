@@ -88,6 +88,8 @@ public final class AclSynchronizer {
   }
 
   public static final class CycleException extends Exception {
+    @java.io.Serial private static final long serialVersionUID = 1L;
+
     CycleException(String phase, Exception cause) {
       super("Failure while " + phase + " (" + cause.getClass().getSimpleName() + ")", cause);
     }

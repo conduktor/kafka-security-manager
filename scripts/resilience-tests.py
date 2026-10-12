@@ -4,6 +4,7 @@
 Inject a lost CreateAcls response, controller election, total broker outage,
 source errors and notification failure. All processes and data are disposable.
 """
+
 import argparse
 import csv
 import hashlib
@@ -11,7 +12,6 @@ import importlib.util
 import io
 import json
 import os
-from pathlib import Path
 import re
 import signal
 import socket
@@ -19,14 +19,18 @@ import struct
 import subprocess
 import threading
 import time
+from pathlib import Path
 
-SPEC = importlib.util.spec_from_file_location("brokers", Path(__file__).with_name("broker-tests.py"))
+SPEC = importlib.util.spec_from_file_location(
+    "brokers", Path(__file__).with_name("broker-tests.py")
+)
 B = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(B)
 
 
 class FaultProxy:
     """Frame-aware TCP proxy. Drop responses after forwarding a CreateAcls request."""
+
     def __init__(self, listen, destination, armed, triggered):
         self.destination, self.armed, self.triggered = destination, armed, triggered
         self.server = socket.socket()
@@ -44,8 +48,12 @@ class FaultProxy:
                 upstream = socket.create_connection(("127.0.0.1", self.destination), timeout=5)
                 upstream.settimeout(None)
                 self.sockets.extend([client, upstream])
-                threading.Thread(target=self.forward, args=(client, upstream, True), daemon=True).start()
-                threading.Thread(target=self.forward, args=(upstream, client, False), daemon=True).start()
+                threading.Thread(
+                    target=self.forward, args=(client, upstream, True), daemon=True
+                ).start()
+                threading.Thread(
+                    target=self.forward, args=(upstream, client, False), daemon=True
+                ).start()
             except OSError:
                 if self.closed:
                     return
@@ -70,7 +78,7 @@ class FaultProxy:
                         return
                     if len(pending) < size + 4:
                         break
-                    frame, pending = pending[:size + 4], pending[size + 4:]
+                    frame, pending = pending[: size + 4], pending[size + 4 :]
                     create_acls = size >= 2 and struct.unpack(">h", frame[4:6])[0] == 30
                     if create_acls and self.armed.is_set():
                         # Mark before sending so the reverse thread cannot deliver a successful response.
@@ -100,20 +108,38 @@ class FaultProxy:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--java25", type=Path, default=Path(os.environ.get("JAVA_HOME", Path.home() / ".sdkman/candidates/java/25.0.3-tem")))
-    parser.add_argument("--cache", type=Path, default=Path(os.environ.get("KSM_KAFKA_CACHE", Path.home() / ".cache/ksm-kafka")))
+    parser.add_argument(
+        "--java25",
+        type=Path,
+        default=Path(
+            os.environ.get("JAVA_HOME", Path.home() / ".sdkman/candidates/java/25.0.3-tem")
+        ),
+    )
+    parser.add_argument(
+        "--cache",
+        type=Path,
+        default=Path(os.environ.get("KSM_KAFKA_CACHE", Path.home() / ".cache/ksm-kafka")),
+    )
     args = parser.parse_args()
     java = args.java25.resolve()
     directory = B.ROOT / "target/resilience-it" / time.strftime("%Y%m%d-%H%M%S")
     directory.mkdir(parents=True)
     jar = directory / "ksm.jar"
     import shutil
+
     shutil.copy2(B.ROOT / "target/kafka-security-manager-2.0.0.jar", jar)
     distro = B.download(next(c for c in B.MATRIX if c["version"] == "4.3.1"), args.cache.resolve())
-    env = dict(os.environ, JAVA_HOME=str(java), KAFKA_HEAP_OPTS="-Xms128m -Xmx384m",
-               KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC", LOG_DIR=str(directory / "logs"))
+    env = dict(
+        os.environ,
+        JAVA_HOME=str(java),
+        KAFKA_HEAP_OPTS="-Xms128m -Xmx384m",
+        KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC",
+        LOG_DIR=str(directory / "logs"),
+    )
     for key in list(env):
-        if key.startswith(("KSM_", "SOURCE_", "NOTIFICATION_", "ADMIN_CLIENT_", "AUTHORIZER_")) or key in ("KAFKA_OPTS", "JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS"):
+        if key.startswith(
+            ("KSM_", "SOURCE_", "NOTIFICATION_", "ADMIN_CLIENT_", "AUTHORIZER_")
+        ) or key in ("KAFKA_OPTS", "JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS"):
             env.pop(key)
     handles, processes, proxies, events = [], {}, [], []
     controls = {i: B.port() for i in (1, 2, 3)}
@@ -124,8 +150,10 @@ def main():
     armed, triggered = threading.Event(), threading.Event()
     source = directory / "policy.csv"
     header = "KafkaPrincipal,ResourceType,PatternType,ResourceName,Operation,PermissionType,Host\n"
-    management = {"User:manager,Cluster,LITERAL,kafka-cluster,Describe,Allow,*",
-                  "User:manager,Cluster,LITERAL,kafka-cluster,Alter,Allow,*"}
+    management = {
+        "User:manager,Cluster,LITERAL,kafka-cluster,Describe,Allow,*",
+        "User:manager,Cluster,LITERAL,kafka-cluster,Alter,Allow,*",
+    }
     expected = set(management)
     probe = 0
 
@@ -140,8 +168,13 @@ def main():
         return handle
 
     def start_node(node):
-        processes[node] = subprocess.Popen([str(distro / "bin/kafka-server-start.sh"), str(directory / f"node-{node}.properties")],
-                                          env=env, stdout=log(f"node-{node}"), stderr=subprocess.STDOUT, start_new_session=True)
+        processes[node] = subprocess.Popen(
+            [str(distro / "bin/kafka-server-start.sh"), str(directory / f"node-{node}.properties")],
+            env=env,
+            stdout=log(f"node-{node}"),
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
         B.wait_port(controls[node] if node < 4 else clients[node], processes[node], 90)
 
     def stop(key, hard=False):
@@ -155,18 +188,33 @@ def main():
                 process.wait()
 
     def ksm_config(path, user, ports, extra=""):
-        values = {"bootstrap.servers": ",".join(f"127.0.0.1:{p}" for p in ports),
-                  "security.protocol": "SASL_PLAINTEXT", "sasl.mechanism": "PLAIN",
-                  "sasl.jaas.config": B.jaas(user), "default.api.timeout.ms": "4000", "request.timeout.ms": "2000"}
+        values = {
+            "bootstrap.servers": ",".join(f"127.0.0.1:{p}" for p in ports),
+            "security.protocol": "SASL_PLAINTEXT",
+            "sasl.mechanism": "PLAIN",
+            "sasl.jaas.config": B.jaas(user),
+            "default.api.timeout.ms": "4000",
+            "request.timeout.ms": "2000",
+        }
         path.write_text("authorizer.admin-client-config=" + json.dumps(values) + "\n" + extra)
         return path
 
     def read_acls(node=4):
         nonlocal probe
         probe += 1
-        config = ksm_config(directory / f"extract-{node}.conf", "root", [internals[node]], "ksm.extract.enable=true\n")
-        result = subprocess.run([str(java / "bin/java"), "-Dconfig.file=" + str(config), "-jar", str(jar)],
-                                env=env, text=True, capture_output=True, timeout=12)
+        config = ksm_config(
+            directory / f"extract-{node}.conf",
+            "root",
+            [internals[node]],
+            "ksm.extract.enable=true\n",
+        )
+        result = subprocess.run(
+            [str(java / "bin/java"), "-Dconfig.file=" + str(config), "-jar", str(jar)],
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=12,
+        )
         (directory / f"observed-{probe}.csv").write_text(result.stdout)
         (directory / f"extract-{probe}.log").write_text(result.stderr)
         if result.returncode:
@@ -192,20 +240,45 @@ def main():
         temporary.replace(source)
 
     def convergence():
-        eventually("ACL convergence on both brokers", lambda: read_acls(4) == expected and read_acls(5) == expected)
+        eventually(
+            "ACL convergence on both brokers",
+            lambda: read_acls(4) == expected and read_acls(5) == expected,
+        )
 
     def start_ksm():
-        processes["ksm"] = subprocess.Popen([str(java / "bin/java"), "-Dconfig.file=" + str(directory / "ksm.conf"), "-jar", str(jar)],
-                                           env=env, stdout=log("ksm"), stderr=subprocess.STDOUT, start_new_session=True)
+        processes["ksm"] = subprocess.Popen(
+            [
+                str(java / "bin/java"),
+                "-Dconfig.file=" + str(directory / "ksm.conf"),
+                "-jar",
+                str(jar),
+            ],
+            env=env,
+            stdout=log("ksm"),
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
 
     def failures():
         path = directory / "ksm.log"
         return path.read_text().count("Cycle failed:") if path.exists() else 0
 
     def leader():
-        result = subprocess.run([str(distro / "bin/kafka-metadata-quorum.sh"), "--bootstrap-server", f"127.0.0.1:{internals[4]}",
-                                 "--command-config", str(directory / "root.properties"), "describe", "--status"],
-                                env=env, capture_output=True, text=True, timeout=15)
+        result = subprocess.run(
+            [
+                str(distro / "bin/kafka-metadata-quorum.sh"),
+                "--bootstrap-server",
+                f"127.0.0.1:{internals[4]}",
+                "--command-config",
+                str(directory / "root.properties"),
+                "describe",
+                "--status",
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
         (directory / "quorum.log").open("a").write(result.stdout + result.stderr)
         match = re.search(r"LeaderId:\s+(\d+)", result.stdout)
         if result.returncode or not match:
@@ -217,50 +290,108 @@ def main():
         for node in range(1, 6):
             controller = node < 4
             config = {
-                "node.id": node, "process.roles": "controller" if controller else "broker",
-                "controller.quorum.voters": voters, "controller.listener.names": "CONTROLLER",
+                "node.id": node,
+                "process.roles": "controller" if controller else "broker",
+                "controller.quorum.voters": voters,
+                "controller.listener.names": "CONTROLLER",
                 "listener.security.protocol.map": "CLIENT:SASL_PLAINTEXT,INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT",
-                "listeners": f"CONTROLLER://127.0.0.1:{controls[node]}" if controller else
-                             f"CLIENT://127.0.0.1:{clients[node]},INTERNAL://127.0.0.1:{internals[node]}",
-                "inter.broker.listener.name": "INTERNAL", "sasl.enabled.mechanisms": "PLAIN",
-                "sasl.mechanism.inter.broker.protocol": "PLAIN", "sasl.mechanism.controller.protocol": "PLAIN",
+                "listeners": f"CONTROLLER://127.0.0.1:{controls[node]}"
+                if controller
+                else f"CLIENT://127.0.0.1:{clients[node]},INTERNAL://127.0.0.1:{internals[node]}",
+                "inter.broker.listener.name": "INTERNAL",
+                "sasl.enabled.mechanisms": "PLAIN",
+                "sasl.mechanism.inter.broker.protocol": "PLAIN",
+                "sasl.mechanism.controller.protocol": "PLAIN",
                 "authorizer.class.name": "org.apache.kafka.metadata.authorizer.StandardAuthorizer",
-                "super.users": "User:root", "allow.everyone.if.no.acl.found": "false",
-                "log.dirs": directory / f"data-{node}", "offsets.topic.replication.factor": "2",
-                "transaction.state.log.replication.factor": "2", "transaction.state.log.min.isr": "1",
+                "super.users": "User:root",
+                "allow.everyone.if.no.acl.found": "false",
+                "log.dirs": directory / f"data-{node}",
+                "offsets.topic.replication.factor": "2",
+                "transaction.state.log.replication.factor": "2",
+                "transaction.state.log.min.isr": "1",
             }
             for listener in ("client", "internal", "controller"):
-                config[f"listener.name.{listener}.plain.sasl.jaas.config"] = B.jaas("root", server=True)
+                config[f"listener.name.{listener}.plain.sasl.jaas.config"] = B.jaas(
+                    "root", server=True
+                )
             if not controller:
-                config["advertised.listeners"] = f"CLIENT://127.0.0.1:{exposed[node]},INTERNAL://127.0.0.1:{internals[node]}"
+                config["advertised.listeners"] = (
+                    f"CLIENT://127.0.0.1:{exposed[node]},INTERNAL://127.0.0.1:{internals[node]}"
+                )
                 proxies.append(FaultProxy(exposed[node], clients[node], armed, triggered))
             config_path = directory / f"node-{node}.properties"
             B.properties(config_path, config)
-            B.execute([distro / "bin/kafka-storage.sh", "format", "-t", "MkU3OEVBNTcwNTJENDM2Qk", "-c", config_path],
-                      env, directory / f"format-{node}.log")
+            B.execute(
+                [
+                    distro / "bin/kafka-storage.sh",
+                    "format",
+                    "-t",
+                    "MkU3OEVBNTcwNTJENDM2Qk",
+                    "-c",
+                    config_path,
+                ],
+                env,
+                directory / f"format-{node}.log",
+            )
         for node in range(1, 6):
             start_node(node)
-        B.properties(directory / "root.properties", {"security.protocol": "SASL_PLAINTEXT", "sasl.mechanism": "PLAIN",
-                                                     "sasl.jaas.config": B.jaas("root")})
+        B.properties(
+            directory / "root.properties",
+            {
+                "security.protocol": "SASL_PLAINTEXT",
+                "sasl.mechanism": "PLAIN",
+                "sasl.jaas.config": B.jaas("root"),
+            },
+        )
         eventually("Initial authorizer readiness", lambda: read_acls() == set())
-        B.execute([distro / "bin/kafka-acls.sh", "--bootstrap-server", f"127.0.0.1:{internals[4]}",
-                   "--command-config", directory / "root.properties", "--add", "--allow-principal", "User:manager",
-                   "--operation", "Describe", "--operation", "Alter", "--cluster"], env, directory / "bootstrap-acls.log")
+        B.execute(
+            [
+                distro / "bin/kafka-acls.sh",
+                "--bootstrap-server",
+                f"127.0.0.1:{internals[4]}",
+                "--command-config",
+                directory / "root.properties",
+                "--add",
+                "--allow-principal",
+                "User:manager",
+                "--operation",
+                "Describe",
+                "--operation",
+                "Alter",
+                "--cluster",
+            ],
+            env,
+            directory / "bootstrap-acls.log",
+        )
         write_policy(expected)
-        ksm_config(directory / "ksm.conf", "manager", exposed.values(), """
+        ksm_config(
+            directory / "ksm.conf",
+            "manager",
+            exposed.values(),
+            """
 ksm { readonly=false, debug=true, refresh.frequency.ms=200, cycle.timeout.ms=30000 }
 source.class="io.conduktor.ksm.source.FileSourceAcl"
-source.file.filename=""" + json.dumps(str(source)) + """
+source.file.filename="""
+            + json.dumps(str(source))
+            + """
 notification.class="io.conduktor.ksm.notification.SlackNotification"
 notification.slack.webhook="http://127.0.0.1:1/unavailable"
 notification.slack.request.timeout.ms=300
-""")
+""",
+        )
         start_ksm()
         expected.add("User:app,Topic,LITERAL,initial,Read,Allow,*")
         write_policy(expected)
         convergence()
-        eventually("Slack failure stays separate", lambda: "after successful ACL application" in (directory / "ksm.log").read_text())
-        record("separate-controllers-forwarding-and-propagation", status="PASS", acl_count=len(expected))
+        eventually(
+            "Slack failure stays separate",
+            lambda: "after successful ACL application" in (directory / "ksm.log").read_text(),
+        )
+        record(
+            "separate-controllers-forwarding-and-propagation",
+            status="PASS",
+            acl_count=len(expected),
+        )
 
         initial = set(expected)
         previous = failures()
@@ -271,10 +402,18 @@ notification.slack.request.timeout.ms=300
         eventually("Lost connection causes a failed cycle", lambda: failures() > previous, 20)
         during_fault = read_acls()
         assert initial <= during_fault <= expected
-        (directory / "fault-state.json").write_text(json.dumps({"before": len(initial), "observed": len(during_fault), "desired": len(expected)}))
+        (directory / "fault-state.json").write_text(
+            json.dumps(
+                {"before": len(initial), "observed": len(during_fault), "desired": len(expected)}
+            )
+        )
         armed.clear()
         convergence()
-        record("create-request-forwarded-response-lost-recovery", status="PASS", observed_during_fault=len(during_fault))
+        record(
+            "create-request-forwarded-response-lost-recovery",
+            status="PASS",
+            observed_during_fault=len(during_fault),
+        )
 
         old_leader = leader()
         expected.add("User:app,Topic,LITERAL,after-election,Read,Allow,*")
@@ -282,7 +421,12 @@ notification.slack.request.timeout.ms=300
         stop(old_leader, hard=True)
         eventually("New controller leader", lambda: leader() != old_leader)
         convergence()
-        record("controller-leader-killed-during-continuous-reconciliation", status="PASS", old_leader=old_leader, new_leader=leader())
+        record(
+            "controller-leader-killed-during-continuous-reconciliation",
+            status="PASS",
+            old_leader=old_leader,
+            new_leader=leader(),
+        )
         start_node(old_leader)
 
         previous = failures()
@@ -326,8 +470,14 @@ notification.slack.request.timeout.ms=300
             proxy.close()
         for handle in handles:
             handle.close()
-        report = {"status": status, "version": "4.3.1", "controllers": 3, "brokers": 2,
-                  "artifact_sha256": hashlib.sha256(jar.read_bytes()).hexdigest(), "scenarios": events}
+        report = {
+            "status": status,
+            "version": "4.3.1",
+            "controllers": 3,
+            "brokers": 2,
+            "artifact_sha256": hashlib.sha256(jar.read_bytes()).hexdigest(),
+            "scenarios": events,
+        }
         (directory / "results.json").write_text(json.dumps(report, indent=2) + "\n")
         print("Report: " + str(directory / "results.json"), flush=True)
 

@@ -99,7 +99,8 @@ public final class KafkaSecurityManager {
               worker.shutdownNow();
               main.interrupt();
               try {
-                cleanupFinished.await(7, TimeUnit.SECONDS);
+                if (!cleanupFinished.await(7, TimeUnit.SECONDS))
+                  LOG.warn("Shutdown cleanup did not finish within seven seconds");
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
               }

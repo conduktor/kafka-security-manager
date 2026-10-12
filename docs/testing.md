@@ -2,6 +2,8 @@
 
 Use Java 25 for KSM and Python 3.12 or newer for the fixtures. Java 17 is also needed to launch Kafka 2.x/3.x. Docker is only required for the distribution tests.
 
+Run the [required static checks](../CONTRIBUTING.md#required-checks) before the broker suites. `./scripts/lint.sh` checks Python, shell, workflows and Markdown; `./mvnw verify` also enforces formatting, compiler warnings and SpotBugs.
+
 ## Commands
 
 ```sh
@@ -73,7 +75,7 @@ Parser tests retain the valid legacy examples and reject the corruption cases fo
 
 ## Distribution checks and evidence
 
-Distribution tests start the README Compose example from fresh storage, produce and consume with application credentials, then stop its continuous writer. Each ZIP/tar.gz launcher and Docker architecture applies a changed policy, extracts the result and restores the initial policy through the real Admin API. The launcher test includes a configuration path containing spaces.
+Distribution tests start the README Compose example from fresh storage, produce and consume with application credentials, then stop its continuous writer. CI sets `KSM_IMAGE` to an isolated local image and builds the current checkout; the README uses the published image with `--no-build`. Each ZIP/tar.gz launcher and Docker architecture applies a changed policy, extracts the result and restores the initial policy through the real Admin API. The launcher test includes a configuration path containing spaces.
 
 Docker images run as UID/GID 10001. The test executes the Java runtime and records architecture, image ID and whether the engine uses emulation. Local cross-architecture execution requires Docker emulation; CI uses native amd64 and arm64 runners.
 

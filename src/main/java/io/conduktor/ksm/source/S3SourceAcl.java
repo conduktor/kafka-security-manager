@@ -28,7 +28,6 @@ public final class S3SourceAcl implements SourceAcl {
   public void configure(Config config) {
     bucket = config.getString("bucketname");
     key = config.getString("objectkey");
-    parsers.getParserByFilename(key);
     maxBytes = config.getInt("max.bytes");
     Duration timeout = Duration.ofMillis(config.getLong("request.timeout.ms"));
     var builder =

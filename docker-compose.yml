@@ -45,6 +45,7 @@ services:
         /opt/kafka/bin/kafka-acls.sh --bootstrap-server kafka:9092 --command-config /demo/demo-root.properties --add --allow-principal User:manager --operation Alter --operation Describe --cluster
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --command-config /demo/demo-root.properties --create --if-not-exists --topic orders --partitions 1 --replication-factor 1
   ksm:
+    image: ${KSM_IMAGE:-conduktor/kafka-security-manager:v2.0.0}
     build: .
     depends_on:
       init:

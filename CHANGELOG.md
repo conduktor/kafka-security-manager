@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.1/)
@@ -24,18 +25,22 @@ ZooKeeper configuration and custom extension migration. See [testing](docs/testi
 for the supported-version matrix and reproducible qualification commands.
 
 ## [1.1.0-SNAPSHOT]
+
 - TODO
 
 ## [1.0.1] - 06/02/2022
+
 - Fixed log4j dependency
 - Added Google IAM
 
 ## [0.11.0] - 31/06/2021
+
 - Renamed packages to `io.conduktor`
 - Prepared release to sonatype and Maven
 - Renamed `ksm.extract` config to `ksm.extract.enable` (breaking change)
 
 ## [0.10.2] - 12/05/2021
+
 - Removed gRPC
 - Implemented support for additional parsers (#74)
 - Implemented YAML parser (#74)
@@ -44,6 +49,7 @@ for the supported-version matrix and reproducible qualification commands.
 - Fixed (#88) S3SourceAcl from BufferedReader bug
 
 ## [0.9] - 08/07/2020
+
 - Upgrade to Kafka 2.5.0
 - Added Bitbucket Cloud as an ACL source
 - Added Branch parameter for Bitbucket Server ACL Source
@@ -51,25 +57,30 @@ for the supported-version matrix and reproducible qualification commands.
 - Massive refactor to better handle refresh and parsing exceptions
 
 ## [0.8] - 10/01/2020
+
 - Added possibility to run AclSynchronizer just once and then stop KSM (Issue #56)
 - Updated to Kafka 2.3.1
 
 ## [0.7] - 24/07/2019
+
 - Kafka 2.1.1
 - No-zookeeper ACL managing via admin client
 - Scala 2.12.8, sbt 1.2.8
 - Fix fox basic auth (Issue #51)
 
 ## [0.6] - 28/01/2019
+
 - Added Bitbucket Server as an ACL source
 - Added sample ACL rules for a schema registry user
 - Important stability fixes in case of source refresh issue
 
 ## [0.5] - 12/12/2018
+
 - New custom delimiter option for CsvAclParser
 - Refactoring to allow new AclParser formats
 
 ## [0.4] - 09/09/2018
+
 - Added S3 Acl Source (#27)
 - Upgraded to Kafka 2.0
 - New format to ACLs that allows Patterns (like prefixes)
@@ -78,6 +89,7 @@ for the supported-version matrix and reproducible qualification commands.
 - Using OpenJDK-8 slim as the base image for Docker releases
 
 ## [0.3] - 13/06/2018
+
 - Added gRPC endpoint to perform API calls on KSM (the goal is to build a UI on top of KSM)
 - Feature flag for gRPC server (off by default)
 - Added gRPC reflection service
@@ -91,11 +103,12 @@ for the supported-version matrix and reproducible qualification commands.
 - Artifacts are now deployed to Sonatype / Maven Central
 
 ## [0.2] - 05/05/2018
+
 - Kafka 1.1.0
 - Updated Embedded Kafka to v1.1.0-kafka1.1.0 (test dependency)
 
-
 ## [0.1] - 08/03/2018
+
 - Kafka 1.0.1
 - Initial Release
 - Travis CI automation
@@ -103,8 +116,8 @@ for the supported-version matrix and reproducible qualification commands.
 - Parsers: CsvAclParser
 - Source: GitHub & File
 - Notification: Console & Slack
-- Extract ACLs from Kafka. 
-- Tests including with Kafka running 
+- Extract ACLs from Kafka.
+- Tests including with Kafka running
 - GitHub Enterprise Support
 - GitHub Authentication Support
 - Slack Notification Support

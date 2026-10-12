@@ -1,15 +1,18 @@
 """Exercise checksum verification, mirror fallback and curl resumption over real HTTP."""
+
 import hashlib
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import io
-from pathlib import Path
 import tarfile
 import tempfile
 import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
-spec = importlib.util.spec_from_file_location("broker_tests", Path(__file__).with_name("broker-tests.py"))
+spec = importlib.util.spec_from_file_location(
+    "broker_tests", Path(__file__).with_name("broker-tests.py")
+)
 brokers = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(brokers)
 
@@ -39,10 +42,12 @@ class DownloadTest(unittest.TestCase):
                 self.send_response(206 if offset else 200)
                 self.send_header("Content-Length", str(len(content) - offset))
                 if offset:
-                    self.send_header("Content-Range", f"bytes {offset}-{len(content)-1}/{len(content)}")
+                    self.send_header(
+                        "Content-Range", f"bytes {offset}-{len(content) - 1}/{len(content)}"
+                    )
                 self.end_headers()
                 if self.path.startswith("/partial/") and not resume:
-                    self.wfile.write(content[:len(content) // 2])
+                    self.wfile.write(content[: len(content) // 2])
                     self.close_connection = True
                 else:
                     self.wfile.write(content[offset:])
@@ -63,8 +68,10 @@ class DownloadTest(unittest.TestCase):
         self.temp.cleanup()
 
     def cell(self, route):
-        return {"url": f"http://127.0.0.1:{self.server.server_port}/{route}/test.tgz",
-                "sha512": hashlib.sha512(self.payload).hexdigest()}
+        return {
+            "url": f"http://127.0.0.1:{self.server.server_port}/{route}/test.tgz",
+            "sha512": hashlib.sha512(self.payload).hexdigest(),
+        }
 
     def test_unavailable_mirror_falls_back_to_verified_archive(self):
         cell = self.cell("valid")
