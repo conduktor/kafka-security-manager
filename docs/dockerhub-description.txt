@@ -1,0 +1,1 @@
+Kafka ACL synchronization from CSV/YAML policies. An open-source project by Conduktor.

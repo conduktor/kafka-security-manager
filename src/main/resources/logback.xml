@@ -1,0 +1,8 @@
+<configuration>
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
+    <encoder><pattern>%date{ISO8601} %-5level %logger{30} - %msg%n</pattern></encoder>
+  </appender>
+  <logger name="org.apache.kafka" level="WARN"/>
+  <root level="INFO"><appender-ref ref="STDERR"/></root>
+</configuration>

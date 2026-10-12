@@ -1,0 +1,4 @@
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
+*.sh text eol=lf
+bin/kafka-security-manager text eol=lf

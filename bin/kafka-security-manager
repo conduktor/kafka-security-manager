@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -eu
+KSM_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -n "${JAVA_HOME:-}" ]; then
+  KSM_JAVA="$JAVA_HOME/bin/java"
+else
+  KSM_JAVA=java
+fi
+# Preserve the legacy launcher's -Dproperty=value convention, including paths with spaces.
+jvm_options=()
+app_options=()
+for argument in "$@"; do
+  case "$argument" in
+    -D*) jvm_options+=("$argument") ;;
+    *) app_options+=("$argument") ;;
+  esac
+done
+exec "$KSM_JAVA" "${jvm_options[@]}" -jar "$KSM_DIR/lib/kafka-security-manager.jar" "${app_options[@]}"

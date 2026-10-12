@@ -1,0 +1,44 @@
+[
+  {
+    "version": "2.8.2",
+    "fixture": "zk",
+    "url": "https://archive.apache.org/dist/kafka/2.8.2/kafka_2.13-2.8.2.tgz",
+    "sha512": "6b1465e02845a5487dbcfad31bc14f6c6f13458bf682dde1bb1b6886a350810ba7c3773dcea1051e2a62fc5227b149e184959edef138ac25b3b97ddea0fa06af"
+  },
+  {
+    "version": "3.9.2",
+    "fixture": "zk",
+    "url": "https://archive.apache.org/dist/kafka/3.9.2/kafka_2.13-3.9.2.tgz",
+    "sha512": "01186a5086b5ae753811ee71808a797baec1303d4e0d4b1c0acf42c489654a7b8988136f8469d0b66f0be439f8e3e9b816171ea0b0d7a36462b07aa2d3ef0023"
+  },
+  {
+    "version": "3.9.2",
+    "fixture": "kraft",
+    "url": "https://archive.apache.org/dist/kafka/3.9.2/kafka_2.13-3.9.2.tgz",
+    "sha512": "01186a5086b5ae753811ee71808a797baec1303d4e0d4b1c0acf42c489654a7b8988136f8469d0b66f0be439f8e3e9b816171ea0b0d7a36462b07aa2d3ef0023"
+  },
+  {
+    "version": "4.0.2",
+    "fixture": "kraft",
+    "url": "https://archive.apache.org/dist/kafka/4.0.2/kafka_2.13-4.0.2.tgz",
+    "sha512": "b854b5ee761f04f8bd27f18576590cd54f4890d5dc103818f3db23c1a5b04de27f8465d4042f7cdf463dbfa6f149dafca92b60f56b5e2136861cf8d766f1a56b"
+  },
+  {
+    "version": "4.1.2",
+    "fixture": "kraft",
+    "url": "https://archive.apache.org/dist/kafka/4.1.2/kafka_2.13-4.1.2.tgz",
+    "sha512": "78ac6e488b1071122f9608dfdb363f6fe50e1dbbc492347002c0398dfbf77e0d8caa5bf794c5937379721004dfe92025937d238b0faf4eb715529417fd43b491"
+  },
+  {
+    "version": "4.2.2",
+    "fixture": "kraft",
+    "url": "https://archive.apache.org/dist/kafka/4.2.2/kafka_2.13-4.2.2.tgz",
+    "sha512": "acb9961f7ec72f5ff1544afdfbcca39030f2c9ca0d80e8466cf961bd83ae2030bafc28d2577f3f1a099b39c06e6252b8886c1eaf6477f2a2aca8be8b68c0b25e"
+  },
+  {
+    "version": "4.3.1",
+    "fixture": "kraft",
+    "url": "https://archive.apache.org/dist/kafka/4.3.1/kafka_2.13-4.3.1.tgz",
+    "sha512": "c7d7b2318cb51aa0c61d3246a51c349210073c5c9b754947ef965a439f2f939e8600f204e134a75ac31faf3829c9370960ef7c6a9886c8a1dbf0339a21f4c54c"
+  }
+]

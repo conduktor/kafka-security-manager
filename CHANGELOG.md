@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.1/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - Unreleased
+
+- Rewrite KSM in Java 25 using only the public Kafka Admin API. Remove direct
+  ZooKeeper access and broker/Scala runtime dependencies.
+- Preserve built-in CSV/YAML sources, console/Slack notifications, Kafka client
+  properties and execution modes. The Java extension SPI replaces the Scala SPI.
+- Reject malformed or unavailable sources before reconciliation. Fix conditional
+  fetch caching, file changes, URL encoding, request deadlines and resource cleanup.
+- Correct YAML Produce to grant only topic permissions. Make CSV/YAML exports
+  round-trip safely; unsupported YAML representations fail before output.
+- Add a real dry-run, nonzero failure exit codes and a continuous loop that
+  recovers from source/Kafka failures without overlapping cycles.
+- Qualify exact Kafka releases with real brokers, authentication, authorization,
+  client operations, failure injection and executable distribution tests.
+
+See [migration](docs/migration.md) for intentional changes, including the removed
+ZooKeeper configuration and custom extension migration. See [testing](docs/testing.md)
+for the supported-version matrix and reproducible qualification commands.
+
 ## [1.1.0-SNAPSHOT]
 - TODO
 
