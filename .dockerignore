@@ -2,7 +2,7 @@
 !Dockerfile
 !target/
 target/*
-!target/kafka-security-manager-2.0.0-SNAPSHOT.jar
+!target/kafka-security-manager-2.0.0.jar
 !bin/
 !bin/**
 !example/

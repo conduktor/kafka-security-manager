@@ -105,7 +105,7 @@ ksm { readonly=false, refresh.frequency.ms=0 }
 source.class="io.conduktor.ksm.source.FileSourceAcl"
 source.file.filename=""" + json.dumps(str(policy)) + "\n")
         for extension in ("zip", "tar.gz"):
-            archive = ROOT / f"target/kafka-security-manager-2.0.0-SNAPSHOT-bin.{extension}"
+            archive = ROOT / f"target/kafka-security-manager-2.0.0-bin.{extension}"
             unpacked = directory / extension
             unpacked.mkdir()
             if extension == "zip":

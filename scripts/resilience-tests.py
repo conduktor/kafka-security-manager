@@ -108,7 +108,7 @@ def main():
     directory.mkdir(parents=True)
     jar = directory / "ksm.jar"
     import shutil
-    shutil.copy2(B.ROOT / "target/kafka-security-manager-2.0.0-SNAPSHOT.jar", jar)
+    shutil.copy2(B.ROOT / "target/kafka-security-manager-2.0.0.jar", jar)
     distro = B.download(next(c for c in B.MATRIX if c["version"] == "4.3.1"), args.cache.resolve())
     env = dict(os.environ, JAVA_HOME=str(java), KAFKA_HEAP_OPTS="-Xms128m -Xmx384m",
                KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC", LOG_DIR=str(directory / "logs"))

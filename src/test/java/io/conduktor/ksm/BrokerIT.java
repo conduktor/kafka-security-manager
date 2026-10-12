@@ -25,7 +25,7 @@ class BrokerIT {
           Objects.requireNonNull(
               System.getProperty("ksm.it.directory"), "Use scripts/broker-tests.py"));
   final Path jar =
-      Path.of(System.getProperty("ksm.it.jar", "target/kafka-security-manager-2.0.0-SNAPSHOT.jar"))
+      Path.of(System.getProperty("ksm.it.jar", "target/kafka-security-manager-2.0.0.jar"))
           .toAbsolutePath();
   final CsvAclParser csv = new CsvAclParser();
   int invocation;

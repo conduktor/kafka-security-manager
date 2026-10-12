@@ -12,7 +12,7 @@ Remove `authorizer.config` and the `AUTHORIZER_ZOOKEEPER_CONNECT`, `AUTHORIZER_Z
 
 KSM needs an accessible broker listener, an enabled authorizer, and a Kafka principal allowed to describe and alter ACLs on the literal cluster resource `kafka-cluster`. The tests use Cluster Describe and Alter without making KSM a super-user. Include KSM's own visible ACLs in the source: the entire visible ACL set is authoritative.
 
-The Scala artifact (`kafka-security-manager_2.12`) remains historical. Java builds use `io.conduktor:kafka-security-manager:2.0.0-SNAPSHOT`; this working version is not a published release.
+The Scala artifact (`kafka-security-manager_2.12`) remains historical. Get the Java JAR or ZIP/tar.gz from the [2.0.0 release](https://github.com/conduktor/kafka-security-manager/releases/tag/v2.0.0), or use `conduktor/kafka-security-manager:v2.0.0`. The Docker `latest` tag now follows KSM 2; pin a version when upgrading. The Maven coordinates are `io.conduktor:kafka-security-manager:2.0.0` for local builds; this release is distributed through GitHub and Docker Hub, not Maven Central.
 
 ## Intentional corrections
 

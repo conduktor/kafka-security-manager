@@ -4,7 +4,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends --only-upgrade libfreetype6 libpng16-16t64 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/ksm
-ARG JAR=target/kafka-security-manager-2.0.0-SNAPSHOT.jar
+ARG JAR=target/kafka-security-manager-2.0.0.jar
 COPY --chown=10001:10001 ${JAR} lib/kafka-security-manager.jar
 COPY --chown=10001:10001 bin/ bin/
 COPY --chown=10001:10001 example/ example/

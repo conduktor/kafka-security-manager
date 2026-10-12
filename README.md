@@ -20,9 +20,9 @@ KSM stays focused on reconciling Kafka ACLs. Its scope does not include a team p
 
 ## Compatibility
 
-This branch contains the Java rewrite, **KSM 2.0.0-SNAPSHOT**, not a published release.
+**KSM 2.0.0** is the Java rewrite. Download the executable JAR or ZIP/tar.gz distribution from the [release](https://github.com/conduktor/kafka-security-manager/releases/tag/v2.0.0).
 
-The Docker repository is [`conduktor/kafka-security-manager`](https://hub.docker.com/r/conduktor/kafka-security-manager). Its existing published tags, including `latest`, contain the older Scala implementation. Build this branch locally to try the Java rewrite; future releases use the Conduktor repository.
+Docker images are published to [`conduktor/kafka-security-manager`](https://hub.docker.com/r/conduktor/kafka-security-manager) for **linux/amd64 and linux/arm64**. Pin `conduktor/kafka-security-manager:v2.0.0` for this release; `latest` now follows KSM 2. The historical `v1.x-release` tags remain Scala builds. Read the [migration guide](docs/migration.md) before upgrading.
 
 - **KSM runtime: Java 25 LTS.** The broker's Java runtime is independent.
 - **Minimum qualified Kafka release: 2.8.2.** The exact broker releases in the test matrix are **2.8.2, 3.9.2, 4.0.2, 4.1.2, 4.2.2 and 4.3.1**. This is not a claim that every intervening or future release is tested.
@@ -75,7 +75,7 @@ The broker's host listener binds to `127.0.0.1:19092`; change `KSM_DEMO_PORT` if
 
 ## Connect to your cluster
 
-Build with `./mvnw verify`, then use the executable JAR or unpack the ZIP/tar.gz from `target/`. The ZIP launcher accepts `-Dconfig.file=/path/ksm.conf`; `JAVA_TOOL_OPTIONS` works with the JAR, launcher and container.
+Download a [release](https://github.com/conduktor/kafka-security-manager/releases/tag/v2.0.0), or build with `./mvnw verify` to create the executable JAR and ZIP/tar.gz in `target/`. The examples below use the locally built JAR; adjust its path for a downloaded release. The ZIP launcher accepts `-Dconfig.file=/path/ksm.conf`; `JAVA_TOOL_OPTIONS` works with the JAR, launcher and container.
 
 ```sh
 export ADMIN_CLIENT_BOOTSTRAP_SERVERS=localhost:9092
@@ -83,11 +83,11 @@ export SOURCE_CLASS=io.conduktor.ksm.source.FileSourceAcl
 export SOURCE_FILE_FILENAME=/path/to/reviewed-acls.csv
 
 # Validate the source and preview additions/removals. No writes.
-java -jar target/kafka-security-manager-2.0.0-SNAPSHOT.jar --dry-run
+java -jar target/kafka-security-manager-2.0.0.jar --dry-run
 
 # Apply once, after reviewing the preview.
 KSM_READONLY=false KSM_REFRESH_FREQUENCY_MS=0 \
-  java -jar target/kafka-security-manager-2.0.0-SNAPSHOT.jar
+  java -jar target/kafka-security-manager-2.0.0.jar
 ```
 
 Supply your cluster's Kafka authentication properties as described in [configuration](docs/configuration.md). For continuous synchronization, set `KSM_READONLY=false` and a positive `KSM_REFRESH_FREQUENCY_MS` (default 10000).
@@ -98,7 +98,7 @@ Export current ACLs, including before migration:
 
 ```sh
 KSM_EXTRACT_ENABLE=true KSM_EXTRACT_FORMAT=csv \
-  java -jar target/kafka-security-manager-2.0.0-SNAPSHOT.jar > current-acls.csv
+  java -jar target/kafka-security-manager-2.0.0.jar > current-acls.csv
 ```
 
 Diagnostics go to stderr. CSV represents all supported resource and principal types. YAML export rejects ACL sets it cannot represent without loss.

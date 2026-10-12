@@ -247,7 +247,7 @@ def main():
     cells = [c for c in MATRIX if not args.cases or c["version"] + "-" + c["fixture"] in args.cases]
     output = ROOT / "target/broker-it" / time.strftime("%Y%m%d-%H%M%S")
     output.mkdir(parents=True)
-    jar = ROOT / "target/kafka-security-manager-2.0.0-SNAPSHOT.jar"
+    jar = ROOT / "target/kafka-security-manager-2.0.0.jar"
     if not jar.is_file() or not (ROOT / "target/test-classes/io/conduktor/ksm/BrokerIT.class").is_file():
         parser.error("Run ./mvnw verify first to build the artifact and integration tests")
     shutil.copy2(jar, output / "ksm.jar")
