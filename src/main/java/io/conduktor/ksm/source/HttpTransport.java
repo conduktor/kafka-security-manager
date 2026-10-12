@@ -70,7 +70,7 @@ public final class HttpTransport implements AutoCloseable {
     }
 
     public CompletionStage<byte[]> getBody() {
-      return result;
+      return result.minimalCompletionStage();
     }
 
     public void onSubscribe(Flow.Subscription subscription) {

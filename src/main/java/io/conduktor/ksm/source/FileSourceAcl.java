@@ -21,7 +21,6 @@ public final class FileSourceAcl implements SourceAcl {
   public void configure(Config config) {
     file = Path.of(config.getString("filename"));
     maxBytes = config.getInt("max.bytes");
-    parsers.getParserByFilename(file.toString());
   }
 
   public Optional<SourceSnapshot> fetch() throws Exception {

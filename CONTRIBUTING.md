@@ -20,6 +20,33 @@ Run the security, resilience and distribution suites documented in [testing](doc
 
 Keep the [migration guide](docs/migration.md), [configuration reference](src/main/resources/reference.conf) and compatibility matrix consistent with behavior. Explain intentional compatibility changes. Do not claim support for an untested Kafka version or provider.
 
+## Required checks
+
+Every PR runs the following checks. A finding fails the job; the Kafka matrix starts only after lint and Java contracts pass.
+
+| Area | Blocking checks |
+| --- | --- |
+| Java | Spotless formatting, all javac warnings treated as errors, SpotBugs at maximum effort including low-priority findings |
+| Python fixtures | Ruff lint (E, F, I, UP, B, RUF) and formatting |
+| Shell scripts | ShellCheck, including style findings |
+| GitHub Actions | actionlint, including embedded shell checks |
+| Markdown | markdownlint on all tracked and new, non-ignored Markdown files |
+
+SpotBugs exceptions are limited to documented SPI and framework lifecycle cases in [the filter](config/spotbugs-exclude.xml). Do not add a project-wide exclusion to silence a new finding. Line-length rules are disabled for prose/URLs and Python fixture strings; Markdown HTML is limited to `details` and `summary`. The generated Maven wrapper is kept upstream and is not included in ShellCheck.
+
+For local script and documentation checks, install Node 22+, Python 3.12+, ShellCheck 0.11.0 and actionlint 1.7.12, then:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install --requirement tools/lint/requirements.txt
+npm ci --prefix tools/lint --ignore-scripts
+./scripts/lint.sh
+./mvnw verify
+```
+
+Ruff and Markdown dependencies are pinned in `tools/lint`; CI verifies SHA-256 checksums for the ShellCheck and actionlint binaries. The Markdown runner uses literal Git paths, and KaTeX is pinned to its security patch in the tooling lockfile. These packages are development tools and are not included in the KSM image or JAR.
+
 ## Release preparation
 
 Update the project version and distribution paths together, rerun the entire qualification, review dependency and image scans, and attach the reports to the release candidate. CI builds and tests; it does not automatically publish from a branch or tag.

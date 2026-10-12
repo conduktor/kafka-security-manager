@@ -14,7 +14,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tools/lint/package-lock.json
+      - run: python3 -m pip install --requirement tools/lint/requirements.txt
+      - run: npm ci --prefix tools/lint --ignore-scripts
+      - name: Install checksum-pinned actionlint and ShellCheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          lint_dir="$RUNNER_TEMP/ksm-lint"
+          mkdir -p "$lint_dir"
+          cd "$lint_dir"
+          curl -fsSL --retry 3 --connect-timeout 10 --max-time 120 \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            -o actionlint.tar.gz
+          echo '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz' | sha256sum --check --strict
+          tar -xzf actionlint.tar.gz actionlint
+          curl -fsSL --retry 3 --connect-timeout 10 --max-time 120 \
+            https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz \
+            -o shellcheck.tar.xz
+          echo '8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  shellcheck.tar.xz' | sha256sum --check --strict
+          tar -xJf shellcheck.tar.xz shellcheck-v0.11.0/shellcheck
+          echo "$lint_dir" >> "$GITHUB_PATH"
+          echo "$lint_dir/shellcheck-v0.11.0" >> "$GITHUB_PATH"
+      - run: ./scripts/lint.sh
+
   contracts:
+    needs: lint
     runs-on: ubuntu-24.04
     outputs:
       broker-matrix: ${{ steps.matrix.outputs.cells }}

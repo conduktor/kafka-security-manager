@@ -20,6 +20,8 @@
     <dependency><groupId>software.amazon.awssdk</groupId><artifactId>bom</artifactId><version>${aws.version}</version><type>pom</type><scope>import</scope></dependency>
   </dependencies></dependencyManagement>
   <dependencies>
+    <!-- Compile-time annotations used by dependencies and documented analysis exceptions. -->
+    <dependency><groupId>com.github.spotbugs</groupId><artifactId>spotbugs-annotations</artifactId><version>4.10.5</version><scope>provided</scope></dependency>
     <dependency><groupId>org.apache.kafka</groupId><artifactId>kafka-clients</artifactId><version>${kafka.version}</version></dependency>
     <dependency><groupId>com.typesafe</groupId><artifactId>config</artifactId><version>1.4.9</version></dependency>
     <dependency><groupId>org.apache.commons</groupId><artifactId>commons-csv</artifactId><version>1.14.1</version></dependency>
@@ -45,7 +47,13 @@
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-enforcer-plugin</artifactId><version>3.6.2</version>
       <executions><execution><id>java-25</id><goals><goal>enforce</goal></goals><configuration><rules><requireJavaVersion><version>[25,26)</version></requireJavaVersion></rules></configuration></execution></executions>
     </plugin>
-    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.16.0</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.16.0</version>
+      <configuration><showWarnings>true</showWarnings><failOnWarning>true</failOnWarning><compilerArgs><arg>-Xlint:all</arg></compilerArgs></configuration>
+    </plugin>
+    <plugin><groupId>com.github.spotbugs</groupId><artifactId>spotbugs-maven-plugin</artifactId><version>4.10.5.0</version>
+      <configuration><effort>Max</effort><threshold>Low</threshold><failOnError>true</failOnError><excludeFilterFile>config/spotbugs-exclude.xml</excludeFilterFile></configuration>
+      <executions><execution><goals><goal>check</goal></goals></execution></executions>
+    </plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version><configuration><forceCreation>true</forceCreation></configuration></plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.6.0</version><configuration><useModulePath>false</useModulePath></configuration></plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId><version>3.6.0</version>

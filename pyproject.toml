@@ -1,0 +1,9 @@
+[tool.ruff]
+required-version = "==0.17.0"
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF"]
+# Ruff's formatter owns wrapping; URLs and fixture strings can exceed the limit.
+ignore = ["E501"]
