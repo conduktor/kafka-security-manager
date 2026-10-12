@@ -25,6 +25,10 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - run: ./mvnw -B -ntp verify
       - id: matrix
         name: Read the qualified broker manifest
@@ -70,6 +74,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: ./mvnw -B -ntp verify
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ksm-kafka/*.tgz
+          key: kafka-archives-${{ runner.os }}-${{ matrix.cell }}-${{ hashFiles('scripts/broker-matrix.json') }}
       - name: Real Kafka ACL and security tests
         env:
           MATRIX_CELL: ${{ matrix.cell }}
@@ -102,6 +110,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: ./mvnw -B -ntp verify
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ksm-kafka/*.tgz
+          key: kafka-archives-${{ runner.os }}-4.3.1-kraft-${{ hashFiles('scripts/broker-matrix.json') }}
       - run: python3 scripts/resilience-tests.py --java25 "$JAVA_HOME"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()

@@ -31,10 +31,26 @@ def download(cell, cache):
     archive = cache / name
     cache.mkdir(parents=True, exist_ok=True)
     if not archive.exists():
-        print("Downloading " + name, flush=True)
         temporary = archive.with_suffix(".part")
-        subprocess.run(["curl", "-fsSL", "--retry", "2", "--max-time", "300", "-o", str(temporary), cell["url"]], check=True)
-        temporary.replace(archive)
+        for url in dict.fromkeys([*cell.get("mirrors", []), cell["url"]]):
+            temporary.unlink(missing_ok=True)
+            for attempt in range(2):
+                print(f"Downloading {name} from {url} (attempt {attempt + 1})", flush=True)
+                result = subprocess.run(["curl", "-fsSL", "--connect-timeout", "10", "--max-time", "120",
+                                         "--continue-at", "-", "-o", str(temporary), url])
+                if result.returncode == 0:
+                    if hashlib.sha512(temporary.read_bytes()).hexdigest() != cell["sha512"]:
+                        temporary.unlink()
+                        raise RuntimeError("Apache archive SHA-512 mismatch: " + name)
+                    temporary.replace(archive)
+                    break
+                if result.returncode not in (18, 28, 56):
+                    break
+            if archive.exists():
+                break
+        if not archive.exists():
+            temporary.unlink(missing_ok=True)
+            raise RuntimeError("Could not download verified Apache archive: " + name)
     if hashlib.sha512(archive.read_bytes()).hexdigest() != cell["sha512"]:
         raise RuntimeError("Apache archive SHA-512 mismatch: " + name)
     destination = cache / name.removesuffix(".tgz")
@@ -235,6 +251,9 @@ def main():
     if not jar.is_file() or not (ROOT / "target/test-classes/io/conduktor/ksm/BrokerIT.class").is_file():
         parser.error("Run ./mvnw verify first to build the artifact and integration tests")
     shutil.copy2(jar, output / "ksm.jar")
+    # Fail once on download errors instead of retrying the same unavailable archive per profile.
+    for cell in {c["version"]: c for c in cells}.values():
+        download(cell, args.cache)
     results = []
     for cell in cells:
         for profile in args.profiles:

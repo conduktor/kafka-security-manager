@@ -6,6 +6,7 @@ Use Java 25 for KSM and Python 3.12 or newer for the fixtures. Java 17 is also n
 
 ```sh
 ./mvnw verify
+python3 -m unittest discover -s scripts -p 'test_*.py'
 
 # Seven broker configurations; SASL/PLAIN transport by default.
 python3 scripts/broker-tests.py \
@@ -26,6 +27,8 @@ python3 scripts/verify-distribution.py
 All commands fail on infrastructure errors and failed assertions. `./mvnw verify` intentionally runs the tests without external brokers; it does not qualify Kafka by itself. Failsafe's `broker-it` profile is an internal entry point used by the test runner with an existing fixture directory, not a cluster launcher.
 
 The test runner downloads official Apache archives and checks their SHA-512 against [broker-matrix.json](../scripts/broker-matrix.json). `--cache /path` or `KSM_KAFKA_CACHE` selects a reusable cache. Each invocation has an isolated output directory and starts/stops only its own processes. Run one broker test invocation at a time per checkout: Maven's Failsafe report directory is shared.
+
+The manifest lists the Apache CDN and Huawei Cloud mirror before the Apache archive fallback. Every downloaded or cached archive must match the pinned Apache SHA-512 before extraction. Interrupted transfers resume within the same mirror; unavailable mirrors fall back, and checksum mismatches fail immediately. CI caches the verified archives. The Python contract tests exercise fallback, resumption and rejection of corrupt downloads/cache entries through a local HTTP server.
 
 To focus a broker test:
 
